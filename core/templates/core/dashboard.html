@@ -1,0 +1,76 @@
+{% extends "core/frames/frame_dashboard.html" %}
+
+{% block page_title %}仪表盘{% endblock %}
+
+{% block page_content %}
+<div class="row">
+    <div class="col-12">
+        <h2 class="mb-4">仪表盘</h2>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- 用户统计卡片 -->
+    <div class="col-md-3">
+        <div class="card h-100">
+            <div class="card-body">
+                <h5 class="card-title text-muted">总用户数</h5>
+                <h2 class="mb-0">{{ stats.total_users|default(0) }}</h2>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card h-100">
+            <div class="card-body">
+                <h5 class="card-title text-muted">活跃用户</h5>
+                <h2 class="mb-0">{{ stats.active_users|default(0) }}</h2>
+                <small class="text-muted">{{ stats.active_percentage|default(0) }}%</small>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card h-100">
+            <div class="card-body">
+                <h5 class="card-title text-muted">一类用户</h5>
+                <h2 class="mb-0">{{ stats.manager_users|default(0) }}</h2>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card h-100">
+            <div class="card-body">
+                <h5 class="card-title text-muted">二类用户</h5>
+                <h2 class="mb-0">{{ stats.leader_users|default(0) }}</h2>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mt-2">
+    <div class="col-md-3">
+        <div class="card h-100">
+            <div class="card-body">
+                <h5 class="card-title text-muted">三类用户</h5>
+                <h2 class="mb-0">{{ stats.employee_users|default(0) }}</h2>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">欢迎使用 {{ system_name|default("仙芙CIMF") }}</h5>
+            </div>
+            <div class="card-body">
+                <p class="mb-2">{{ settings.welcome_subtitle|default("让我们一起把项目完善吧。") }}</p>
+                <textarea class="form-control" rows="3" readonly>{{ settings.welcome_intro|default("初始用户名：admin 初始密码：admin123") }}</textarea>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
