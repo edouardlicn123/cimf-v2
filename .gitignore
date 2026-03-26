@@ -34,11 +34,6 @@ desktop.ini
 *~
 .#*
 
-# code2ai 生成的审查快照（临时文件，不应提交）
-code2ai/code_for_ai_review*.txt
-code2ai/*.txt
-code2ai/*.md
-
 # 其他可能出现的
 .mypy_cache/
 .pytest_cache/
