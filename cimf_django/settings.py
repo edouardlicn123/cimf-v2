@@ -18,6 +18,13 @@
 
 from pathlib import Path
 
+# pymysql 兼容性处理（使用 MySQL 时需要）
+try:
+    import pymysql
+    pymysql.install_as_MySQLdb()
+except ImportError:
+    pass
+
 # 加载环境变量
 from dotenv import load_dotenv
 import os
@@ -120,12 +127,10 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'cimf_django.wsgi.application'
 
-# Database - 使用 SQLite，Django 专用数据库（与 Flask 分离）
+# Database - 根据 config.env 配置选择 SQLite 或 MySQL
+from cimf_django.database import get_database_config
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'instance' / 'django.db',
-    }
+    'default': get_database_config()
 }
 
 
@@ -164,14 +169,14 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
 STATIC_URL = 'static/'
-STATIC_ROOT = BASE_DIR / 'staticfiles'
+STATIC_ROOT = BASE_DIR / 'storage' / 'staticfiles'
 STATICFILES_DIRS = [
     BASE_DIR / 'static',
 ]
 
 # Media files
 MEDIA_URL = 'media/'
-MEDIA_ROOT = BASE_DIR / 'media'
+MEDIA_ROOT = BASE_DIR / 'storage' / 'uploads'
 
 # Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'

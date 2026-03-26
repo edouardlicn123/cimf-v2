@@ -47,7 +47,7 @@ VENV_DIR="venv"
 PIP_INDEX="https://pypi.tuna.tsinghua.edu.cn/simple"
 APP_PORT=8000
 DB_PATH="instance/django.db"
-BACKUP_DIR="backups"
+BACKUP_DIR="storage/backups"
 
 # 优先使用项目内 venv
 if [[ -d "$PROJECT_ROOT/venv" ]]; then
@@ -124,7 +124,7 @@ fi
 run_server() {
     echo -e "\n${GREEN}>>> 启动 CIMF 管理系统 (开发模式)${NC}\n"
     
-    mkdir -p instance staticfiles media
+    mkdir -p storage/uploads storage/backups instance
     
     echo "  监听地址 : http://0.0.0.0:${APP_PORT}"
     echo "  本地访问 : http://127.0.0.1:${APP_PORT}"
@@ -225,7 +225,7 @@ clean_cache() {
     find . -type f -name "*.pyo" -delete 2>/dev/null || true
     
     rm -rf .pytest_cache .coverage .mypy_cache .ruff_cache 2>/dev/null || true
-    rm -rf staticfiles/.cache 2>/dev/null || true
+    rm -rf storage/staticfiles/.cache 2>/dev/null || true
     
     echo -e "${GREEN}缓存清理完成${NC}"
 }
@@ -241,9 +241,9 @@ show_env_vars() {
     echo
 }
 
-# 创建 .env 文件
+# 创建 config.env 文件
 create_env_file() {
-    echo -e "\n${GREEN}>>> 创建 .env 文件${NC}\n"
+    echo -e "\n${GREEN}>>> 创建 config.env 文件${NC}\n"
     
     if [[ -f "config.env" ]]; then
         echo -e "${YELLOW}config.env 已存在${NC}"
@@ -255,8 +255,51 @@ create_env_file() {
     fi
     
     if [[ -f "config.env.sample" ]]; then
-        cp config.env.sample config.env
-        echo -e "${GREEN}已创建 config.env（基于 config.env.sample）${NC}"
+        # 选择数据库类型
+        echo "请选择数据库类型："
+        echo "  1 → SQLite（默认，适合开发和测试）"
+        echo "  2 → MySQL（适合生产环境）"
+        read -p "请输入选项 (1/2): " db_choice
+        
+        case "$db_choice" in
+            1)
+                # SQLite 配置
+                sed 's/^# DB_TYPE=mysql/DB_TYPE=sqlite/' config.env.sample > config.env
+                echo -e "${GREEN}已创建 config.env（SQLite）${NC}"
+                ;;
+            2)
+                # MySQL 配置
+                echo "请输入 MySQL 配置："
+                read -p "  数据库名 [cimf]: " db_name
+                read -p "  用户名 [root]: " db_user
+                read -s -p "  密码: " db_pass; echo
+                read -p "  主机 [localhost]: " db_host
+                read -p "  端口 [3306]: " db_port
+                
+                # 生成配置
+                cp config.env.sample config.env
+                sed -i 's/^DB_TYPE=sqlite/DB_TYPE=mysql/' config.env
+                sed -i "s/^# DB_NAME=cimf/DB_NAME=${db_name:-cimf}/" config.env
+                sed -i "s/^# DB_USER=root/DB_USER=${db_user:-root}/" config.env
+                sed -i "s/^# DB_PASSWORD=$/DB_PASSWORD=${db_pass}/" config.env
+                sed -i "s/^# DB_HOST=localhost/DB_HOST=${db_host:-localhost}/" config.env
+                sed -i "s/^# DB_PORT=3306/DB_PORT=${db_port:-3306}/" config.env
+                
+                # 取消注释 MySQL 配置行
+                sed -i 's/^# \(DB_TYPE=mysql\)/\1/' config.env
+                sed -i 's/^# \(DB_NAME=\)/\1/' config.env
+                sed -i 's/^# \(DB_USER=\)/\1/' config.env
+                sed -i 's/^# \(DB_PASSWORD=\)/\1/' config.env
+                sed -i 's/^# \(DB_HOST=\)/\1/' config.env
+                sed -i 's/^# \(DB_PORT=\)/\1/' config.env
+                
+                echo -e "${GREEN}已创建 config.env（MySQL）${NC}"
+                ;;
+            *)
+                cp config.env.sample config.env
+                echo -e "${YELLOW}使用默认配置（SQLite）${NC}"
+                ;;
+        esac
     else
         echo -e "${RED}config.env.sample 不存在${NC}"
     fi
@@ -290,7 +333,7 @@ show_init_menu() {
     echo
     echo "  1 → 创建虚拟环境并安装依赖"
     echo "  2 → 初始化系统（重建数据库+创建管理员）"
-    echo "  3 → 创建 .env 文件"
+    echo "  3 → 创建 config.env 文件"
     echo "  4 → 生成随机 SECRET_KEY"
     echo "  5 → 初始化海外客户样本数据"
     echo "  6 → 初始化国内客户样本数据"

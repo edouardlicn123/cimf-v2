@@ -10,6 +10,7 @@ jinja2>=3.1,<4.0
 
 # 数据库
 # sqlite3 (built-in)
+# pymysql (可选，使用 MySQL 时安装: pip install pymysql)
 
 # HTTP 请求
 requests>=2.32,<3.0
