@@ -278,4 +278,11 @@
 9. 修复首页间距问题：恢复frame_dashboard.html原padding (py-4 py-md-5)
 10. 删除core/node/views.py中无效的node_list和node_view视图（重定向到modules对应视图）
 11. 优化代码：将9处裸except改为except Exception
+12. 实现首页功能卡片区域与时钟模块：创建clock模块基础文件(apps.py/urls.py/services.py)、实现时间API、创建时钟卡片模板、添加3×2功能卡片区域HTML、实现拖拽功能和位置保存API
+13. 实现动态模板加载：修改settings.py，在启动时自动扫描modules/目录下所有模块的templates目录并加入模板搜索路径
+14. 修复首页功能卡片区域不显示时钟卡片的问题：修正core/views.py中模块路径导入错误，使用modules.{module_path}.module格式
+15. 修复时钟卡片不显示时间问题：修正JS中时钟API URL从/modules/clock/改为/nodes/clock/
+16. 修改URL路径从nodes/改为modules/，统一模块URL前缀
+17. 为run.sh添加杀死服务器进程功能，支持通过DJANGO_PORT环境变量指定端口
+18. 删除首页仪表盘中的用户统计卡片区域
 

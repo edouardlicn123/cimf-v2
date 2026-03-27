@@ -20,6 +20,9 @@ urlpatterns = [
     path('customer/', include('modules.customer.urls')),
     path('customer_cn/', include('modules.customer_cn.urls')),
     
+    # 时钟模块
+    path('clock/', include('modules.clock.urls')),
+    
     # 字段类型 (must be before generic slug pattern)
     path('field-types/', node_views.field_types, name='field_types'),
     path('api/field-types/', node_views.field_types_api, name='field_types_api'),

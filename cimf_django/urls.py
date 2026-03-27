@@ -8,7 +8,7 @@ from core.importexport.urls import urlpatterns as importexport_urls, urlpatterns
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('core.urls', namespace='core')),
-    path('nodes/', include('modules.urls', namespace='nodes')),
+    path('modules/', include('modules.urls', namespace='modules')),
     path('node/', include('core.node.urls', namespace='node')),
     path('export/', include((urlpatterns_all, 'importexport'))),
 ]

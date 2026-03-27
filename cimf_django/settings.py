@@ -58,14 +58,19 @@ _base_apps = [
     'modules',
 ]
 
-# 动态扫描 modules/ 下的模块
+# 动态扫描 modules/ 下的模块及其模板目录
 _node_modules = []
+_module_template_dirs = []
 _nodes_dir = os.path.join(BASE_DIR, 'modules')
 if os.path.isdir(_nodes_dir):
     for item in os.listdir(_nodes_dir):
         module_path = os.path.join(_nodes_dir, item)
         if os.path.isdir(module_path) and os.path.exists(os.path.join(module_path, 'module.py')):
             _node_modules.append(f'modules.{item}')
+            # 收集模块的 templates 目录
+            template_dir = os.path.join(module_path, 'templates')
+            if os.path.isdir(template_dir):
+                _module_template_dirs.append(Path(template_dir))
 
 INSTALLED_APPS = _base_apps + _node_modules
 
@@ -82,16 +87,18 @@ MIDDLEWARE = [
 ROOT_URLCONF = 'cimf_django.urls'
 
 # Jinja2 模板引擎配置（兼容现有 Flask 模板）
+# 动态收集所有模板目录
+_template_dirs = [
+    BASE_DIR / 'core' / 'templates',
+    BASE_DIR / 'core' / 'node' / 'templates',
+    BASE_DIR / 'core' / 'node' / 'templates' / 'types',
+    BASE_DIR / 'core' / 'importexport' / 'templates',
+] + _module_template_dirs
+
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.jinja2.Jinja2',
-        'DIRS': [
-            BASE_DIR / 'core' / 'templates',
-            BASE_DIR / 'core' / 'node' / 'templates',
-            BASE_DIR / 'modules' / 'customer' / 'templates',
-            BASE_DIR / 'modules' / 'customer_cn' / 'templates',
-            BASE_DIR / 'core' / 'node' / 'templates' / 'types',
-        ],
+        'DIRS': _template_dirs,
         'APP_DIRS': False,
         'OPTIONS': {
             'environment': 'cimf_django.jinja2.environment',
@@ -114,11 +121,7 @@ TEMPLATES = [
     },
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [
-            BASE_DIR / 'core' / 'templates',
-            BASE_DIR / 'core' / 'node' / 'templates',
-            BASE_DIR / 'core' / 'importexport' / 'templates',
-        ],
+        'DIRS': _template_dirs,
         'APP_DIRS': False,
         'OPTIONS': {
             'context_processors': [

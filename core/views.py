@@ -960,3 +960,72 @@ def importexport_dashboard(request):
     return render(request, 'core/importexport/importexport_dashboard.html', {
         'active_section': 'dashboard',
     })
+
+
+# ===== 功能卡片区域 API =====
+
+@login_required
+@require_GET
+def api_dashboard_cards(request):
+    """获取功能卡片布局"""
+    from core.models import SystemSetting
+    import json
+
+    setting = SystemSetting.objects.filter(key='user_dashboard_card_positions').first()
+    positions = {}
+    if setting and setting.value:
+        try:
+            positions = json.loads(setting.value)
+        except Exception:
+            positions = {}
+
+    default_positions = {str(i): {'module': None, 'size': 'medium', 'config': {}} for i in range(1, 7)}
+    for k, v in positions.items():
+        default_positions[k] = v
+
+    available_modules = []
+    try:
+        from core.node.models import NodeModule
+        from importlib import import_module
+
+        active_modules = NodeModule.objects.filter(is_active=True)
+        for node_module in active_modules:
+            module_path = node_module.path
+            if module_path:
+                try:
+                    mod = import_module(f'modules.{module_path}.module')
+                    if hasattr(mod, 'MODULE_INFO') and 'dashboard_cards' in mod.MODULE_INFO:
+                        available_modules.append(node_module.module_id)
+                except Exception:
+                    pass
+    except Exception:
+        pass
+
+    return JsonResponse({
+        'success': True,
+        'data': {
+            'positions': default_positions,
+            'available_modules': available_modules,
+        }
+    })
+
+
+@login_required
+@require_POST
+def api_dashboard_cards_save(request):
+    """保存功能卡片布局"""
+    from core.models import SystemSetting
+    import json
+
+    try:
+        data = json.loads(request.body)
+        positions = data.get('positions', {})
+
+        SystemSetting.objects.update_or_create(
+            key='user_dashboard_card_positions',
+            defaults={'value': json.dumps(positions), 'description': '用户首页功能卡片布局'}
+        )
+
+        return JsonResponse({'success': True, 'message': '布局已保存'})
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=400)

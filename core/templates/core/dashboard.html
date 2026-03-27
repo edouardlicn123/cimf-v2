@@ -9,56 +9,25 @@
     </div>
 </div>
 
-<div class="row g-4">
-    <!-- 用户统计卡片 -->
-    <div class="col-md-3">
-        <div class="card h-100">
-            <div class="card-body">
-                <h5 class="card-title text-muted">总用户数</h5>
-                <h2 class="mb-0">{{ stats.total_users|default(0) }}</h2>
-            </div>
-        </div>
-    </div>
-    
-    <div class="col-md-3">
-        <div class="card h-100">
-            <div class="card-body">
-                <h5 class="card-title text-muted">活跃用户</h5>
-                <h2 class="mb-0">{{ stats.active_users|default(0) }}</h2>
-                <small class="text-muted">{{ stats.active_percentage|default(0) }}%</small>
-            </div>
-        </div>
-    </div>
-    
-    <div class="col-md-3">
-        <div class="card h-100">
-            <div class="card-body">
-                <h5 class="card-title text-muted">一类用户</h5>
-                <h2 class="mb-0">{{ stats.manager_users|default(0) }}</h2>
-            </div>
-        </div>
-    </div>
-    
-    <div class="col-md-3">
-        <div class="card h-100">
-            <div class="card-body">
-                <h5 class="card-title text-muted">二类用户</h5>
-                <h2 class="mb-0">{{ stats.leader_users|default(0) }}</h2>
-            </div>
+<!-- 功能卡片区域 -->
+<div class="row mt-4">
+    <div class="col-12">
+        <h5 class="mb-3">功能卡片</h5>
+        <div id="dashboardCardsArea" class="row g-3">
+            <div class="col-4 card-slot" data-position="1"></div>
+            <div class="col-4 card-slot" data-position="2"></div>
+            <div class="col-4 card-slot" data-position="3"></div>
+            <div class="col-4 card-slot" data-position="4"></div>
+            <div class="col-4 card-slot" data-position="5"></div>
+            <div class="col-4 card-slot" data-position="6"></div>
         </div>
     </div>
 </div>
 
-<div class="row g-4 mt-2">
-    <div class="col-md-3">
-        <div class="card h-100">
-            <div class="card-body">
-                <h5 class="card-title text-muted">三类用户</h5>
-                <h2 class="mb-0">{{ stats.employee_users|default(0) }}</h2>
-            </div>
-        </div>
-    </div>
-</div>
+<!-- 时钟卡片模板 -->
+<template id="clock-card-template">
+    {% include "clock/dashboard_card.html" %}
+</template>
 
 <div class="row mt-4">
     <div class="col-12">
@@ -73,4 +42,35 @@
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<style>
+.card-slot {
+    min-height: 120px;
+    border: 2px dashed transparent;
+    border-radius: 0.5rem;
+    transition: all 0.2s ease;
+}
+.card-slot.drag-over {
+    border-color: var(--bs-primary);
+    background-color: rgba(13, 110, 253, 0.05);
+}
+.clock-card {
+    cursor: grab;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.clock-card:active {
+    cursor: grabbing;
+}
+.clock-card.dragging {
+    opacity: 0.5;
+    transform: scale(0.95);
+}
+.clock-card .clock-time {
+    font-family: 'Courier New', monospace;
+    letter-spacing: 2px;
+}
+</style>
+<script src="{{ static('js/dashboard_cards.js') }}?v={{ timestamp }}"></script>
 {% endblock %}

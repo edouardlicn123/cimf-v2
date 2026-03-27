@@ -83,4 +83,8 @@ urlpatterns = [
     path('api/regions/path/', views.api_regions_path, name='api_regions_path'),
     path('api/regions/stats/', views.api_regions_stats, name='api_regions_stats'),
     
+    # 功能卡片区域 API
+    path('api/user/dashboard/cards/', views.api_dashboard_cards, name='api_dashboard_cards'),
+    path('api/user/dashboard/cards/save/', views.api_dashboard_cards_save, name='api_dashboard_cards_save'),
+    
 ]

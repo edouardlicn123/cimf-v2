@@ -43,9 +43,14 @@ echo
 PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$PROJECT_ROOT" || { echo -e "${RED}无法进入项目目录${NC}"; exit 1; }
 
+# 加载环境变量
+if [[ -f "$PROJECT_ROOT/config.env" ]]; then
+    source "$PROJECT_ROOT/config.env"
+fi
+
 VENV_DIR="venv"
 PIP_INDEX="https://pypi.tuna.tsinghua.edu.cn/simple"
-APP_PORT=8000
+APP_PORT=${DJANGO_PORT:-8000}
 DB_PATH="instance/django.db"
 BACKUP_DIR="storage/backups"
 
@@ -87,7 +92,11 @@ show_help() {
     echo "  ./run.sh 1              启动开发服务器"
     echo "  ./run.sh 2              初始化"
     echo "  ./run.sh 3              维护"
+    echo "  ./run.sh 4              杀死服务器进程"
     echo "  ./run.sh 0 / --help     显示帮助"
+    echo
+    echo "环境变量："
+    echo "  DJANGO_PORT             服务器端口 (默认: 8000)"
     echo
     exit 0
 }
@@ -228,6 +237,30 @@ clean_cache() {
     rm -rf storage/staticfiles/.cache 2>/dev/null || true
     
     echo -e "${GREEN}缓存清理完成${NC}"
+}
+
+# 杀死服务器进程
+kill_server() {
+    echo -e "\n${GREEN}>>> 杀死服务器进程 (端口: ${APP_PORT})${NC}\n"
+    
+    local pids
+    pids=$(lsof -ti:${APP_PORT} 2>/dev/null || true)
+    
+    if [[ -z "$pids" ]]; then
+        echo -e "${YELLOW}端口 ${APP_PORT} 上没有运行的进程${NC}"
+        return 0
+    fi
+    
+    echo "找到进程 PID: $pids"
+    echo "正在杀死进程..."
+    
+    for pid in $pids; do
+        if kill -9 "$pid" 2>/dev/null; then
+            echo -e "${GREEN}进程已杀死 (PID: $pid)${NC}"
+        else
+            echo -e "${RED}杀死进程失败 (PID: $pid)${NC}"
+        fi
+    done
 }
 
 # 查看当前环境变量
@@ -375,6 +408,7 @@ show_maint_menu() {
     echo "  1 → 数据库备份"
     echo "  2 → 清理缓存"
     echo "  3 → 查看环境变量"
+    echo "  4 → 杀死服务器进程"
     echo "  0 → 返回主菜单"
     echo
 }
@@ -382,7 +416,7 @@ show_maint_menu() {
 run_maint_menu() {
     while true; do
         show_maint_menu
-        read -p "请输入选项 (0/1/2/3): " raw_input
+        read -p "请输入选项 (0/1/2/3/4): " raw_input
         
         choice=$(echo "$raw_input" | sed 's/[^0-9]//g' | head -c 1)
         
@@ -391,6 +425,7 @@ run_maint_menu() {
             1) echo "→ 数据库备份"; backup_database ;;
             2) echo "→ 清理缓存"; clean_cache ;;
             3) echo "→ 查看环境变量"; show_env_vars ;;
+            4) echo "→ 杀死服务器进程"; kill_server ;;
             *) echo -e "${YELLOW}无效选项 '$choice'${NC}" ;;
         esac
         
@@ -422,6 +457,7 @@ if [[ $# -ge 1 ]]; then
         1) activate_venv; run_server ;;
         2) run_init_menu ;;
         3) run_maint_menu ;;
+        4) kill_server ;;
         0|-h|--help) show_help ;;
         *) echo -e "${RED}未知选项: $1${NC}"; show_help ;;
     esac
