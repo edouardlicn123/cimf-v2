@@ -271,4 +271,7 @@
 2. 删除模块管理页与frame_structure的关联，改用frame_admin
 3. 创建frame_module框架并应用于模块管理页
 4. 将 nodes 目录重命名为 modules，完成所有 nodes->modules 引用更新
+5. 模块技术规范文档升级：新增模块设计总结.md，重写02_模块技术规范.md（从nodes改为modules）
+6. 全面检查并修复URL namespace引用：nodes:改为modules:或importexport:
+7. 修复模板加载问题：settings.py中nodes路径改为modules，APP_DIRS改为False确保Jinja2优先
 

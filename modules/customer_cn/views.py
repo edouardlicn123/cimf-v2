@@ -315,4 +315,4 @@ def node_delete(request, node_id: int):
     else:
         messages.error(request, '节点不存在')
     
-    return redirect('nodes:customer_cn:list')
+    return redirect('modules:customer_cn:list')

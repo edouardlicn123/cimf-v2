@@ -175,7 +175,7 @@ def node_list(request, node_type_slug: str):
 @login_required
 def node_create(request, node_type_slug: str):
     """通用节点创建（用于未来扩展的节点类型）"""
-    return redirect('nodes:node_list', node_type_slug=node_type_slug)
+    return redirect('modules:node_list', node_type_slug=node_type_slug)
 
 
 @login_required
@@ -200,7 +200,7 @@ def node_view(request, node_type_slug: str, node_id: int):
 @login_required
 def node_edit(request, node_type_slug: str, node_id: int):
     """通用节点编辑"""
-    return redirect('nodes:node_view', node_type_slug=node_type_slug, node_id=node_id)
+    return redirect('modules:node_view', node_type_slug=node_type_slug, node_id=node_id)
 
 
 @login_required
@@ -210,7 +210,7 @@ def node_delete(request, node_type_slug: str, node_id: int):
     if node:
         NodeService.delete(node_id)
         messages.success(request, '节点已删除')
-    return redirect('nodes:node_list', node_type_slug=node_type_slug)
+    return redirect('modules:node_list', node_type_slug=node_type_slug)
 
 
 @login_required

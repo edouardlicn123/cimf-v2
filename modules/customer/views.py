@@ -291,4 +291,4 @@ def node_delete(request, node_id: int):
             CustomerService.delete(node_id)
             messages.success(request, '客户已删除')
     
-    return redirect('nodes:customer:list')
+    return redirect('modules:customer:list')

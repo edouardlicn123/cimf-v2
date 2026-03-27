@@ -88,11 +88,11 @@ TEMPLATES = [
         'DIRS': [
             BASE_DIR / 'core' / 'templates',
             BASE_DIR / 'core' / 'node' / 'templates',
-            BASE_DIR / 'nodes' / 'customer' / 'templates',
-            BASE_DIR / 'nodes' / 'customer_cn' / 'templates',
+            BASE_DIR / 'modules' / 'customer' / 'templates',
+            BASE_DIR / 'modules' / 'customer_cn' / 'templates',
             BASE_DIR / 'core' / 'node' / 'templates' / 'types',
         ],
-        'APP_DIRS': True,
+        'APP_DIRS': False,
         'OPTIONS': {
             'environment': 'cimf_django.jinja2.environment',
             'context_processors': [
@@ -119,7 +119,7 @@ TEMPLATES = [
             BASE_DIR / 'core' / 'node' / 'templates',
             BASE_DIR / 'core' / 'importexport' / 'templates',
         ],
-        'APP_DIRS': True,
+        'APP_DIRS': False,
         'OPTIONS': {
             'context_processors': [
                 'django.template.context_processors.request',
