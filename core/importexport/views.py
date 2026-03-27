@@ -49,7 +49,7 @@ def export_list(request):
         return redirect('core:dashboard')
     
     node_types = NodeTypeService.get_all()
-    return render(request, 'importexport/export.html', {
+    return render(request, 'core/importexport/export.html', {
         'node_types': node_types,
         'active_section': 'export',
     })
@@ -103,7 +103,7 @@ def export_select_fields(request, node_type_slug):
     filterable_fields = ExportService.get_filterable_fields(node_type_slug)
     has_region = ExportService.has_region_field(node_type_slug)
     
-    return render(request, 'importexport/export_fields.html', {
+    return render(request, 'core/importexport/export_fields.html', {
         'node_type': node_type,
         'fields': fields,
         'filterable_fields': filterable_fields,
@@ -138,7 +138,7 @@ def export_confirm(request, node_type_slug):
     
     filter_summaries = _build_filter_summaries(node_type_slug, filters)
     
-    return render(request, 'importexport/export_confirm.html', {
+    return render(request, 'core/importexport/export_confirm.html', {
         'node_type': node_type,
         'selected_fields': selected_fields,
         'fields_info': fields_info,
@@ -164,7 +164,7 @@ def export_exporting(request, node_type_slug):
     if not selected_fields:
         return redirect('importexport:export_select_fields', node_type_slug)
     
-    return render(request, 'importexport/export_exporting.html', {
+    return render(request, 'core/importexport/export_exporting.html', {
         'node_type': node_type,
         'active_section': 'export',
     })
@@ -206,7 +206,7 @@ def import_list(request):
         return redirect('core:dashboard')
     
     node_types = NodeTypeService.get_all()
-    return render(request, 'importexport/import.html', {
+    return render(request, 'core/importexport/import.html', {
         'node_types': node_types,
         'active_section': 'import',
     })
@@ -224,7 +224,7 @@ def import_page(request, node_type_slug):
     
     fields = ImportService.get_importable_fields(node_type_slug)
     
-    return render(request, 'importexport/import_page.html', {
+    return render(request, 'core/importexport/import_page.html', {
         'node_type': node_type,
         'fields': fields,
         'active_section': 'import',
@@ -332,7 +332,7 @@ def do_import(request, node_type_slug):
     
     del request.session['import_data']
     
-    return render(request, 'importexport/import_result.html', {
+    return render(request, 'core/importexport/import_result.html', {
         'node_type': node_type,
         'result': result,
         'active_section': 'import',

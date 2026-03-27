@@ -17,6 +17,7 @@ urlpatterns = [
     path('modules/install/<str:module_id>/', views.module_install, name='module_install'),
     path('modules/enable/<str:module_id>/', views.module_enable, name='module_enable'),
     path('modules/disable/<str:module_id>/', views.module_disable, name='module_disable'),
+    path('types/', views.node_types_list, name='node_types_list'),
     path('<slug:node_type_slug>/', views.node_list, name='node_list'),
     path('<slug:node_type_slug>/create/', views.node_create, name='node_create'),
     path('<slug:node_type_slug>/<int:node_id>/', views.node_view, name='node_view'),

@@ -1,0 +1,117 @@
+{% extends "core/frames/frame_importexport.html" %}
+
+{% set show_nav = true %}
+{% set show_header = false %}
+
+{% set active_section = 'export' %}
+
+{% block admin_title %}
+  <span class="text-muted">导出确认 - </span>{{ node_type.name }}
+{% endblock %}
+
+{% block admin_title_buttons %}
+<a href="{{ url('importexport:export_select_fields', node_type.slug) }}" class="btn btn-outline-secondary btn-sm">
+    <i class="bi bi-arrow-left me-1"></i> 返回
+</a>
+{% endblock %}
+
+{% block admin_content %}
+<!-- 导出摘要 -->
+<div class="card mb-4">
+    <div class="card-header">
+        <h5 class="mb-0">导出摘要</h5>
+    </div>
+    <div class="card-body">
+        <table class="table table-bordered mb-0">
+            <tr>
+                <th style="width: 150px;">模块</th>
+                <td>
+                    <i class="bi {{ node_type.icon|default('bi-folder') }} me-1"></i>
+                    {{ node_type.name }}
+                </td>
+            </tr>
+            <tr>
+                <th>数据条数</th>
+                <td><strong>{{ record_count }}</strong> 条记录</td>
+            </tr>
+            <tr>
+                <th>已选字段</th>
+                <td>
+                    {% for field in fields_info %}
+                    <span class="badge bg-secondary me-1">{{ field.label }}</span>
+                    {% endfor %}
+                    <span class="badge bg-primary ms-1">{{ fields_info|length }} 个字段</span>
+                </td>
+            </tr>
+            <tr>
+                <th>导出格式</th>
+                <td>
+                    {% if export_format == 'xlsx' %}
+                    <span class="badge bg-success">XLSX</span> Excel 格式
+                    {% else %}
+                    <span class="badge bg-info">CSV</span> 通用格式
+                    {% endif %}
+                </td>
+            </tr>
+            {% if filter_summaries %}
+            <tr>
+                <th>筛选条件</th>
+                <td>
+                    {% for fs in filter_summaries %}
+                    <span class="badge bg-warning text-dark me-1">{{ fs.label }} = {{ fs.value }}</span>
+                    {% endfor %}
+                </td>
+            </tr>
+            {% endif %}
+        </table>
+    </div>
+</div>
+
+<!-- 数据预览 -->
+{% if preview_data %}
+<div class="card mb-4">
+    <div class="card-header">
+        <h5 class="mb-0">数据预览（前 {{ preview_data|length }} 条）</h5>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-sm table-bordered mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th style="width: 50px;">#</th>
+                        {% for field in fields_info %}
+                        <th>{{ field.label }}</th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in preview_data %}
+                    <tr>
+                        <td>{{ loop.index }}</td>
+                        {% for field in fields_info %}
+                        <td>{{ row[field.name]|default('-') }}</td>
+                        {% endfor %}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<form method="post" id="confirmForm">
+    {{ csrf_token }}
+</form>
+{% endblock %}
+
+{% block admin_footer %}
+<div class="d-flex justify-content-between">
+    <a href="{{ url('importexport:export_select_fields', node_type.slug) }}" class="btn btn-secondary">
+        <i class="bi bi-arrow-left me-1"></i> 上一步
+    </a>
+    <button type="submit" form="confirmForm" class="btn btn-primary">
+        <i class="bi bi-download me-1"></i> 开始导出
+    </button>
+</div>
+{% endblock %}

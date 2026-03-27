@@ -263,4 +263,12 @@
 4. 创建数据库配置模块独立化方案文档
 5. 重构存储目录：新建storage/，包含uploads/和backups/
 6. 实施数据库配置模块独立化方案
+7. 合并node_modules和node_types页面
+
+# 2026-03-27 修改记录
+
+1. 实施模块管理功能升级方案
+2. 删除模块管理页与frame_structure的关联，改用frame_admin
+3. 创建frame_module框架并应用于模块管理页
+4. 将 nodes 目录重命名为 modules，完成所有 nodes->modules 引用更新
 

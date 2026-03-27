@@ -25,11 +25,11 @@ class ModelRegistry:
             return cls._registry[slug]
         
         if slug == 'customer':
-            from nodes.customer.models import CustomerFields
+            from modules.customer.models import CustomerFields
             cls._registry[slug] = CustomerFields
             return CustomerFields
         elif slug == 'customer_cn':
-            from nodes.customer_cn.models import CustomerCnFields
+            from modules.customer_cn.models import CustomerCnFields
             cls._registry[slug] = CustomerCnFields
             return CustomerCnFields
         

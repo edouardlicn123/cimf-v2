@@ -7,9 +7,9 @@
 from django.core.management.base import BaseCommand
 
 from core.node.models import Node, NodeType
-from nodes.customer.models import CustomerFields
+from modules.customer.models import CustomerFields
 from core.models import User
-from nodes.customer.sample_data import OVERSEAS_CUSTOMERS
+from modules.customer.sample_data import OVERSEAS_CUSTOMERS
 
 
 class Command(BaseCommand):

@@ -248,7 +248,7 @@ class NodeService:
 class NodeModuleService:
     """Node 模块服务"""
     
-    MODULES_DIR = 'nodes'
+    MODULES_DIR = 'modules'
     
     # ===== 扫描功能 =====
     
@@ -287,7 +287,7 @@ class NodeModuleService:
         """加载模块信息"""
         try:
             module_file = os.path.join(NodeModuleService.MODULES_DIR, module_dir, 'module.py')
-            spec = importlib.util.spec_from_file_location(f"nodes.{module_dir}.module", module_file)
+            spec = importlib.util.spec_from_file_location(f"modules.{module_dir}.module", module_file)
             module = importlib.util.module_from_spec(spec)
             spec.loader.exec_module(module)
             
@@ -384,13 +384,19 @@ class NodeModuleService:
     
     @staticmethod
     def enable_module(module_id: str) -> Optional[NodeModule]:
-        """启用模块"""
+        """启用模块并同步节点类型"""
         try:
             module = NodeModule.objects.get(module_id=module_id)
             if module.is_installed:
                 module.is_active = True
                 module.activated_at = timezone.now()
                 module.save(update_fields=['is_active', 'activated_at'])
+                
+                node_type = NodeType.objects.filter(slug=module.module_id).first()
+                if node_type:
+                    node_type.is_active = True
+                    node_type.save(update_fields=['is_active'])
+                
                 return module
         except NodeModule.DoesNotExist:
             pass
@@ -398,11 +404,17 @@ class NodeModuleService:
     
     @staticmethod
     def disable_module(module_id: str) -> Optional[NodeModule]:
-        """禁用模块"""
+        """禁用模块并同步节点类型"""
         try:
             module = NodeModule.objects.get(module_id=module_id)
             module.is_active = False
             module.save(update_fields=['is_active'])
+            
+            node_type = NodeType.objects.filter(slug=module.module_id).first()
+            if node_type:
+                node_type.is_active = False
+                node_type.save(update_fields=['is_active'])
+            
             return module
         except NodeModule.DoesNotExist:
             pass

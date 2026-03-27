@@ -60,12 +60,8 @@ urlpatterns = [
     path('taxonomy/<int:taxonomy_id>/item/<int:item_id>/edit/', views.taxonomy_item_update, name='taxonomy_item_update'),
     path('taxonomy/<int:taxonomy_id>/item/<int:item_id>/delete/', views.taxonomy_item_delete, name='taxonomy_item_delete'),
     
-    # Node 节点系统
-    path('node/types/', node_views.node_types, name='node_types'),
-    path('node/type/create/', node_views.node_type_create, name='node_type_create'),
-    path('node/type/<int:node_type_id>/edit/', node_views.node_type_edit, name='node_type_edit'),
-    path('node/type/<int:node_type_id>/delete/', node_views.node_type_delete, name='node_type_delete'),
-    path('node/type/<int:node_type_id>/toggle/', node_views.node_type_toggle, name='node_type_toggle'),
+    # Node 节点系统 - 已合并到 /node/modules/
+    # 模块管理和节点类型管理现在都在 node_modules 页面
     
     # 仪表盘
     path('', views.dashboard, name='dashboard'),

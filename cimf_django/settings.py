@@ -55,17 +55,17 @@ _base_apps = [
     'django.contrib.staticfiles',
     'rest_framework',
     'core',
-    'nodes',
+    'modules',
 ]
 
 # 动态扫描 nodes/ 下的模块
 _node_modules = []
-_nodes_dir = os.path.join(BASE_DIR, 'nodes')
+_nodes_dir = os.path.join(BASE_DIR, 'modules')
 if os.path.isdir(_nodes_dir):
     for item in os.listdir(_nodes_dir):
         module_path = os.path.join(_nodes_dir, item)
         if os.path.isdir(module_path) and os.path.exists(os.path.join(module_path, 'module.py')):
-            _node_modules.append(f'nodes.{item}')
+            _node_modules.append(f'modules.{item}')
 
 INSTALLED_APPS = _base_apps + _node_modules
 
@@ -87,9 +87,10 @@ TEMPLATES = [
         'BACKEND': 'django.template.backends.jinja2.Jinja2',
         'DIRS': [
             BASE_DIR / 'core' / 'templates',
+            BASE_DIR / 'core' / 'node' / 'templates',
             BASE_DIR / 'nodes' / 'customer' / 'templates',
             BASE_DIR / 'nodes' / 'customer_cn' / 'templates',
-            BASE_DIR / 'core' / 'node' / 'templates',
+            BASE_DIR / 'core' / 'node' / 'templates' / 'types',
         ],
         'APP_DIRS': True,
         'OPTIONS': {
@@ -107,12 +108,17 @@ TEMPLATES = [
                 'jinja2.ext.loopcontrols',
                 'jinja2.ext.do',
                 'jinja2.ext.i18n',
+                'jinja2.ext.debug',
             ],
         },
     },
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [
+            BASE_DIR / 'core' / 'templates',
+            BASE_DIR / 'core' / 'node' / 'templates',
+            BASE_DIR / 'core' / 'importexport' / 'templates',
+        ],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [

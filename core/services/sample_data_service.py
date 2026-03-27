@@ -13,11 +13,11 @@ class SampleDataService:
     def init_sample_customers() -> Dict[str, int]:
         """初始化客户样本数据"""
         from core.node.models import Node, NodeType
-        from nodes.customer.models import CustomerFields
-        from nodes.customer_cn.models import CustomerCnFields
+        from modules.customer.models import CustomerFields
+        from modules.customer_cn.models import CustomerCnFields
         from core.models import User
-        from nodes.customer.sample_data import OVERSEAS_CUSTOMERS
-        from nodes.customer_cn.sample_data import DOMESTIC_CUSTOMERS
+        from modules.customer.sample_data import OVERSEAS_CUSTOMERS
+        from modules.customer_cn.sample_data import DOMESTIC_CUSTOMERS
         
         results = {'overseas': 0, 'domestic': 0}
         

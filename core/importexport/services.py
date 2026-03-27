@@ -413,8 +413,8 @@ class ExportService:
     @classmethod
     def get_exportable_fields(cls, node_type_slug: str) -> List[Dict]:
         """获取可导出的字段列表"""
-        from nodes.customer.services import CustomerService
-        from nodes.customer_cn.services import CustomerCnService
+        from modules.customer.services import CustomerService
+        from modules.customer_cn.services import CustomerCnService
         
         SERVICE_FIELD_MAP = {
             'customer': CustomerService.get_exportable_fields(),
@@ -598,8 +598,8 @@ class ExportService:
     @classmethod
     def _get_service_class(cls, node_type_slug: str):
         """获取节点类型对应的服务类"""
-        from nodes.customer.services import CustomerService
-        from nodes.customer_cn.services import CustomerCnService
+        from modules.customer.services import CustomerService
+        from modules.customer_cn.services import CustomerCnService
         
         SERVICE_MAP = {
             'customer': CustomerService,

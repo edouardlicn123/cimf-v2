@@ -957,6 +957,6 @@ def importexport_dashboard(request):
     """数据导入导出首页"""
     if not PermissionService.has_permission(request.user, 'importexport.view'):
         return redirect('core:dashboard')
-    return render(request, 'core/frames/importexport_dashboard.html', {
+    return render(request, 'core/importexport/importexport_dashboard.html', {
         'active_section': 'dashboard',
     })

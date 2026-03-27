@@ -38,6 +38,7 @@ class NodeType(models.Model):
     slug = models.CharField(max_length=50, unique=True, db_index=True, verbose_name='标识符')
     description = models.CharField(max_length=500, blank=True, null=True, verbose_name='描述')
     icon = models.CharField(max_length=50, default='bi-folder', verbose_name='图标')
+    author = models.CharField(max_length=100, blank=True, null=True, verbose_name='作者')
     fields_config = models.JSONField(default=list, verbose_name='字段配置')
     is_active = models.BooleanField(default=True, verbose_name='是否启用')
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='创建时间')
@@ -131,7 +132,7 @@ class NodeModule(models.Model):
         """检查模块目录是否存在"""
         if not self.path:
             return False
-        module_path = os.path.join(settings.BASE_DIR, 'nodes', self.path)
+        module_path = os.path.join(settings.BASE_DIR, 'modules', self.path)
         return os.path.isdir(module_path)
     
     def __str__(self):

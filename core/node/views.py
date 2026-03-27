@@ -39,13 +39,19 @@ def nodes_index(request):
 
 @login_required
 def node_types(request):
-    """节点类型列表"""
+    """节点类型列表（重定向到 node_types_list）"""
+    return redirect('node:node_types_list')
+
+
+@login_required
+def node_types_list(request):
+    """可用节点类型列表页"""
     if not PermissionService.can_access_admin(request.user):
         messages.error(request, '需要系统管理员权限访问该页面')
         return redirect('core:dashboard')
     
     node_types = NodeTypeService.get_all_including_inactive()
-    return render(request, 'core/node/types/index.html', {
+    return render(request, 'core/node/node_types_list.html', {
         'node_types': node_types,
         'active_section': 'node_types',
     })
@@ -245,7 +251,7 @@ def taxonomy_items_api(request):
 
 @login_required
 def node_modules(request):
-    """Node 模块管理页"""
+    """Node 模块管理页 - 合并模块管理和节点类型"""
     if not PermissionService.can_access_admin(request.user):
         messages.error(request, '需要系统管理员权限访问该页面')
         return redirect('core:dashboard')
@@ -256,9 +262,12 @@ def node_modules(request):
     registered_ids = {m.module_id for m in registered}
     unregistered = [m for m in all_modules if m['id'] not in registered_ids]
     
-    return render(request, 'core/node/modules/index.html', {
+    node_types = NodeTypeService.get_all_including_inactive()
+    
+    return render(request, 'core/node/index.html', {
         'modules': registered,
         'unregistered_modules': unregistered,
+        'node_types': node_types,
         'active_section': 'node_modules',
     })
 
@@ -401,7 +410,7 @@ def module_dispatch(request, module_slug: str, node_id: int = None):
     
     # 4. 动态导入并调用视图
     try:
-        module_views = importlib.import_module(f'nodes.{module_slug}.views')
+        module_views = importlib.import_module(f'modules.{module_slug}.views')
         view_func = getattr(module_views, view_func_name)
         return view_func(request, node_id=node_id) if node_id else view_func(request)
     except (ImportError, AttributeError) as e:

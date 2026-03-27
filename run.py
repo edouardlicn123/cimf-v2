@@ -69,7 +69,7 @@ def validate_and_fix_installed_apps():
     from django.conf import settings
     
     # 检查已加载的模块
-    loaded_node_modules = [app for app in settings.INSTALLED_APPS if app.startswith('nodes.')]
+    loaded_node_modules = [app for app in settings.INSTALLED_APPS if app.startswith('modules.')]
     
     print(f"  已加载 Node 模块: {', '.join(loaded_node_modules) if loaded_node_modules else '无'}")
 

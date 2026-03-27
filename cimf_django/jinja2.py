@@ -35,11 +35,32 @@ def jinja2_date_filter(value, format_string='Y-m-d H:i'):
 
 def url_with_args(viewname, *args, **kwargs):
     """
-    包装 reverse 函数，支持位置参数
-    用法：{{ url('core:user_edit', u.id) }}
-          {{ url('core:user_edit', user_id=u.id) }}
+    包装 reverse 函数，支持位置参数和关键字参数
+    用法：{{ url('core:user_edit', user.id) }}
+          {{ url('core:user_edit', user_id=user.id) }}
+          {{ url('node:module_scan') }}
     """
-    return reverse(viewname, args=args, kwargs=kwargs)
+    # 处理关键字参数
+    if args and kwargs:
+        # 混合使用位置和关键字参数不支持
+        return reverse(viewname, args=args, kwargs=kwargs)
+    elif args:
+        return reverse(viewname, args=args)
+    elif kwargs:
+        return reverse(viewname, kwargs=kwargs)
+    else:
+        return reverse(viewname)
+
+
+def jinja2_truncatechars(value, length=50):
+    """Truncate characters filter for Jinja2 templates"""
+    if value is None:
+        return ''
+    if isinstance(value, int):
+        value = str(value)
+    if len(value) <= length:
+        return value
+    return value[:length] + '...'
 
 
 def environment(**options):
@@ -59,7 +80,8 @@ def environment(**options):
         'media': media,
     })
     
-    # 添加 date 过滤器
+    # 添加过滤器
     env.filters['date'] = jinja2_date_filter
+    env.filters['truncatechars'] = jinja2_truncatechars
     
     return env

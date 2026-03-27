@@ -33,7 +33,7 @@
                 
                 <!-- 事务处理 - 节点管理入口 -->
                 <li class="nav-item">
-                    <a class="nav-link fw-bold" href="{{ url('nodes:index') }}">
+                    <a class="nav-link fw-bold" href="{{ url('modules:index') }}">
                         事务处理
                     </a>
                 </li>
@@ -44,6 +44,16 @@
                     <a class="nav-link fw-bold {% if request.resolver_match.url_name == 'importexport_dashboard' %}active{% endif %}" 
                        href="{{ url('core:importexport_dashboard') }}">
                         导出导入
+                    </a>
+                </li>
+                {% endif %}
+                
+                <!-- 模块管理 - 仅管理员可见 -->
+                {% if user.is_admin %}
+                <li class="nav-item">
+                    <a class="nav-link fw-bold {% if request.resolver_match.namespace == 'node' %}active{% endif %}" 
+                       href="{{ url('node:modules') }}">
+                        模块管理
                     </a>
                 </li>
                 {% endif %}
