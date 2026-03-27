@@ -9,7 +9,7 @@
     Node 节点系统视图，包含节点类型管理、节点仪表盘等
 
 版本：
-    - 1.0: 从 nodes/views.py 迁移
+    - 1.0: 从 modules/views.py 迁移
 
 依赖：
     - core.node.models: NodeType
@@ -149,27 +149,7 @@ def node_type_toggle(request, node_type_id: int):
 @login_required
 def node_list(request, node_type_slug: str):
     """通用节点列表（用于未来扩展的节点类型）"""
-    from django.http import Http404
-    
-    node_type = NodeTypeService.get_by_slug(node_type_slug)
-    if not node_type:
-        node_type = NodeTypeService.get_by_slug_including_inactive(node_type_slug)
-        if node_type:
-            raise Http404(f'节点类型 "{node_type.name}" 已禁用')
-        raise Http404('节点类型不存在')
-    
-    search = request.GET.get('search', '')
-    node_types = NodeTypeService.get_all()
-    
-    nodes = NodeService.get_list(node_type_slug, search if search else None)
-    
-    return render(request, 'nodes/list.html', {
-        'node_type': node_type,
-        'node_types': node_types,
-        'nodes': nodes,
-        'search': search,
-        'active_section': node_type_slug,
-    })
+    return redirect('modules:node_list', node_type_slug=node_type_slug)
 
 
 @login_required
@@ -181,20 +161,7 @@ def node_create(request, node_type_slug: str):
 @login_required
 def node_view(request, node_type_slug: str, node_id: int):
     """通用节点查看"""
-    from django.http import Http404
-    
-    node = NodeService.get_by_id(node_id)
-    if not node:
-        raise Http404('节点不存在')
-    
-    node_types = NodeTypeService.get_all()
-    
-    return render(request, 'nodes/view.html', {
-        'node_type': node.node_type,
-        'node_types': node_types,
-        'node': node,
-        'active_section': node_type_slug,
-    })
+    return redirect('modules:node_view', node_type_slug=node_type_slug, node_id=node_id)
 
 
 @login_required

@@ -14,7 +14,7 @@
     - 导入模板生成
 
 版本：
-    - 1.0: 从 nodes/services/ 迁移合并
+    - 1.0: 从 modules/services/ 迁移合并
 
 依赖：
     - core.node.models: Node, NodeType
@@ -545,7 +545,7 @@ class ExportService:
                 try:
                     if len(str(cell.value)) > max_length:
                         max_length = len(str(cell.value))
-                except:
+                except Exception:
                     pass
             adjusted_width = min(max_length + 2, 50)
             ws.column_dimensions[column].width = adjusted_width
@@ -716,7 +716,7 @@ class TemplateGenerator:
                         length = len(str(cell.value))
                         if length > max_length:
                             max_length = length
-                except:
+                except Exception:
                     pass
             
             adjusted_width = min(max(max_length + 4, 15), 40)

@@ -9,7 +9,7 @@
     Node 节点系统表单定义
 
 版本：
-    - 1.0: 从 nodes/forms.py 迁移
+    - 1.0: 从 modules/forms.py 迁移
 
 依赖：
     - django.forms: 表单框架

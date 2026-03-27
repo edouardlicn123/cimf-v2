@@ -72,7 +72,7 @@ class WatermarkService:
             
             try:
                 font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", font_size)
-            except:
+            except Exception:
                 font = ImageFont.load_default()
             
             bbox = draw.textbbox((0, 0), text, font=font)

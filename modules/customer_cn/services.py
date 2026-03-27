@@ -2,7 +2,7 @@
 """
 ================================================================================
 文件：services.py
-路径：/home/edo/cimf-v2/nodes/customer_cn/services.py
+路径：/home/edo/cimf-v2/modules/customer_cn/services.py
 ================================================================================
 
 功能说明：
@@ -10,10 +10,10 @@
 
 版本：
     - 1.0: 初始版本
-    - 1.1: 移动到 nodes/customer_cn/ 目录
+    - 1.1: 移动到 modules/customer_cn/ 目录
 
 依赖：
-    - nodes.models.CustomerCnFields: 国内客户字段模型
+    - modules.models.CustomerCnFields: 国内客户字段模型
     - core.node.services: NodeService
 """
 

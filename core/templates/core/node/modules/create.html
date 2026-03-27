@@ -1,0 +1,84 @@
+{% extends "core/frames/frame_structure.html" %}
+
+{% set show_nav = true %}
+{% set show_header = false %}
+
+{% set active_section = 'node_modules' %}
+
+{% block admin_title %}新建模块{% endblock %}
+
+{% block admin_content %}
+<form method="post" id="createModuleForm">
+    {{ csrf_token }}
+    
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="mb-0">模块基本信息</h5>
+        </div>
+        <div class="card-body">
+            <div class="mb-3">
+                <label class="form-label">模块标识符 *</label>
+                <input type="text" name="module_id" class="form-control" placeholder="如: supplier" required>
+                <small class="text-muted">模块的唯一标识符，只能使用字母、数字和下划线</small>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">模块名称 *</label>
+                <input type="text" name="name" class="form-control" placeholder="如: 供应商" required>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">版本号</label>
+                <input type="text" name="version" class="form-control" value="1.0.0">
+            </div>
+            <div class="mb-3">
+                <label class="form-label">作者</label>
+                <input type="text" name="author" class="form-control" placeholder="您的名字">
+            </div>
+            <div class="mb-3">
+                <label class="form-label">描述</label>
+                <textarea name="description" class="form-control" rows="3" placeholder="模块功能描述"></textarea>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">图标</label>
+                <input type="text" name="icon" class="form-control" value="bi-folder">
+                <small class="text-muted">使用 Bootstrap Icons 类名</small>
+            </div>
+        </div>
+    </div>
+    
+    <div class="text-end">
+        <a href="{{ url('node:modules') }}" class="btn btn-secondary">取消</a>
+        <button type="submit" class="btn btn-primary">创建模块</button>
+    </div>
+</form>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.getElementById('createModuleForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    
+    try {
+        const response = await fetch('{{ url("node:module_create_action") }}', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}'
+            }
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            alert('模块创建成功！');
+            window.location.href = '{{ url("node:modules") }}';
+        } else {
+            alert('错误: ' + result.error);
+        }
+    } catch (error) {
+        alert('请求失败: ' + error);
+    }
+});
+</script>
+{% endblock %}

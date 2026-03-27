@@ -2,7 +2,7 @@
 """
 ================================================================================
 文件：services.py
-路径：/home/edo/cimf-v2/nodes/customer/services.py
+路径：/home/edo/cimf-v2/modules/customer/services.py
 ================================================================================
 
 功能说明：
@@ -22,10 +22,10 @@
 
 版本：
     - 1.0: 从 Flask 迁移
-    - 1.1: 移动到 nodes/customer/ 目录
+    - 1.1: 移动到 modules/customer/ 目录
 
 依赖：
-    - nodes.models.CustomerFields: 客户字段模型
+    - modules.models.CustomerFields: 客户字段模型
     - core.node.services: NodeService
     - core.services: PermissionService
 """

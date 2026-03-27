@@ -25,7 +25,7 @@ class RegionSelectWidget(forms.TextInput):
             if isinstance(value, str):
                 try:
                     initial_data = json.loads(value)
-                except:
+                except Exception:
                     pass
             elif isinstance(value, dict):
                 initial_data = value
@@ -87,7 +87,7 @@ class RegionSelectField(forms.CharField):
         if isinstance(value, str):
             try:
                 return json.loads(value)
-            except:
+            except Exception:
                 return {'province': '', 'city': '', 'district': '', 'province_name': '', 'city_name': '', 'district_name': ''}
         
         return {'province': '', 'city': '', 'district': '', 'province_name': '', 'city_name': '', 'district_name': ''}

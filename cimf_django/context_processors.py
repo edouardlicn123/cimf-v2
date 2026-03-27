@@ -27,7 +27,7 @@ def system_settings(request):
             'system_settings': settings,
             'timestamp': int(time.time()),
         }
-    except:
+    except Exception:
         return {
             'system_name': 'CIMF',
             'system_settings': {},

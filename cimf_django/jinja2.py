@@ -29,7 +29,7 @@ def jinja2_date_filter(value, format_string='Y-m-d H:i'):
         return value
     try:
         return date_format(value, format_string)
-    except:
+    except Exception:
         return str(value)
 
 

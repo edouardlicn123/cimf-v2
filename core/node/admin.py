@@ -9,7 +9,7 @@
     Node 节点系统 Django Admin 配置
 
 版本：
-    - 1.0: 从 nodes/admin.py 迁移
+    - 1.0: 从 modules/admin.py 迁移
 
 依赖：
     - core.node.models: NodeType, Node

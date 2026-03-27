@@ -2,18 +2,18 @@
 """
 ================================================================================
 文件：views.py
-路径：/home/edo/cimf-v2/nodes/customer/views.py
+路径：/home/edo/cimf-v2/modules/customer/views.py
 ================================================================================
 
 功能说明：
     海外客户模块视图
 
 版本：
-    - 1.0: 从 nodes/views.py 拆分
+    - 1.0: 从 modules/views.py 拆分
 
 依赖：
     - django: Web 框架
-    - nodes.customer.services: 海外客户服务
+    - modules.customer.services: 海外客户服务
     - core.node.services: Node服务
 """
 

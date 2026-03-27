@@ -274,4 +274,8 @@
 5. 模块技术规范文档升级：新增模块设计总结.md，重写02_模块技术规范.md（从nodes改为modules）
 6. 全面检查并修复URL namespace引用：nodes:改为modules:或importexport:
 7. 修复模板加载问题：settings.py中nodes路径改为modules，APP_DIRS改为False确保Jinja2优先
+8. 修复首页内容区域与顶部菜单间距过大：dashboard.html添加use_custom_main=true和show_header=false
+9. 修复首页间距问题：恢复frame_dashboard.html原padding (py-4 py-md-5)
+10. 删除core/node/views.py中无效的node_list和node_view视图（重定向到modules对应视图）
+11. 优化代码：将9处裸except改为except Exception
 

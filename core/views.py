@@ -792,7 +792,7 @@ def check_view_has_admin_permission(view_func):
     try:
         source = inspect.getsource(view_func)
         return 'can_access_admin' in source
-    except:
+    except Exception:
         return False
 
 

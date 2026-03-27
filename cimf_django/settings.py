@@ -58,7 +58,7 @@ _base_apps = [
     'modules',
 ]
 
-# 动态扫描 nodes/ 下的模块
+# 动态扫描 modules/ 下的模块
 _node_modules = []
 _nodes_dir = os.path.join(BASE_DIR, 'modules')
 if os.path.isdir(_nodes_dir):

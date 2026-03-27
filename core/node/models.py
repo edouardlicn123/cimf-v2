@@ -13,7 +13,7 @@
     - Node: 节点主表
 
 版本：
-    - 1.0: 从 nodes/models.py 迁移
+    - 1.0: 从 modules/models.py 迁移
 
 依赖：
     - django.db: 数据模型

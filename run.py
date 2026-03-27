@@ -114,7 +114,7 @@ def check_production():
                 print("\n" + "=" * 80)
                 print("【警告】SECRET_KEY 太弱，建议设置为至少48位随机字符串")
                 print("=" * 80 + "\n")
-        except:
+        except Exception:
             pass
 
 

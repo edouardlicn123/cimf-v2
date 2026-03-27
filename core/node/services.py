@@ -254,7 +254,7 @@ class NodeModuleService:
     
     @staticmethod
     def scan_modules() -> List[Dict[str, Any]]:
-        """扫描 nodes/ 目录下的所有模块"""
+        """扫描 modules/ 目录下的所有模块"""
         modules = []
         base_path = NodeModuleService.MODULES_DIR
         

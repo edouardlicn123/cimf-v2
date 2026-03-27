@@ -182,7 +182,7 @@ def init_database(with_data: bool = False, force: bool = False, dry_run: bool = 
             
             print(colored(f"  Node 模块初始化完成: {installed_count} 个模块", "green"))
         else:
-            print(colored("[模拟] 将扫描 nodes/ 目录并安装模块", "yellow"))
+            print(colored("[模拟] 将扫描 modules/ 目录并安装模块", "yellow"))
     except Exception as e:
         print(colored(f"  Node 模块初始化失败: {str(e)}", "red"))
     
