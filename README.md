@@ -6,30 +6,32 @@
 
 > CIMF = Corporate Internal Management Framework，企业内部管理框架。
 
-灵感来自Drupal，通过node、field、taxnomy等功能实现CRM等系统的管理功能。
+灵感来自 Drupal，通过 node、field、taxonomy 等功能实现 CRM 等系统的管理功能。
 
 ---
 
 ## 功能特点
 
 - 🔐 **角色权限体系** - 经理/组长/员工三级权限管理，可精细控制节点操作权限
-- 📊 **可扩展的节点系统** - 如客户管理、会员管理、居民信息管理、项目管理等
+- 📊 **模块化节点系统** - 插件式模块架构，支持动态加载/卸载
 - 📝 **24种自定义字段类型** - 文本、数字、布尔、文件、图片、邮箱、电话、日期、地理位置、颜色、身份识别、隐私脱敏等
-- 🗂️ **词汇表管理** - 37个预置分类（国家、客户类型、行业、企业性质、客户等级等）
+- 🗂️ **词汇表管理** - 预置分类（国家、客户类型、行业、企业性质、客户等级等）
 - 🗺️ **中国行政区划** - 省市县三级联动字段，支持级联选择
 - 💧 **水印保护** - 网页动态水印 + 导出文件水印
 - 📥 **数据导入导出** - 支持 CSV/Excel 格式，可自定义字段和过滤条件
 - ⏰ **定时任务系统** - 可扩展的 Cron 任务（时间同步、缓存清理）
 - 🧪 **完整测试覆盖** - 核心模块单元测试和集成测试
+- 🏠 **首页快捷入口** - 3×2 卡片布局，支持拖拽自定义
 
 ---
 
 ## 目前已有模块
 
-| 模块 | 说明 |
-|------|------|
-| 客户管理（海外） | 海外客户信息管理，支持 20+ 字段 |
-| 客户管理（国内） | 国内客户信息管理，支持省市县联动、微信/钉钉联系方式 |
+| 模块 | 类型 | 说明 |
+|------|------|------|
+| 客户信息（海外） | node | 海外客户信息管理，支持 20+ 字段，含 LinkedIn |
+| 客户信息（国内） | node | 国内客户信息管理，支持省市县联动、微信/钉钉 |
+| 时钟 | system | 时钟/日历展示，仪表盘快捷卡片 |
 
 ---
 
@@ -75,72 +77,78 @@
 
 ```
 cimf-v2/
-├── cimf_django/              # Django 项目配置
-│   ├── settings.py           # 主配置文件
-│   ├── urls.py               # 根 URL 配置
-│   ├── jinja2.py             # Jinja2 模板引擎配置
-│   └── context_processors.py # 模板上下文处理器
+├── cimf_django/                  # Django 项目配置
+│   ├── settings.py                # 主配置文件
+│   ├── urls.py                    # 根 URL 配置
+│   ├── jinja2.py                  # Jinja2 模板引擎配置
+│   └── context_processors.py      # 模板上下文处理器
 │
-├── core/                     # 核心应用
-│   ├── models.py             # User, Taxonomy, ChinaRegion, SystemSetting
-│   ├── views.py              # 认证、仪表盘、管理页面
-│   ├── urls.py               # 核心 URL 路由
-│   ├── forms.py              # 登录表单等
-│   ├── admin.py              # Django Admin 配置
-│   ├── services/            # 核心服务层
-│   │   ├── auth_service.py           # 认证服务
-│   │   ├── permission_service.py    # 权限服务
-│   │   ├── user_service.py          # 用户服务
-│   │   ├── settings_service.py      # 系统设置服务
-│   │   ├── taxonomy_service.py      # 词汇表服务
-│   │   ├── china_region_service.py  # 行政区划服务
-│   │   ├── cron_service.py          # 定时任务服务
-│   │   └── tasks/                    # 定时任务实现
-│   └── fields/              # 自定义字段类型 (24种)
-│       ├── base.py
-│       ├── string.py
-│       ├── text.py
-│       ├── integer.py
-│       ├── boolean.py
-│       ├── file.py
-│       ├── image.py
-│       ├── email.py
-│       ├── telephone.py
-│       ├── datetime.py
-│       ├── region_select.py   # 省市区联动
-│       └── ... (其他字段类型)
+├── core/                         # 核心应用
+│   ├── models.py                 # User, Taxonomy, ChinaRegion, SystemSetting
+│   ├── views.py                  # 认证、仪表盘、管理页面
+│   ├── urls.py                   # 核心 URL 路由
+│   ├── forms/                    # 表单定义
+│   │   ├── auth_forms.py         # 登录表单
+│   │   ├── admin_forms.py        # 用户管理表单
+│   │   └── settings_forms.py    # 系统设置表单
+│   ├── admin.py                  # Django Admin 配置
+│   ├── services/                 # 核心服务层
+│   │   ├── auth_service.py       # 认证服务
+│   │   ├── permission_service.py # 权限服务
+│   │   ├── user_service.py       # 用户服务
+│   │   ├── settings_service.py   # 系统设置服务
+│   │   ├── taxonomy_service.py   # 词汇表服务
+│   │   ├── china_region_service.py   # 行政区划服务
+│   │   ├── cron_service.py       # 定时任务服务
+│   │   ├── time_service.py       # 时间服务
+│   │   ├── export_service.py     # 导出服务
+│   │   └── import_service.py     # 导入服务
+│   ├── node/                     # 节点核心系统
+│   │   ├── models.py             # NodeType, Node, NodeModule
+│   │   ├── services.py           # 节点类型服务、节点服务
+│   │   └── views.py              # 节点管理视图
+│   ├── importexport/             # 导入导出功能
+│   │   ├── views.py              # 导入导出视图
+│   │   └── services.py           # 导入导出服务
+│   ├── fields/                   # 自定义字段类型 (24种)
+│   │   ├── base.py
+│   │   ├── string.py
+│   │   ├── region_select.py      # 省市区联动
+│   │   └── ... (其他字段类型)
+│   └── templates/                # Jinja2 模板
+│       ├── core/                 # 核心模板
+│       │   ├── frames/           # 页面框架
+│       │   ├── admin/            # 管理页面
+│       │   ├── structure/        # 结构页面
+│       │   ├── node/             # 节点模板
+│       │   ├── importexport/     # 导入导出模板
+│       │   └── usermenu/         # 用户菜单
+│       └── includes/              # 模板片段
 │
-├── nodes/                    # 节点应用
-│   ├── models.py             # NodeType, Node, CustomerFields, CustomerCnFields
-│   ├── views.py             # 节点 CRUD、导入导出视图
-│   ├── urls.py               # 节点 URL 路由
-│   ├── forms.py             # 通用表单
-│   ├── admin.py             # Django Admin 配置
-│   ├── services/            # 节点服务层
-│   │   ├── node_type_service.py
-│   │   ├── node_service.py
-│   │   ├── customer_service.py      # 海外客户服务
-│   │   ├── customer_cn_service.py   # 国内客户服务
-│   │   ├── export_service.py        # 导出服务
-│   │   ├── import_service.py        # 导入服务
-│   │   └── template_generator.py   # 导入模板生成
-│   └── customer/
-│       └── forms.py          # 客户专用表单
+├── modules/                      # 业务模块 (plugins)
+│   ├── __init__.py
+│   ├── apps.py
+│   ├── urls.py
+│   ├── customer/                 # 客户（海外）模块
+│   │   ├── module.py             # 模块信息
+│   │   ├── models.py             # CustomerFields
+│   │   ├── services.py           # 客户服务
+│   │   ├── views.py              # 客户视图
+│   │   ├── urls.py               # 客户路由
+│   │   ├── forms.py              # 客户表单
+│   │   └── templates/
+│   ├── customer_cn/              # 客户（国内）模块
+│   │   └── ...
+│   └── clock/                    # 时钟模块
+│       ├── module.py
+│       ├── services.py
+│       ├── views.py
+│       └── templates/
 │
-├── templates/                # Jinja2 模板
-│   ├── core/                # 核心模板
-│   │   ├── frames/          # 页面框架 (frame_*)
-│   │   ├── admin/           # 管理页面
-│   │   └── structure/       # 结构页面 (taxonomies, importexport)
-│   └── nodes/               # 节点模板
-│       ├── types/           # 节点类型管理
-│       ├── customer/        # 海外客户
-│       └── customer_cn/     # 国内客户
-│
-├── static/                   # 静态资源 (CSS, JS, 图片)
-├── docs/                    # 开发文档
-│   ├── 技术规范/            # 技术规范文档
-│   │   ├── 02_Node模块技术规范.md
+├── static/                      # 静态资源 (CSS, JS, 图片)
+├── docs/                        # 开发文档
+│   ├── 技术规范/
+│   │   ├── 02_模块技术规范.md
 │   │   ├── 03_省市县联动字段技术规范.md
 │   │   ├── 04_模板开发规范.md
 │   │   └── 05_Python代码开发规范.md
@@ -148,9 +156,10 @@ cimf-v2/
 │   ├── bug排查规范.md
 │   └── progress.md
 │
-├── venv/                    # Python 虚拟环境
-├── run.sh                   # 项目启动脚本
-├── manage.py                # Django 管理脚本
+├── run.sh                       # 项目启动脚本
+├── manage.py                    # Django 管理脚本
+├── init_db.py                   # 数据库初始化脚本
+├── update_progress.py           # 进度更新脚本
 └── README.md
 ```
 
@@ -158,14 +167,12 @@ cimf-v2/
 
 ## 文档说明
 
-项目提供完整的技术文档：
-
 | 文档 | 说明 |
 |------|------|
-| [技术规范/04_模板开发规范.md](./docs/技术规范/04_模板开发规范.md) | Jinja2 模板开发规范，包含语法差异、片段库、命名规范、反模式 |
-| [技术规范/05_Python代码开发规范.md](./docs/技术规范/05_Python代码开发规范.md) | Python 代码开发规范，包含 Model/Service/View 规范、测试、迁移、定时任务 |
-| [技术规范/02_Node模块技术规范.md](./docs/技术规范/02_Node模块技术规范.md) | Node 节点类型系统的实现指南 |
-| [技术规范/03_省市县联动字段技术规范.md](./docs/技术规范/03_省市县联动字段技术规范.md) | 省市县三级联动字段的设计与使用 |
+| [技术规范/02_模块技术规范.md](./docs/技术规范/02_模块技术规范.md) | 模块系统实现指南，包含首页卡片开发 |
+| [技术规范/04_模板开发规范.md](./docs/技术规范/04_模板开发规范.md) | Jinja2 模板开发规范 |
+| [技术规范/05_Python代码开发规范.md](./docs/技术规范/05_Python代码开发规范.md) | Python 代码开发规范 |
+| [技术规范/03_省市县联动字段技术规范.md](./docs/技术规范/03_省市县联动字段技术规范.md) | 省市县三级联动字段设计 |
 | [开发规范.md](./docs/开发规范.md) | 项目开发通用规范 |
 | [bug排查规范.md](./docs/bug排查规范.md) | Bug 排查检查清单 |
 

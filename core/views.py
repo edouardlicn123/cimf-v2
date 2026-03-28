@@ -968,6 +968,7 @@ def api_regions_search(request):
     })
 
 
+@login_required
 @require_GET
 def api_regions_path(request):
     """获取完整路径"""

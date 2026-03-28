@@ -310,4 +310,7 @@
 19. 修复首页设置页面3x2布局：使用Bootstrap row g-0 + col-4实现正确的3列2行网格
 20. 修复首页设置页面边框显示：使用明确的颜色值替代CSS变量
 21. 修复首页设置页面样式加载：使用正确的head_extra block名称替代extra_head
+22. 修复安全漏洞：api_regions_path API添加@login_required装饰器
+23. 更新模块技术规范：新增「十一、首页卡片系统」章节，提供完整的模块首页卡片开发指南
+24. 更新README.md：反映最新的项目结构（modules目录、core/node、core/importexport等），更新功能特点和技术栈说明
 
