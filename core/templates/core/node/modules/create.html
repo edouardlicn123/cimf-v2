@@ -16,6 +16,10 @@
             <h5 class="mb-0">模块基本信息</h5>
         </div>
         <div class="card-body">
+            <p class="text-primary small mb-3">
+                <i class="bi bi-lightbulb me-1"></i>
+                在这个页面建立模块的基础内容，再继续进行代码开发或利用 AI 辅助开发。
+            </p>
             <div class="mb-3">
                 <label class="form-label">模块标识符 *</label>
                 <input type="text" name="module_id" class="form-control" placeholder="如: supplier" required>
@@ -24,6 +28,11 @@
             <div class="mb-3">
                 <label class="form-label">模块名称 *</label>
                 <input type="text" name="name" class="form-control" placeholder="如: 供应商" required>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">模块类型 *</label>
+                <input type="text" name="module_type" class="form-control" placeholder="请输入模块类型" required>
+                <div class="form-text">建议选项: <code>node</code>（事务节点）、<code>system</code>（系统模块）</div>
             </div>
             <div class="mb-3">
                 <label class="form-label">版本号</label>

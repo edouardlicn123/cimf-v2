@@ -292,3 +292,21 @@ def node_delete(request, node_id: int):
             messages.success(request, '客户已删除')
     
     return redirect('modules:customer:list')
+
+
+@login_required
+def api_stats(request):
+    """获取客户统计信息"""
+    from django.http import JsonResponse
+    from modules.customer.services import CustomerService
+    
+    total = CustomerService.get_count()
+    recent = CustomerService.get_recent_count(days=7)
+    
+    return JsonResponse({
+        'success': True,
+        'data': {
+            'total': total,
+            'recent': recent,
+        }
+    })

@@ -76,10 +76,15 @@ def dashboard(request):
     """仪表盘"""
     stats = UserService.get_user_stats()
     settings = SettingsService.get_all_settings()
+    user_display_name = request.user.nickname or request.user.username
+    settings['welcome_subtitle'] = settings.get('welcome_subtitle') or '让我们一起把项目完善吧。'
+    settings['welcome_intro'] = settings.get('welcome_intro') or '初始用户名：admin 初始密码：admin123'
     
     return render(request, 'core/dashboard.html', {
         'stats': stats,
         'settings': settings,
+        'user_display_name': user_display_name,
+        'page_title': user_display_name,
     })
 
 
@@ -984,6 +989,7 @@ def api_dashboard_cards(request):
         default_positions[k] = v
 
     available_modules = []
+    module_stats = {}
     try:
         from core.node.models import NodeModule
         from importlib import import_module
@@ -994,8 +1000,26 @@ def api_dashboard_cards(request):
             if module_path:
                 try:
                     mod = import_module(f'modules.{module_path}.module')
-                    if hasattr(mod, 'MODULE_INFO') and 'dashboard_cards' in mod.MODULE_INFO:
-                        available_modules.append(node_module.module_id)
+                    if hasattr(mod, 'MODULE_INFO'):
+                        mod_info = mod.MODULE_INFO
+                        if 'dashboard_cards' in mod_info or True:
+                            available_modules.append(node_module.module_id)
+                        
+                        if node_module.module_id in ['customer', 'customer_cn']:
+                            service_map = {
+                                'customer': 'CustomerService',
+                                'customer_cn': 'CustomerCnService'
+                            }
+                            service_name = service_map.get(node_module.module_id)
+                            if service_name:
+                                stats_mod = import_module(f'modules.{module_path}.services')
+                                if hasattr(stats_mod, service_name):
+                                    service_class = getattr(stats_mod, service_name)
+                                    if hasattr(service_class, 'get_count'):
+                                        module_stats[node_module.module_id] = {
+                                            'total': service_class.get_count(),
+                                            'recent': getattr(service_class, 'get_recent_count', lambda d=7: 0)(7)
+                                        }
                 except Exception:
                     pass
     except Exception:
@@ -1006,6 +1030,7 @@ def api_dashboard_cards(request):
         'data': {
             'positions': default_positions,
             'available_modules': available_modules,
+            'module_stats': module_stats,
         }
     })
 

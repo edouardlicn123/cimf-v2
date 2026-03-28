@@ -172,3 +172,11 @@ class CustomerCnService:
             parts.append(region.get('district', ''))
         
         return ' '.join(parts)
+    
+    @staticmethod
+    def get_recent_count(days: int = 7) -> int:
+        """获取最近N天新增的客户数量"""
+        from django.utils import timezone
+        from datetime import timedelta
+        start_date = timezone.now() - timedelta(days=days)
+        return CustomerCnFields.objects.filter(created_at__gte=start_date).count()

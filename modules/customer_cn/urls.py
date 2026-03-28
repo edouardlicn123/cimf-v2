@@ -14,4 +14,5 @@ urlpatterns = [
     path('<int:node_id>/', views.node_view, name='view'),
     path('<int:node_id>/edit/', views.node_edit, name='edit'),
     path('<int:node_id>/delete/', views.node_delete, name='delete'),
+    path('api/stats/', views.api_stats, name='api_stats'),
 ]

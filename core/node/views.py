@@ -29,8 +29,12 @@ from core.fields import get_all_field_types_info
 
 @login_required
 def nodes_index(request):
-    """节点首页 - 显示所有节点类型"""
-    node_types = NodeTypeService.get_all()
+    """节点首页 - 只显示 node 类型的节点类型"""
+    node_type_ids = NodeModule.objects.filter(
+        module_type='node',
+        is_active=True
+    ).values_list('module_id', flat=True)
+    node_types = NodeType.objects.filter(slug__in=node_type_ids, is_active=True)
     return render(request, 'core/node/node_dashboard.html', {
         'node_types': node_types,
         'active_section': 'dashboard',
@@ -254,7 +258,8 @@ def module_scan(request):
     for m in modules:
         if m['id'] not in registered_ids:
             module = NodeModuleService.register_module(m)
-            NodeModuleService.sync_node_type(module)
+            if module.module_type == 'node':
+                NodeModuleService.sync_node_type(module)
             new_modules.append(m['name'])
     
     # 清理已卸载的模块
@@ -300,7 +305,6 @@ def module_enable(request, module_id: str):
     NodeModuleService.install_module(module_id)
     module = NodeModuleService.enable_module(module_id)
     if module:
-        NodeModuleService.sync_node_type(module)
         messages.success(request, f'模块 {module.name} 已启用')
     return redirect('node:modules')
 
@@ -407,6 +411,7 @@ def module_create_action(request):
     
     module_id = request.POST.get('module_id', '').strip()
     name = request.POST.get('name', '').strip()
+    module_type = request.POST.get('module_type', 'node').strip()
     description = request.POST.get('description', '').strip()
     icon = request.POST.get('icon', 'bi-folder').strip()
     
@@ -416,7 +421,10 @@ def module_create_action(request):
     if not name:
         return JsonResponse({'success': False, 'error': '请输入模块名称'}, status=400)
     
-    result = NodeModuleService.create_module(module_id, name, description, icon)
+    if not module_type:
+        return JsonResponse({'success': False, 'error': '请输入模块类型'}, status=400)
+    
+    result = NodeModuleService.create_module(module_id, name, module_type, description, icon)
     
     if result.get('success'):
         return JsonResponse({'success': True, 'module_id': result['module_id']})

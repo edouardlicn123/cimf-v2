@@ -316,3 +316,21 @@ def node_delete(request, node_id: int):
         messages.error(request, '节点不存在')
     
     return redirect('modules:customer_cn:list')
+
+
+@login_required
+def api_stats(request):
+    """获取客户统计信息"""
+    from django.http import JsonResponse
+    from modules.customer_cn.services import CustomerCnService
+    
+    total = CustomerCnService.get_count()
+    recent = CustomerCnService.get_recent_count(days=7)
+    
+    return JsonResponse({
+        'success': True,
+        'data': {
+            'total': total,
+            'recent': recent,
+        }
+    })

@@ -6,6 +6,7 @@
 MODULE_INFO = {
     'id': 'clock',
     'name': '时钟',
+    'type': 'system',
     'version': '1.0.0',
     'author': '',
     'description': '提供时钟、日历的展现功能。',

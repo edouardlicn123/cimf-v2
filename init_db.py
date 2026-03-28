@@ -160,63 +160,7 @@ def init_database(with_data: bool = False, force: bool = False, dry_run: bool = 
     except Exception as e:
         print(colored(f"  词汇表数据初始化失败: {str(e)}", "red"))
 
-    # 步骤 5: 初始化节点类型数据（已废弃，使用动态模块系统）
-    print(colored("\n步骤 2.4: 初始化节点类型数据...", "blue"))
-    print(colored("  已移至动态模块系统，跳过", "yellow"))
-    
-    # 步骤 5.1: 初始化 Node 模块（列表加载 + 安装）
-    print(colored("\n步骤 2.4.1: 初始化 Node 模块...", "blue"))
-    
-    try:
-        if not dry_run:
-            from core.node.services import NodeModuleService
-            
-            modules = NodeModuleService.scan_modules()
-            installed_count = 0
-            
-            for m in modules:
-                module = NodeModuleService.register_module(m)
-                if NodeModuleService.install_module(m['id']):
-                    NodeModuleService.enable_module(m['id'])
-                    installed_count += 1
-            
-            print(colored(f"  Node 模块初始化完成: {installed_count} 个模块", "green"))
-        else:
-            print(colored("[模拟] 将扫描 modules/ 目录并安装模块", "yellow"))
-    except Exception as e:
-        print(colored(f"  Node 模块初始化失败: {str(e)}", "red"))
-    
-    # 步骤 6: 初始化海外客户样本数据
-    print(colored("\n步骤 2.5: 初始化海外客户样本数据...", "blue"))
-    
-    try:
-        if not dry_run:
-            from django.core.management import call_command
-            from io import StringIO
-            out = StringIO()
-            call_command('init_overseas_customers', stdout=out)
-            print(colored(f"  海外客户样本数据初始化完成: {out.getvalue().strip().split('完成! ')[-1]}", "green"))
-        else:
-            print(colored("[模拟] 将调用 init_overseas_customers 命令", "yellow"))
-    except Exception as e:
-        print(colored(f"  海外客户样本数据初始化失败: {str(e)}", "red"))
-    
-    # 步骤 7: 初始化国内客户样本数据
-    print(colored("\n步骤 2.6: 初始化国内客户样本数据...", "blue"))
-    
-    try:
-        if not dry_run:
-            from django.core.management import call_command
-            from io import StringIO
-            out = StringIO()
-            call_command('init_domestic_customers', stdout=out)
-            print(colored(f"  国内客户样本数据初始化完成: {out.getvalue().strip().split('完成! ')[-1]}", "green"))
-        else:
-            print(colored("[模拟] 将调用 init_domestic_customers 命令", "yellow"))
-    except Exception as e:
-        print(colored(f"  国内客户样本数据初始化失败: {str(e)}", "red"))
-
-    # 步骤 5: 创建管理员用户
+    # 步骤 5: 创建管理员用户（必须在客户样本数据初始化之前）
     print(colored("\n步骤 2.3: 初始化默认管理员用户...", "blue"))
 
     # 默认管理员配置（环境变量覆盖优先）
@@ -276,6 +220,58 @@ def init_database(with_data: bool = False, force: bool = False, dry_run: bool = 
             print(colored("\n警告：请登录后立即修改密码！", "yellow"))
         else:
             print(colored(f"[模拟] 将创建管理员用户: {admin_username}", "yellow"))
+
+    # 步骤 5.1: 初始化 Node 模块（列表加载 + 安装）
+    print(colored("\n步骤 2.4.1: 初始化 Node 模块...", "blue"))
+    
+    try:
+        if not dry_run:
+            from core.node.services import NodeModuleService
+            
+            modules = NodeModuleService.scan_modules()
+            installed_count = 0
+            
+            for m in modules:
+                module = NodeModuleService.register_module(m)
+                if NodeModuleService.install_module(m['id']):
+                    NodeModuleService.enable_module(m['id'])
+                    installed_count += 1
+            
+            print(colored(f"  Node 模块初始化完成: {installed_count} 个模块", "green"))
+        else:
+            print(colored("[模拟] 将扫描 modules/ 目录并安装模块", "yellow"))
+    except Exception as e:
+        print(colored(f"  Node 模块初始化失败: {str(e)}", "red"))
+
+    # 步骤 6: 初始化海外客户样本数据
+    print(colored("\n步骤 2.5: 初始化海外客户样本数据...", "blue"))
+    
+    try:
+        if not dry_run:
+            from django.core.management import call_command
+            from io import StringIO
+            out = StringIO()
+            call_command('init_overseas_customers', stdout=out)
+            print(colored(f"  海外客户样本数据初始化完成: {out.getvalue().strip().split('完成! ')[-1]}", "green"))
+        else:
+            print(colored("[模拟] 将调用 init_overseas_customers 命令", "yellow"))
+    except Exception as e:
+        print(colored(f"  海外客户样本数据初始化失败: {str(e)}", "red"))
+
+    # 步骤 7: 初始化国内客户样本数据
+    print(colored("\n步骤 2.6: 初始化国内客户样本数据...", "blue"))
+    
+    try:
+        if not dry_run:
+            from django.core.management import call_command
+            from io import StringIO
+            out = StringIO()
+            call_command('init_domestic_customers', stdout=out)
+            print(colored(f"  国内客户样本数据初始化完成: {out.getvalue().strip().split('完成! ')[-1]}", "green"))
+        else:
+            print(colored("[模拟] 将调用 init_domestic_customers 命令", "yellow"))
+    except Exception as e:
+        print(colored(f"  国内客户样本数据初始化失败: {str(e)}", "red"))
 
     print(colored("\n所有初始化完成！", "green"))
     print("-" * 80)

@@ -1,11 +1,11 @@
 {% extends "base.html" %}
-
-{% block title %}{% block page_title %}仪表盘{% endblock %} - {{ system_name|default('仙芙CIMF') }}{% endblock %}
-
+{% with show_header=False %}
 {% block content %}
+{% include "includes/header.html" %}
 <div class="d-flex flex-column" style="min-height: 100vh;">
   <div class="flex-grow-1 px-4 py-2" style="background: var(--bg-body, #ffffff);">
     {% block page_content %}{% endblock %}
   </div>
 </div>
 {% endblock %}
+{% endwith %}

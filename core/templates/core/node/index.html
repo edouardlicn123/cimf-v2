@@ -16,12 +16,6 @@
 {% block admin_content %}
 <div class="row">
     <div class="col-12">
-        <!-- 提示信息 -->
-        <div class="alert alert-warning mb-3">
-            <i class="bi bi-exclamation-triangle-fill me-2"></i>
-            注意！删除模块前必须先禁用。
-        </div>
-        
         <!-- 已安装模块列表 -->
         <div class="card mb-4">
             <div class="card-header">
@@ -35,6 +29,7 @@
                             <tr>
                                 <th>模块名称</th>
                                 <th>ID</th>
+                                <th>类型</th>
                                 <th>版本</th>
                                 <th>作者</th>
                                 <th>状态</th>
@@ -48,6 +43,15 @@
                             <tr>
                                 <td>{{ module.name }}</td>
                                 <td><code>{{ module.module_id }}</code></td>
+                                <td>
+                                    {% if module.module_type == 'node' %}
+                                    <span class="badge bg-primary">node</span>
+                                    {% elif module.module_type == 'system' %}
+                                    <span class="badge bg-secondary">system</span>
+                                    {% else %}
+                                    <span class="badge bg-warning">{{ module.module_type }}</span>
+                                    {% endif %}
+                                </td>
                                 <td>{{ module.version }}</td>
                                 <td>
                                     {% if module.author %}{{ module.author }}{% else %}-{% endif %}
@@ -104,6 +108,7 @@
                             <tr>
                                 <th>模块名称</th>
                                 <th>ID</th>
+                                <th>类型</th>
                                 <th>版本</th>
                                 <th>作者</th>
                                 <th>描述</th>
@@ -115,6 +120,15 @@
                             <tr>
                                 <td>{{ module.name }}</td>
                                 <td><code>{{ module.id }}</code></td>
+                                <td>
+                                    {% if module.type == 'node' %}
+                                    <span class="badge bg-primary">node</span>
+                                    {% elif module.type == 'system' %}
+                                    <span class="badge bg-secondary">system</span>
+                                    {% else %}
+                                    <span class="badge bg-warning">{{ module.type|default('-') }}</span>
+                                    {% endif %}
+                                </td>
                                 <td>{{ module.version }}</td>
                                 <td>
                                     {% if module.author %}{{ module.author }}{% else %}-{% endif %}
@@ -131,6 +145,12 @@
             </div>
         </div>
         {% endif %}
+        
+        <!-- 底部提示 -->
+        <div class="text-muted small mt-3">
+            <i class="bi bi-info-circle me-1"></i>
+            删除模块前必须先禁用
+        </div>
     </div>
 </div>
 {% endblock %}

@@ -115,6 +115,7 @@ class NodeModule(models.Model):
     is_installed = models.BooleanField(default=False, verbose_name='是否已安装')
     is_active = models.BooleanField(default=False, verbose_name='是否启用')
     is_system = models.BooleanField(default=False, verbose_name='是否系统默认模块')
+    module_type = models.CharField(max_length=20, default='node', verbose_name='模块类型')
     
     installed_at = models.DateTimeField(null=True, blank=True, verbose_name='安装时间')
     activated_at = models.DateTimeField(null=True, blank=True, verbose_name='启用时间')

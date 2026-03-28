@@ -284,18 +284,80 @@ class NodeModuleService:
     
     @staticmethod
     def _load_module_info(module_dir: str) -> Optional[Dict[str, Any]]:
-        """加载模块信息"""
+        """加载模块信息 - 使用 ast 直接解析文件，无需 importlib"""
+        import ast
+        
         try:
-            module_file = os.path.join(NodeModuleService.MODULES_DIR, module_dir, 'module.py')
-            spec = importlib.util.spec_from_file_location(f"modules.{module_dir}.module", module_file)
-            module = importlib.util.module_from_spec(spec)
-            spec.loader.exec_module(module)
+            module_file = os.path.join(
+                NodeModuleService.MODULES_DIR, 
+                module_dir, 
+                'module.py'
+            )
             
-            if hasattr(module, 'MODULE_INFO'):
-                return module.MODULE_INFO
+            with open(module_file, 'r', encoding='utf-8') as f:
+                content = f.read()
+            
+            tree = ast.parse(content)
+            
+            for node in ast.walk(tree):
+                if isinstance(node, ast.Assign):
+                    for target in node.targets:
+                        if (isinstance(target, ast.Name) and 
+                            target.id == 'MODULE_INFO' and
+                            isinstance(node.value, ast.Dict)):
+                            
+                            module_info = {}
+                            
+                            for key_node, value_node in zip(node.value.keys, node.value.values):
+                                if isinstance(key_node, ast.Constant):
+                                    key = key_node.value
+                                elif isinstance(key_node, ast.Str):
+                                    key = key_node.s
+                                else:
+                                    key = str(key_node)
+                                
+                                if isinstance(value_node, ast.Constant):
+                                    value = value_node.value
+                                elif isinstance(value_node, ast.Str):
+                                    value = value_node.s
+                                elif isinstance(value_node, ast.Num):
+                                    value = value_node.n
+                                elif isinstance(value_node, ast.NameConstant):
+                                    value = value_node.value
+                                elif isinstance(value_node, ast.List):
+                                    value = []
+                                    for elem in value_node.elts:
+                                        if isinstance(elem, ast.Constant):
+                                            value.append(elem.value)
+                                        elif isinstance(elem, ast.Dict):
+                                            dict_val = {}
+                                            for k, v in zip(elem.keys, elem.values):
+                                                if isinstance(k, ast.Constant):
+                                                    dict_val[k.value] = v.value if isinstance(v, ast.Constant) else str(v)
+                                            value.append(dict_val)
+                                        else:
+                                            value.append(str(elem) if hasattr(elem, 's') else None)
+                                elif isinstance(value_node, ast.Dict):
+                                    value = {}
+                                    for k, v in zip(value_node.keys, value_node.values):
+                                        if isinstance(k, ast.Constant):
+                                            value[k.value] = v.value if isinstance(v, ast.Constant) else str(v)
+                                else:
+                                    value = None
+                                
+                                module_info[key] = value
+                            
+                            if 'type' not in module_info:
+                                raise ValueError(f"模块 {module_dir} 缺少 type 字段")
+                            
+                            return module_info
+            
             return None
+            
+        except ValueError:
+            raise
         except Exception as e:
-            print(f"加载模块 {module_dir} 信息失败: {e}")
+            print(f"解析模块 {module_dir} 信息失败: {e}")
             return None
     
     # ===== 注册功能 =====
@@ -309,6 +371,7 @@ class NodeModuleService:
         if existing:
             existing.is_installed = False
             existing.is_active = False
+            existing.module_type = module_info.get('type', 'node')
             existing.save()
             return existing
         
@@ -319,6 +382,7 @@ class NodeModuleService:
             author=module_info.get('author'),
             description=module_info.get('description'),
             path=module_info.get('path', module_id),
+            module_type=module_info.get('type', 'node'),
             is_installed=False,
             is_active=False,
             is_system=False,
@@ -361,8 +425,9 @@ class NodeModuleService:
             except Exception:
                 pass
         
-        # 同步 NodeType
-        NodeModuleService.sync_node_type(module)
+        # 同步 NodeType（仅 node 类型模块需要）
+        if module.module_type == 'node':
+            NodeModuleService.sync_node_type(module)
         
         # 标记为已安装
         module.is_installed = True
@@ -392,10 +457,11 @@ class NodeModuleService:
                 module.activated_at = timezone.now()
                 module.save(update_fields=['is_active', 'activated_at'])
                 
-                node_type = NodeType.objects.filter(slug=module.module_id).first()
-                if node_type:
-                    node_type.is_active = True
-                    node_type.save(update_fields=['is_active'])
+                if module.module_type == 'node':
+                    node_type = NodeType.objects.filter(slug=module.module_id).first()
+                    if node_type:
+                        node_type.is_active = True
+                        node_type.save(update_fields=['is_active'])
                 
                 return module
         except NodeModule.DoesNotExist:
@@ -410,10 +476,11 @@ class NodeModuleService:
             module.is_active = False
             module.save(update_fields=['is_active'])
             
-            node_type = NodeType.objects.filter(slug=module.module_id).first()
-            if node_type:
-                node_type.is_active = False
-                node_type.save(update_fields=['is_active'])
+            if module.module_type == 'node':
+                node_type = NodeType.objects.filter(slug=module.module_id).first()
+                if node_type:
+                    node_type.is_active = False
+                    node_type.save(update_fields=['is_active'])
             
             return module
         except NodeModule.DoesNotExist:
@@ -489,7 +556,7 @@ class NodeModuleService:
         return node_type
 
     @staticmethod
-    def create_module(module_id: str, name: str, description: str = '', icon: str = 'bi-folder') -> Dict[str, Any]:
+    def create_module(module_id: str, name: str, module_type: str = 'node', description: str = '', icon: str = 'bi-folder') -> Dict[str, Any]:
         """创建新模块 - 在文件系统中创建模块目录和基础文件"""
         import shutil
         
@@ -525,6 +592,7 @@ class NodeModuleService:
 MODULE_INFO = {{
     'id': '{module_id}',
     'name': '{name}',
+    'type': '{module_type}',
     'version': '1.0.0',
     'author': '',
     'description': '{description}',
