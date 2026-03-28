@@ -16,10 +16,10 @@
     font-size: 1rem;
     font-weight: 600;
     margin-bottom: 16px;
-    color: #212529;
+    color: var(--text-primary);
 }
 .homepage-settings .card-grid {
-    border: 1px solid #e0e0e0 !important;
+    border: 1px solid var(--border) !important;
     margin-bottom: 32px;
 }
 .homepage-settings .card-grid .row {
@@ -30,25 +30,25 @@
 }
 .homepage-settings .card-slot {
     height: 150px;
-    border: 1px solid #e0e0e0 !important;
-    background-color: #f8f9fa !important;
+    border: 1px solid var(--border) !important;
+    background-color: var(--bg-surface) !important;
     display: flex !important;
     align-items: center;
     justify-content: center;
     transition: all 0.2s ease;
 }
 .homepage-settings .card-slot:nth-child(odd) {
-    background-color: #f8f9fa;
+    background-color: var(--bg-surface);
 }
 .homepage-settings .card-slot:nth-child(even) {
-    background-color: rgba(10, 102, 194, 0.1);
+    background-color: var(--primary-light);
 }
 .homepage-settings .card-slot:hover {
-    background-color: #e9ecef;
+    background-color: var(--bg-hover);
 }
 .homepage-settings .card-slot.drag-over {
-    border-color: #0A66C2 !important;
-    background: rgba(10, 102, 194, 0.1);
+    border-color: var(--primary) !important;
+    background: var(--primary-light);
 }
 .homepage-settings .dashboard-card {
     width: 100%;
@@ -58,14 +58,14 @@
     align-items: center;
     justify-content: center;
     cursor: grab;
-    background: #0A66C2;
-    color: white;
+    background: var(--primary);
+    color: #fff;
     transition: all 0.2s ease;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    box-shadow: var(--shadow);
 }
 .homepage-settings .dashboard-card:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 6px rgba(0,0,0,0.15);
+    box-shadow: var(--shadow-hover);
 }
 .homepage-settings .dashboard-card:active {
     cursor: grabbing;
@@ -74,8 +74,8 @@
     opacity: 0.5;
 }
 .homepage-settings .dashboard-card.light-bg {
-    background: rgba(10, 102, 194, 0.1);
-    color: #0A66C2;
+    background: var(--primary-light);
+    color: var(--primary);
 }
 .homepage-settings .dashboard-card i {
     font-size: 2rem;
@@ -86,19 +86,9 @@
     font-weight: 500;
 }
 .homepage-settings .empty-slot {
-    color: #6c757d;
+    color: var(--text-muted);
     font-size: 0.85rem;
     text-align: center;
-}
-.homepage-settings .available-card:active {
-    cursor: grabbing;
-}
-.homepage-settings .available-card.dragging {
-    opacity: 0.5;
-}
-.homepage-settings .available-card i {
-    font-size: 1.1rem;
-    color: #0A66C2;
 }
 .homepage-settings .available-section {
     margin-top: 24px;
@@ -106,33 +96,33 @@
 .homepage-settings .available-area {
     min-height: 80px;
     padding: 16px;
-    border: 1px solid #e0e0e0;
+    border: 1px solid var(--border);
     border-radius: 4px;
-    background: #f8f9fa;
+    background: var(--bg-surface);
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
     transition: all 0.2s ease;
 }
 .homepage-settings .available-area.drag-over {
-    border-color: #dc3545;
-    background: rgba(220, 53, 69, 0.05);
+    border-color: var(--danger, #dc3545);
+    background: var(--danger-light, rgba(220, 53, 69, 0.05));
 }
 .homepage-settings .available-card {
     display: inline-flex;
     align-items: center;
     gap: 8px;
     padding: 10px 16px;
-    border: 1px solid #e0e0e0;
+    border: 1px solid var(--border);
     background: white;
     cursor: grab;
     transition: all 0.2s ease;
     font-size: 0.9rem;
 }
 .homepage-settings .available-card:hover {
-    border-color: #0A66C2;
+    border-color: var(--primary);
     transform: translateY(-2px);
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    box-shadow: var(--shadow);
 }
 .homepage-settings .available-card:active {
     cursor: grabbing;
@@ -142,7 +132,7 @@
 }
 .homepage-settings .available-card i {
     font-size: 1.1rem;
-    color: #0A66C2;
+    color: var(--primary);
 }
 </style>
 {% endblock %}
@@ -150,7 +140,7 @@
 {% block admin_content %}
 <div class="homepage-settings">
     <h4 class="section-title mb-3">
-        <i class="bi bi-grid-3x3-gap me-2"></i>当前首页卡片
+        <i class="bi bi-grid-3x3-gap me-2"></i>快捷入口
     </h4>
     
     <div class="card-grid" id="homepageArea">
@@ -235,6 +225,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
         
         console.log('Saving positions:', positions);
+        console.log('CSRF Token:', getCsrfToken());
         
         fetch('/api/user/dashboard/cards/save/', {
             method: 'POST',
@@ -242,7 +233,15 @@ document.addEventListener('DOMContentLoaded', function() {
                 'Content-Type': 'application/json',
                 'X-CSRFToken': getCsrfToken()
             },
+            credentials: 'include',
             body: JSON.stringify({ positions: positions })
+        })
+        .then(function(response) { return response.json(); })
+        .then(function(data) {
+            console.log('Save response:', data);
+        })
+        .catch(function(error) {
+            console.error('Save error:', error);
         });
     }
 

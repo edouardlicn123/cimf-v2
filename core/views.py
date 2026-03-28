@@ -613,11 +613,6 @@ def homepage_settings(request):
         default_positions[k] = v
     
     available_modules = []
-    enabled_module_ids = []
-    
-    for pos_data in default_positions.values():
-        if pos_data.get('module'):
-            enabled_module_ids.append(pos_data['module'])
     
     try:
         active_modules = NodeModule.objects.filter(is_active=True)
@@ -638,13 +633,8 @@ def homepage_settings(request):
     except Exception:
         pass
     
-    enabled_modules = [m for m in available_modules if m['id'] in enabled_module_ids]
-    disabled_modules = [m for m in available_modules if m['id'] not in enabled_module_ids]
-    
     return render(request, 'core/usermenu/homepage_settings.html', {
         'available_modules': available_modules,
-        'enabled_modules': enabled_modules,
-        'disabled_modules': disabled_modules,
         'positions': default_positions,
     })
 
