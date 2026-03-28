@@ -20,7 +20,7 @@ MODULE_INFO = {
     'type': 'node',
     'version': '1.0.0',
     'author': 'edouardlicn',
-    'description': '国内客户信息管理模块，支持省市区联动功能',
+    'description': '国内客户信息管理模块',
     'models': ['CustomerCnFields'],
     'dependencies': [],
     'icon': 'bi-people',

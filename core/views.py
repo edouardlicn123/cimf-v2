@@ -85,6 +85,7 @@ def dashboard(request):
         'settings': settings,
         'user_display_name': user_display_name,
         'page_title': user_display_name,
+        'show_header': 'False',
     })
 
 
@@ -588,6 +589,63 @@ def profile_settings(request):
         'profile_form': profile_form,
         'pref_form': pref_form,
         'pwd_form': pwd_form,
+    })
+
+
+@login_required
+def homepage_settings(request):
+    """首页卡片设置"""
+    from core.node.models import NodeModule
+    from core.models import SystemSetting
+    from importlib import import_module
+    import json
+    
+    setting = SystemSetting.objects.filter(key='user_dashboard_card_positions').first()
+    positions = {}
+    if setting and setting.value:
+        try:
+            positions = json.loads(setting.value)
+        except Exception:
+            positions = {}
+    
+    default_positions = {str(i): {'module': None} for i in range(1, 7)}
+    for k, v in positions.items():
+        default_positions[k] = v
+    
+    available_modules = []
+    enabled_module_ids = []
+    
+    for pos_data in default_positions.values():
+        if pos_data.get('module'):
+            enabled_module_ids.append(pos_data['module'])
+    
+    try:
+        active_modules = NodeModule.objects.filter(is_active=True)
+        for node_module in active_modules:
+            module_path = node_module.path
+            if module_path:
+                try:
+                    mod = import_module(f'modules.{module_path}.module')
+                    if hasattr(mod, 'MODULE_INFO'):
+                        module_info = {
+                            'id': node_module.module_id,
+                            'name': mod.MODULE_INFO.get('name', node_module.module_id),
+                            'icon': mod.MODULE_INFO.get('icon', 'bi-grid'),
+                        }
+                        available_modules.append(module_info)
+                except Exception:
+                    pass
+    except Exception:
+        pass
+    
+    enabled_modules = [m for m in available_modules if m['id'] in enabled_module_ids]
+    disabled_modules = [m for m in available_modules if m['id'] not in enabled_module_ids]
+    
+    return render(request, 'core/usermenu/homepage_settings.html', {
+        'available_modules': available_modules,
+        'enabled_modules': enabled_modules,
+        'disabled_modules': disabled_modules,
+        'positions': default_positions,
     })
 
 

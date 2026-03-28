@@ -3,6 +3,12 @@
 {% block title %}欢迎回来，{{ user_display_name }}{% endblock %}
 
 {% block page_content %}
+<header class="py-3">
+    <div class="container">
+        <h1 class="h4 mb-0">欢迎回来，{{ user_display_name }}</h1>
+    </div>
+</header>
+
 <!-- 功能卡片区域 -->
 <div class="row mt-4">
     <div class="col-12">
@@ -322,87 +328,33 @@
                     var availableModules = data.data.available_modules || [];
                     var moduleStats = data.data.module_stats || {};
                     
-                    var savedModules = [];
                     slots.forEach(function(slot) {
                         var position = slot.dataset.position;
                         var cardData = positions[position];
                         
-                        if (cardData && cardData.module && availableModules.indexOf(cardData.module) !== -1) {
-                            savedModules.push(cardData.module);
+                        if (cardData && cardData.module) {
+                            var moduleId = cardData.module;
+                            if (availableModules.indexOf(moduleId) === -1) return;
+                            
                             slot.innerHTML = '';
                             var card;
                             
-                            if (cardData.module === 'clock') {
+                            if (moduleId === 'clock') {
                                 card = createClockCard(parseInt(position));
                             } else {
-                                card = createCustomerCard(cardData.module, parseInt(position), moduleStats[cardData.module]);
+                                card = createCustomerCard(moduleId, parseInt(position), moduleStats[moduleId]);
                             }
                             
-                            card.dataset.module = cardData.module;
+                            card.dataset.module = moduleId;
                             slot.appendChild(card);
                         }
                     });
-                    
-                    if (savedModules.length === 0) {
-                        var defaultModules = ['clock', 'customer', 'customer_cn'];
-                        slots.forEach(function(slot, index) {
-                            var position = parseInt(slot.dataset.position);
-                            var moduleId = defaultModules[index];
-                            if (moduleId && availableModules.indexOf(moduleId) !== -1) {
-                                slot.innerHTML = '';
-                                var card;
-                                if (moduleId === 'clock') {
-                                    card = createClockCard(position);
-                                } else {
-                                    card = createCustomerCard(moduleId, position, moduleStats[moduleId]);
-                                }
-                                card.dataset.module = moduleId;
-                                slot.appendChild(card);
-                            }
-                        });
-                    } else {
-                        var defaultModules = ['clock', 'customer', 'customer_cn'];
-                        defaultModules.forEach(function(moduleId) {
-                            if (savedModules.indexOf(moduleId) !== -1) return;
-                            if (availableModules.indexOf(moduleId) === -1) return;
-                            
-                            for (var i = 0; i < slots.length; i++) {
-                                var slot = slots[i];
-                                if (slot.querySelector('.clock-card')) continue;
-                                
-                                var position = parseInt(slot.dataset.position);
-                                slot.innerHTML = '';
-                                var card;
-                                if (moduleId === 'clock') {
-                                    card = createClockCard(position);
-                                } else {
-                                    card = createCustomerCard(moduleId, position, moduleStats[moduleId]);
-                                }
-                                card.dataset.module = moduleId;
-                                slot.appendChild(card);
-                                savedModules.push(moduleId);
-                                break;
-                            }
-                        });
-                    }
-                } else {
-                    var firstSlot = document.querySelector('.card-slot[data-position="1"]');
-                    if (firstSlot) {
-                        var card = createClockCard(1);
-                        card.dataset.module = 'clock';
-                        firstSlot.appendChild(card);
-                    }
                 }
                 
                 initDragAndDrop();
             })
             .catch(function() {
-                var firstSlot = document.querySelector('.card-slot[data-position="1"]');
-                if (firstSlot && !firstSlot.querySelector('.clock-card')) {
-                    var card = createClockCard(1);
-                    card.dataset.module = 'clock';
-                    firstSlot.appendChild(card);
-                }
+                console.error('加载卡片失败');
                 initDragAndDrop();
             });
     }

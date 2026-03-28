@@ -69,6 +69,7 @@ urlpatterns = [
     # 个人中心
     path('profile/', views.profile_view, name='profile_view'),
     path('profile/settings/', views.profile_settings, name='profile_settings'),
+    path('profile/settings/homepage/', views.homepage_settings, name='homepage_settings'),
     
     # 时间 API
     path('api/time/current/', views.api_time_current, name='api_time_current'),

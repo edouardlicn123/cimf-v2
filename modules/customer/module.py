@@ -20,7 +20,7 @@ MODULE_INFO = {
     'type': 'node',
     'version': '1.0.0',
     'author': 'edouardlicn',
-    'description': '海外客户信息管理模块，支持客户信息的 CRUD 操作',
+    'description': '海外客户信息管理模块',
     'models': ['CustomerFields'],
     'dependencies': [],
     'icon': 'bi-people',

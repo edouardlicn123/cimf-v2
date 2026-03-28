@@ -26,6 +26,13 @@
                 偏好设置
               </a>
             </li>
+            <li class="nav-item">
+              <a class="nav-link d-flex align-items-center py-2 px-2 rounded {% if active_section == 'homepage' %}active{% endif %}" 
+                 href="{{ url('core:homepage_settings') }}">
+                <i class="bi bi-grid me-2 fs-6"></i>
+                首页设置
+              </a>
+            </li>
           </ul>
         </div>
       </div>
