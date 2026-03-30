@@ -330,4 +330,7 @@
 6. 修复 edit.html 模板中 csrf_token 标签语法错误，将 Django 模板语法 {% csrf_token %} 改为 Jinja2 语法 {{ csrf_token }}
 7. 修复 resident_info 模块所有模板语法错误，包括将 Django 模板语法转换为 Jinja2 语法，修复 default 过滤器、date 过滤器和 csrf_token 标签
 8. 在 ModuleService 中添加 create_module_taxonomies 方法，在安装模块时自动创建模块定义的词汇表
+9. 修复 resident_info 模块 bug：delete 方法逻辑错误、node_delete 参数传递错误、redirect 调用方式错误
+10. 修复 resident_info 模块 bug：redirect 使用硬编码 URL 改为命名 URL 反向解析，修复 edit.html 模板空指针问题
+11. 修复 edit.html 模板中多处空指针问题：访问属性时需先检查 resident 是否为 None
 
