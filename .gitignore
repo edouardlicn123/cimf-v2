@@ -39,3 +39,6 @@ desktop.ini
 .pytest_cache/
 coverage.xml
 htmlcov/
+
+# 模块排除（开发中的模块）
+modules/resident_info/
