@@ -1,28 +1,38 @@
 # -*- coding: utf-8 -*-
 """
-节点应用 URL 路由配置 - 仅包含客户模块
+模块 URL 路由配置 - 动态加载
 
-注意：导入导出相关 URL 指向 core.importexport.views
+使用动态安全加载机制，当模块文件夹不存在时自动忽略，
+确保系统可以在没有任何模块的情况下启动。
 """
 
 from django.urls import path, include
+from importlib import import_module
 from core.node import views as node_views
-from core.node import views as core_node_views
 from core.importexport import views as importexport_views
 
 app_name = 'modules'
 
+
+def try_include_module(module_slug):
+    """尝试动态导入模块 URL，失败则返回空列表"""
+    try:
+        import_module(f'modules.{module_slug}.urls')
+        return [path(f'{module_slug}/', include(f'modules.{module_slug}.urls'))]
+    except (ImportError, ModuleNotFoundError, AttributeError):
+        return []
+
+
+_known_modules = ['clock', 'customer', 'customer_cn', 'resident_info']
+_dynamic_routes = []
+for _mod in _known_modules:
+    _dynamic_routes.extend(try_include_module(_mod))
+
+
 urlpatterns = [
     # 首页
     path('', node_views.nodes_index, name='index'),
-    
-    # 客户模块
-    path('customer/', include('modules.customer.urls')),
-    path('customer_cn/', include('modules.customer_cn.urls')),
-    
-    # 时钟模块
-    path('clock/', include('modules.clock.urls')),
-    
+] + _dynamic_routes + [
     # 字段类型 (must be before generic slug pattern)
     path('field-types/', node_views.field_types, name='field_types'),
     path('api/field-types/', node_views.field_types_api, name='field_types_api'),

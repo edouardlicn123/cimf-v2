@@ -1,0 +1,137 @@
+{% extends "core/frames/frame_node.html" %}
+
+{% set show_nav = true %}
+{% set show_header = false %}
+
+{% block admin_title %}
+  居民信息详情
+{% endblock %}
+
+{% block admin_title_buttons %}
+<a href="{{ url('modules:resident_info:edit', node.id) }}" class="btn btn-outline-primary">
+    <i class="bi bi-pencil"></i> 编辑
+</a>
+<a href="{{ url('modules:resident_info:list') }}" class="btn btn-outline-secondary">
+    <i class="bi bi-arrow-left"></i> 返回
+</a>
+{% endblock %}
+
+{% block admin_content %}
+<div class="card">
+    <div class="card-header">
+        <h5 class="mb-0">基本信息</h5>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label class="form-label text-muted">姓名</label>
+                <p class="mb-0">{{ resident.name }}</p>
+            </div>
+            <div class="col-md-6 mb-3">
+                <label class="form-label text-muted">与户主关系</label>
+                <p class="mb-0">{{ resident.relation.name if resident.relation else '-' }}</p>
+            </div>
+            <div class="col-md-6 mb-3">
+                <label class="form-label text-muted">身份证号</label>
+                <p class="mb-0">{{ resident.id_card if resident.id_card else '-' }}</p>
+            </div>
+            <div class="col-md-6 mb-3">
+                <label class="form-label text-muted">性别</label>
+                <p class="mb-0">{{ resident.gender.name if resident.gender else '-' }}</p>
+            </div>
+            <div class="col-md-6 mb-3">
+                <label class="form-label text-muted">联系电话</label>
+                <p class="mb-0">{{ resident.phone if resident.phone else '-' }}</p>
+            </div>
+            <div class="col-md-6 mb-3">
+                <label class="form-label text-muted">出生日期</label>
+                <p class="mb-0">{{ resident.birth_date|date('Y-m-d') if resident.birth_date else '-' }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card mt-3">
+    <div class="card-header">
+        <h5 class="mb-0">居住信息</h5>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label class="form-label text-muted">现住小区/建筑</label>
+                <p class="mb-0">{{ resident.current_community if resident.current_community else '-' }}</p>
+            </div>
+            <div class="col-md-6 mb-3">
+                <label class="form-label text-muted">门牌地址</label>
+                <p class="mb-0">{{ resident.current_door if resident.current_door else '-' }}</p>
+            </div>
+            <div class="col-md-6 mb-3">
+                <label class="form-label text-muted">所属网格</label>
+                <p class="mb-0">{{ resident.grid.name if resident.grid else '-' }}</p>
+            </div>
+            <div class="col-md-6 mb-3">
+                <label class="form-label text-muted">人员类型</label>
+                <p class="mb-0">{{ resident.resident_type.name if resident.resident_type else '-' }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card mt-3">
+    <div class="card-header">
+        <h5 class="mb-0">户籍信息</h5>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label class="form-label text-muted">户籍小区/建筑</label>
+                <p class="mb-0">{{ resident.registered_community if resident.registered_community else '-' }}</p>
+            </div>
+            <div class="col-md-6 mb-3">
+                <label class="form-label text-muted">户籍地址</label>
+                <p class="mb-0">{{ resident.registered_address if resident.registered_address else '-' }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card mt-3">
+    <div class="card-header">
+        <h5 class="mb-0">其他信息</h5>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label class="form-label text-muted">民族</label>
+                <p class="mb-0">{{ resident.nation.name if resident.nation else '-' }}</p>
+            </div>
+            <div class="col-md-6 mb-3">
+                <label class="form-label text-muted">政治面貌</label>
+                <p class="mb-0">{{ resident.political_status.name if resident.political_status else '-' }}</p>
+            </div>
+            <div class="col-md-6 mb-3">
+                <label class="form-label text-muted">婚姻状况</label>
+                <p class="mb-0">{{ resident.marital_status.name if resident.marital_status else '-' }}</p>
+            </div>
+            <div class="col-md-6 mb-3">
+                <label class="form-label text-muted">文化程度</label>
+                <p class="mb-0">{{ resident.education.name if resident.education else '-' }}</p>
+            </div>
+            <div class="col-md-6 mb-3">
+                <label class="form-label text-muted">健康状况</label>
+                <p class="mb-0">{{ resident.health_status.name if resident.health_status else '-' }}</p>
+            </div>
+            <div class="col-md-6 mb-3">
+                <label class="form-label text-muted">是否重点人员</label>
+                <p class="mb-0">{% if resident.is_key_person %}是{% else %}否{% endif %}</p>
+            </div>
+            {% if resident.notes %}
+            <div class="col-md-12 mb-3">
+                <label class="form-label text-muted">备注</label>
+                <p class="mb-0">{{ resident.notes }}</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

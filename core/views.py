@@ -595,7 +595,7 @@ def profile_settings(request):
 @login_required
 def homepage_settings(request):
     """首页卡片设置"""
-    from core.node.models import NodeModule
+    from core.node.models import Module
     from core.models import SystemSetting
     from importlib import import_module
     import json
@@ -615,7 +615,7 @@ def homepage_settings(request):
     available_modules = []
     
     try:
-        active_modules = NodeModule.objects.filter(is_active=True)
+        active_modules = Module.objects.filter(is_active=True)
         for node_module in active_modules:
             module_path = node_module.path
             if module_path:
@@ -1040,10 +1040,10 @@ def api_dashboard_cards(request):
     available_modules = []
     module_stats = {}
     try:
-        from core.node.models import NodeModule
+        from core.node.models import Module
         from importlib import import_module
 
-        active_modules = NodeModule.objects.filter(is_active=True)
+        active_modules = Module.objects.filter(is_active=True)
         for node_module in active_modules:
             module_path = node_module.path
             if module_path:

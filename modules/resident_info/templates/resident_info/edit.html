@@ -1,0 +1,183 @@
+{% extends "core/frames/frame_node.html" %}
+
+{% set show_nav = true %}
+{% set show_header = false %}
+
+{% block admin_title %}
+  {% if resident %}编辑{% else %}新建{% endif %}居民信息
+{% endblock %}
+
+{% block admin_content %}
+<form method="post" class="row g-3">
+    {{ csrf_token }}
+    
+    <div class="col-md-6">
+        <label class="form-label">姓名 *</label>
+        <input type="text" name="name" class="form-control" value="{{ resident.name if resident.name else '' }}" required>
+    </div>
+    
+    <div class="col-md-6">
+        <label class="form-label">与户主关系</label>
+        <select name="relation" class="form-select">
+            <option value="">请选择</option>
+            {% for item in relations %}
+            <option value="{{ item.id }}" {% if resident and resident.relation_id == item.id %}selected{% endif %}>{{ item.name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    
+    <div class="col-md-6">
+        <label class="form-label">身份证号</label>
+        <input type="text" name="id_card" class="form-control" value="{{ resident.id_card if resident.id_card else '' }}">
+    </div>
+    
+    <div class="col-md-6">
+        <label class="form-label">性别</label>
+        <select name="gender" class="form-select">
+            <option value="">请选择</option>
+            {% for item in genders %}
+            <option value="{{ item.id }}" {% if resident and resident.gender_id == item.id %}selected{% endif %}>{{ item.name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    
+    <div class="col-md-6">
+        <label class="form-label">出生日期</label>
+        <input type="date" name="birth_date" class="form-control" value="{{ resident.birth_date if resident.birth_date else '' }}">
+    </div>
+    
+    <div class="col-md-6">
+        <label class="form-label">联系电话</label>
+        <input type="text" name="phone" class="form-control" value="{{ resident.phone if resident.phone else '' }}">
+    </div>
+    
+    <div class="col-md-6">
+        <label class="form-label">现住小区/建筑</label>
+        <input type="text" name="current_community" class="form-control" value="{{ resident.current_community if resident.current_community else '' }}">
+    </div>
+    
+    <div class="col-md-6">
+        <label class="form-label">门牌地址</label>
+        <input type="text" name="current_door" class="form-control" value="{{ resident.current_door if resident.current_door else '' }}">
+    </div>
+    
+    <div class="col-md-6">
+        <label class="form-label">所属网格</label>
+        <select name="grid" class="form-select">
+            <option value="">请选择</option>
+            {% for item in grids %}
+            <option value="{{ item.id }}" {% if resident and resident.grid_id == item.id %}selected{% endif %}>{{ item.name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    
+    <div class="col-md-6">
+        <label class="form-label">人员类型</label>
+        <select name="resident_type" class="form-select">
+            <option value="">请选择</option>
+            {% for item in resident_types %}
+            <option value="{{ item.id }}" {% if resident and resident.resident_type_id == item.id %}selected{% endif %}>{{ item.name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="form-check mt-4">
+            <input type="checkbox" name="is_key_person" class="form-check-input" id="is_key_person" {% if resident and resident.is_key_person %}checked{% endif %}>
+            <label class="form-check-label" for="is_key_person">是否重点人员</label>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <label class="form-label">重点类别</label>
+        <select name="key_category" class="form-select">
+            <option value="">请选择</option>
+            {% for item in key_categories %}
+            <option value="{{ item.id }}" {% if resident and resident.key_category_id == item.id %}selected{% endif %}>{{ item.name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    
+    <div class="col-md-12">
+        <hr>
+        <h6>户籍信息</h6>
+    </div>
+    
+    <div class="col-md-6">
+        <label class="form-label">户籍小区/建筑</label>
+        <input type="text" name="registered_community" class="form-control" value="{{ resident.registered_community if resident.registered_community else '' }}">
+    </div>
+    
+    <div class="col-md-6">
+        <label class="form-label">户籍地址</label>
+        <input type="text" name="registered_address" class="form-control" value="{{ resident.registered_address if resident.registered_address else '' }}">
+    </div>
+    
+    <div class="col-md-12">
+        <hr>
+        <h6>其他信息</h6>
+    </div>
+    
+    <div class="col-md-6">
+        <label class="form-label">民族</label>
+        <select name="nation" class="form-select">
+            <option value="">请选择</option>
+            {% for item in nations %}
+            <option value="{{ item.id }}" {% if resident and resident.nation_id == item.id %}selected{% endif %}>{{ item.name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    
+    <div class="col-md-6">
+        <label class="form-label">政治面貌</label>
+        <select name="political_status" class="form-select">
+            <option value="">请选择</option>
+            {% for item in political_statuses %}
+            <option value="{{ item.id }}" {% if resident and resident.political_status_id == item.id %}selected{% endif %}>{{ item.name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    
+    <div class="col-md-6">
+        <label class="form-label">婚姻状况</label>
+        <select name="marital_status" class="form-select">
+            <option value="">请选择</option>
+            {% for item in marital_statuses %}
+            <option value="{{ item.id }}" {% if resident and resident.marital_status_id == item.id %}selected{% endif %}>{{ item.name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    
+    <div class="col-md-6">
+        <label class="form-label">文化程度</label>
+        <select name="education" class="form-select">
+            <option value="">请选择</option>
+            {% for item in educations %}
+            <option value="{{ item.id }}" {% if resident and resident.education_id == item.id %}selected{% endif %}>{{ item.name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    
+    <div class="col-md-6">
+        <label class="form-label">健康状况</label>
+        <select name="health_status" class="form-select">
+            <option value="">请选择</option>
+            {% for item in health_statuses %}
+            <option value="{{ item.id }}" {% if resident and resident.health_status_id == item.id %}selected{% endif %}>{{ item.name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    
+    <div class="col-md-12">
+        <label class="form-label">备注</label>
+        <textarea name="notes" class="form-control" rows="3">{{ resident.notes if resident.notes else '' }}</textarea>
+    </div>
+    
+    <div class="col-md-12">
+        <button type="submit" class="btn btn-primary">
+            <i class="bi bi-check-lg"></i> 保存
+        </button>
+        <a href="{{ url('modules:resident_info:list') }}" class="btn btn-secondary">取消</a>
+    </div>
+</form>
+{% endblock %}

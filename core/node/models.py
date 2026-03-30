@@ -102,8 +102,8 @@ class Node(models.Model):
         return f'Node {self.id} ({self.node_type.slug})'
 
 
-class NodeModule(models.Model):
-    """Node 模块注册表"""
+class Module(models.Model):
+    """模块注册表"""
     
     module_id = models.CharField(max_length=50, unique=True, verbose_name='模块ID')
     name = models.CharField(max_length=100, verbose_name='模块名称')
@@ -123,9 +123,9 @@ class NodeModule(models.Model):
     updated_at = models.DateTimeField(auto_now=True, verbose_name='更新时间')
     
     class Meta:
-        db_table = 'node_modules'
-        verbose_name = 'Node模块'
-        verbose_name_plural = 'Node模块'
+        db_table = 'modules'
+        verbose_name = '模块'
+        verbose_name_plural = '模块'
         ordering = ['name']
     
     @property

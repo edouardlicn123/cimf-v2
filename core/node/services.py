@@ -25,7 +25,7 @@ import os
 import importlib.util
 from django.contrib.auth import get_user_model
 from django.utils import timezone
-from core.node.models import NodeType, Node, NodeModule
+from core.node.models import NodeType, Node, Module
 
 User = get_user_model()
 
@@ -245,7 +245,7 @@ class NodeService:
         return NodeService.get_list('customer', search)
 
 
-class NodeModuleService:
+class ModuleService:
     """Node 模块服务"""
     
     MODULES_DIR = 'modules'
@@ -256,7 +256,7 @@ class NodeModuleService:
     def scan_modules() -> List[Dict[str, Any]]:
         """扫描 modules/ 目录下的所有模块"""
         modules = []
-        base_path = NodeModuleService.MODULES_DIR
+        base_path = ModuleService.MODULES_DIR
         
         if not os.path.exists(base_path):
             return modules
@@ -271,9 +271,9 @@ class NodeModuleService:
             if not os.path.exists(module_file):
                 continue
             
-            module_info = NodeModuleService._load_module_info(item)
+            module_info = ModuleService._load_module_info(item)
             if module_info:
-                registered = NodeModule.objects.filter(module_id=module_info['id']).first()
+                registered = Module.objects.filter(module_id=module_info['id']).first()
                 module_info['is_registered'] = registered is not None
                 module_info['is_installed'] = registered.is_installed if registered else False
                 module_info['is_active'] = registered.is_active if registered else False
@@ -287,9 +287,32 @@ class NodeModuleService:
         """加载模块信息 - 使用 ast 直接解析文件，无需 importlib"""
         import ast
         
+        def parse_node(node):
+            """递归解析 AST 节点"""
+            if isinstance(node, ast.Constant):
+                return node.value
+            elif isinstance(node, ast.Str):
+                return node.s
+            elif isinstance(node, ast.Num):
+                return node.n
+            elif isinstance(node, ast.NameConstant):
+                return node.value
+            elif isinstance(node, ast.List):
+                return [parse_node(elem) for elem in node.elts]
+            elif isinstance(node, ast.Dict):
+                result = {}
+                for k, v in zip(node.keys, node.values):
+                    key = parse_node(k)
+                    value = parse_node(v)
+                    if key is not None:
+                        result[key] = value
+                return result
+            else:
+                return None
+        
         try:
             module_file = os.path.join(
-                NodeModuleService.MODULES_DIR, 
+                ModuleService.MODULES_DIR, 
                 module_dir, 
                 'module.py'
             )
@@ -306,46 +329,10 @@ class NodeModuleService:
                             target.id == 'MODULE_INFO' and
                             isinstance(node.value, ast.Dict)):
                             
-                            module_info = {}
+                            module_info = parse_node(node.value)
                             
-                            for key_node, value_node in zip(node.value.keys, node.value.values):
-                                if isinstance(key_node, ast.Constant):
-                                    key = key_node.value
-                                elif isinstance(key_node, ast.Str):
-                                    key = key_node.s
-                                else:
-                                    key = str(key_node)
-                                
-                                if isinstance(value_node, ast.Constant):
-                                    value = value_node.value
-                                elif isinstance(value_node, ast.Str):
-                                    value = value_node.s
-                                elif isinstance(value_node, ast.Num):
-                                    value = value_node.n
-                                elif isinstance(value_node, ast.NameConstant):
-                                    value = value_node.value
-                                elif isinstance(value_node, ast.List):
-                                    value = []
-                                    for elem in value_node.elts:
-                                        if isinstance(elem, ast.Constant):
-                                            value.append(elem.value)
-                                        elif isinstance(elem, ast.Dict):
-                                            dict_val = {}
-                                            for k, v in zip(elem.keys, elem.values):
-                                                if isinstance(k, ast.Constant):
-                                                    dict_val[k.value] = v.value if isinstance(v, ast.Constant) else str(v)
-                                            value.append(dict_val)
-                                        else:
-                                            value.append(str(elem) if hasattr(elem, 's') else None)
-                                elif isinstance(value_node, ast.Dict):
-                                    value = {}
-                                    for k, v in zip(value_node.keys, value_node.values):
-                                        if isinstance(k, ast.Constant):
-                                            value[k.value] = v.value if isinstance(v, ast.Constant) else str(v)
-                                else:
-                                    value = None
-                                
-                                module_info[key] = value
+                            if not isinstance(module_info, dict):
+                                return None
                             
                             if 'type' not in module_info:
                                 raise ValueError(f"模块 {module_dir} 缺少 type 字段")
@@ -363,10 +350,10 @@ class NodeModuleService:
     # ===== 注册功能 =====
     
     @staticmethod
-    def register_module(module_info: Dict[str, Any]) -> NodeModule:
+    def register_module(module_info: Dict[str, Any]) -> Module:
         """注册模块 - 写入数据库，标记为未安装"""
         module_id = module_info['id']
-        existing = NodeModule.objects.filter(module_id=module_id).first()
+        existing = Module.objects.filter(module_id=module_id).first()
         
         if existing:
             existing.is_installed = False
@@ -375,7 +362,7 @@ class NodeModuleService:
             existing.save()
             return existing
         
-        module = NodeModule.objects.create(
+        module = Module.objects.create(
             module_id=module_id,
             name=module_info.get('name', module_id),
             version=module_info.get('version', '1.0.0'),
@@ -398,7 +385,7 @@ class NodeModuleService:
         from django.apps import apps
         from django.core.management import call_command
         
-        module = NodeModule.objects.filter(module_id=module_id).first()
+        module = Module.objects.filter(module_id=module_id).first()
         if not module:
             return False
         
@@ -407,7 +394,7 @@ class NodeModuleService:
             return True
         
         # 检查模块目录是否存在
-        module_path = os.path.join(NodeModuleService.MODULES_DIR, module_id)
+        module_path = os.path.join(ModuleService.MODULES_DIR, module_id)
         if not os.path.exists(module_path):
             return False
         
@@ -427,7 +414,10 @@ class NodeModuleService:
         
         # 同步 NodeType（仅 node 类型模块需要）
         if module.module_type == 'node':
-            NodeModuleService.sync_node_type(module)
+            ModuleService.sync_node_type(module)
+        
+        # 创建模块定义的词汇表
+        ModuleService.create_module_taxonomies(module)
         
         # 标记为已安装
         module.is_installed = True
@@ -437,21 +427,77 @@ class NodeModuleService:
         return True
     
     @staticmethod
-    def register_and_install(module_info: Dict[str, Any]) -> NodeModule:
+    def register_and_install(module_info: Dict[str, Any]) -> Module:
         """注册并安装模块"""
-        module = NodeModuleService.register_module(module_info)
-        NodeModuleService.install_module(module.module_id)
-        NodeModuleService.enable_module(module.module_id)
+        module = ModuleService.register_module(module_info)
+        ModuleService.install_module(module.module_id)
+        ModuleService.enable_module(module.module_id)
         module.refresh_from_db()
         return module
+    
+    @staticmethod
+    def create_module_taxonomies(module: Module) -> int:
+        """创建模块定义的词汇表"""
+        from core.models import Taxonomy, TaxonomyItem
+        
+        # 加载模块信息
+        module_info = ModuleService._load_module_info(module.path)
+        if not module_info:
+            return 0
+        
+        # 检查是否有词汇表定义
+        taxonomies = module_info.get('taxonomies', [])
+        if not taxonomies:
+            return 0
+        
+        created_count = 0
+        
+        for tax_data in taxonomies:
+            slug = tax_data.get('slug')
+            name = tax_data.get('name')
+            items = tax_data.get('items', [])
+            
+            if not slug or not name:
+                continue
+            
+            # 检查词汇表是否已存在
+            existing = Taxonomy.objects.filter(slug=slug).first()
+            if existing:
+                # 词汇表已存在，检查是否需要添加词汇项
+                for item_name in items:
+                    TaxonomyItem.objects.get_or_create(
+                        taxonomy=existing,
+                        name=item_name,
+                        defaults={'weight': 0}
+                    )
+                continue
+            
+            # 创建词汇表
+            taxonomy = Taxonomy.objects.create(
+                name=name,
+                slug=slug,
+                description=f'{module.name} 模块词汇表'
+            )
+            
+            # 创建词汇项
+            for idx, item_name in enumerate(items):
+                TaxonomyItem.objects.create(
+                    taxonomy=taxonomy,
+                    name=item_name,
+                    weight=idx
+                )
+            
+            created_count += 1
+        
+        return created_count
     
     # ===== 启用/禁用功能 =====
     
     @staticmethod
-    def enable_module(module_id: str) -> Optional[NodeModule]:
+    def enable_module(module_id: str) -> Optional[Module]:
         """启用模块并同步节点类型"""
         try:
-            module = NodeModule.objects.get(module_id=module_id)
+            module = Module.objects.get(module_id=module_id)
             if module.is_installed:
                 module.is_active = True
                 module.activated_at = timezone.now()
@@ -464,15 +510,15 @@ class NodeModuleService:
                         node_type.save(update_fields=['is_active'])
                 
                 return module
-        except NodeModule.DoesNotExist:
+        except Module.DoesNotExist:
             pass
         return None
     
     @staticmethod
-    def disable_module(module_id: str) -> Optional[NodeModule]:
+    def disable_module(module_id: str) -> Optional[Module]:
         """禁用模块并同步节点类型"""
         try:
-            module = NodeModule.objects.get(module_id=module_id)
+            module = Module.objects.get(module_id=module_id)
             module.is_active = False
             module.save(update_fields=['is_active'])
             
@@ -483,7 +529,7 @@ class NodeModuleService:
                     node_type.save(update_fields=['is_active'])
             
             return module
-        except NodeModule.DoesNotExist:
+        except Module.DoesNotExist:
             pass
         return None
     
@@ -492,11 +538,11 @@ class NodeModuleService:
     @staticmethod
     def cleanup_uninstalled_modules() -> List[str]:
         """清理已卸载的模块注册记录"""
-        registered_modules = NodeModule.objects.filter(is_installed=True)
+        registered_modules = Module.objects.filter(is_installed=True)
         cleaned = []
         
         for module in registered_modules:
-            module_path = os.path.join(NodeModuleService.MODULES_DIR, module.path)
+            module_path = os.path.join(ModuleService.MODULES_DIR, module.path)
             module_file = os.path.join(module_path, 'module.py')
             
             if not os.path.exists(module_file) and not module.is_active:
@@ -508,32 +554,32 @@ class NodeModuleService:
     # ===== 查询功能 =====
     
     @staticmethod
-    def get_all() -> List[NodeModule]:
+    def get_all() -> List[Module]:
         """获取所有已注册的模块"""
-        return list(NodeModule.objects.all())
+        return list(Module.objects.all())
     
     @staticmethod
-    def get_installed() -> List[NodeModule]:
+    def get_installed() -> List[Module]:
         """获取已安装的模块"""
-        return list(NodeModule.objects.filter(is_installed=True))
+        return list(Module.objects.filter(is_installed=True))
     
     @staticmethod
-    def get_active() -> List[NodeModule]:
+    def get_active() -> List[Module]:
         """获取已启用的模块"""
-        return list(NodeModule.objects.filter(is_installed=True, is_active=True))
+        return list(Module.objects.filter(is_installed=True, is_active=True))
     
     @staticmethod
-    def get_by_id(module_id: str) -> Optional[NodeModule]:
+    def get_by_id(module_id: str) -> Optional[Module]:
         """根据 ID 获取模块"""
-        return NodeModule.objects.filter(module_id=module_id).first()
+        return Module.objects.filter(module_id=module_id).first()
     
     # ===== 同步功能 =====
     
     @staticmethod
-    def sync_node_type(module: NodeModule) -> NodeType:
+    def sync_node_type(module: Module) -> NodeType:
         """同步模块与节点类型"""
         # 从 module.py 读取图标
-        module_info = NodeModuleService._load_module_info(module.path)
+        module_info = ModuleService._load_module_info(module.path)
         icon = module_info.get('icon', 'bi-folder') if module_info else 'bi-folder'
         
         node_type = NodeType.objects.filter(slug=module.module_id).first()
@@ -560,7 +606,7 @@ class NodeModuleService:
         """创建新模块 - 在文件系统中创建模块目录和基础文件"""
         import shutil
         
-        module_path = os.path.join(NodeModuleService.MODULES_DIR, module_id)
+        module_path = os.path.join(ModuleService.MODULES_DIR, module_id)
         
         # 检查目录是否已存在
         if os.path.exists(module_path):
@@ -571,7 +617,7 @@ class NodeModuleService:
             return {'success': False, 'error': '模块 ID 只能包含字母、数字、下划线和连字符'}
         
         # 检查模块 ID 是否已注册
-        existing = NodeModule.objects.filter(module_id=module_id).first()
+        existing = Module.objects.filter(module_id=module_id).first()
         if existing:
             return {'success': False, 'error': f'模块 ID 已注册: {module_id}'}
         

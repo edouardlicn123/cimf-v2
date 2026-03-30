@@ -21,8 +21,8 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.http import JsonResponse
-from core.node.models import NodeType, NodeModule
-from core.node.services import NodeTypeService, NodeService, NodeModuleService
+from core.node.models import NodeType, Module
+from core.node.services import NodeTypeService, NodeService, ModuleService
 from core.services import PermissionService
 from core.fields import get_all_field_types_info
 
@@ -30,7 +30,7 @@ from core.fields import get_all_field_types_info
 @login_required
 def nodes_index(request):
     """节点首页 - 只显示 node 类型的节点类型"""
-    node_type_ids = NodeModule.objects.filter(
+    node_type_ids = Module.objects.filter(
         module_type='node',
         is_active=True
     ).values_list('module_id', flat=True)
@@ -227,8 +227,8 @@ def node_modules(request):
         messages.error(request, '需要系统管理员权限访问该页面')
         return redirect('core:dashboard')
     
-    all_modules = NodeModuleService.scan_modules()
-    registered = NodeModuleService.get_all()
+    all_modules = ModuleService.scan_modules()
+    registered = ModuleService.get_all()
     
     registered_ids = {m.module_id for m in registered}
     unregistered = [m for m in all_modules if m['id'] not in registered_ids]
@@ -251,19 +251,19 @@ def module_scan(request):
         return redirect('core:dashboard')
     
     # 扫描并安装新模块
-    modules = NodeModuleService.scan_modules()
-    registered_ids = {m.module_id for m in NodeModule.objects.all()}
+    modules = ModuleService.scan_modules()
+    registered_ids = {m.module_id for m in Module.objects.all()}
     new_modules = []
     
     for m in modules:
         if m['id'] not in registered_ids:
-            module = NodeModuleService.register_module(m)
+            module = ModuleService.register_module(m)
             if module.module_type == 'node':
-                NodeModuleService.sync_node_type(module)
+                ModuleService.sync_node_type(module)
             new_modules.append(m['name'])
     
     # 清理已卸载的模块
-    cleaned = NodeModuleService.cleanup_uninstalled_modules()
+    cleaned = ModuleService.cleanup_uninstalled_modules()
     
     # 显示消息
     if new_modules:
@@ -283,13 +283,13 @@ def module_install(request, module_id: str):
         messages.error(request, '需要系统管理员权限访问该页面')
         return redirect('core:dashboard')
     
-    module_info = NodeModuleService._load_module_info(module_id)
+    module_info = ModuleService._load_module_info(module_id)
     if not module_info:
         messages.error(request, f'模块 {module_id} 不存在')
         return redirect('node:modules')
     
-    module = NodeModuleService.register_module(module_info)
-    NodeModuleService.install_module(module_id)
+    module = ModuleService.register_module(module_info)
+    ModuleService.install_module(module_id)
     
     messages.success(request, f'模块 {module_info["name"]} 已安装')
     return redirect('node:modules')
@@ -302,8 +302,8 @@ def module_enable(request, module_id: str):
         messages.error(request, '需要系统管理员权限访问该页面')
         return redirect('core:dashboard')
     
-    NodeModuleService.install_module(module_id)
-    module = NodeModuleService.enable_module(module_id)
+    ModuleService.install_module(module_id)
+    module = ModuleService.enable_module(module_id)
     if module:
         messages.success(request, f'模块 {module.name} 已启用')
     return redirect('node:modules')
@@ -316,7 +316,7 @@ def module_disable(request, module_id: str):
         messages.error(request, '需要系统管理员权限访问该页面')
         return redirect('core:dashboard')
     
-    module = NodeModuleService.disable_module(module_id)
+    module = ModuleService.disable_module(module_id)
     if module:
         messages.success(request, f'模块 {module.name} 已禁用')
     return redirect('node:modules')
@@ -330,13 +330,13 @@ def module_dispatch(request, module_slug: str, node_id: int = None):
     
     # 1. 检查模块是否已安装且启用
     if node_id:
-        module = NodeModule.objects.filter(
+        module = Module.objects.filter(
             module_id=module_slug,
             is_installed=True,
             is_active=True
         ).first()
     else:
-        module = NodeModule.objects.filter(
+        module = Module.objects.filter(
             module_id=module_slug,
             is_installed=True,
             is_active=True
@@ -346,7 +346,7 @@ def module_dispatch(request, module_slug: str, node_id: int = None):
         raise Http404('模块不存在或未启用')
     
     # 2. 读取模块配置
-    module_info = NodeModuleService._load_module_info(module_slug)
+    module_info = ModuleService._load_module_info(module_slug)
     if not module_info:
         raise Http404('模块配置无效')
     
@@ -424,7 +424,7 @@ def module_create_action(request):
     if not module_type:
         return JsonResponse({'success': False, 'error': '请输入模块类型'}, status=400)
     
-    result = NodeModuleService.create_module(module_id, name, module_type, description, icon)
+    result = ModuleService.create_module(module_id, name, module_type, description, icon)
     
     if result.get('success'):
         return JsonResponse({'success': True, 'module_id': result['module_id']})

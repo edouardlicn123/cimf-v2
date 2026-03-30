@@ -314,3 +314,20 @@
 23. 更新模块技术规范：新增「十一、首页卡片系统」章节，提供完整的模块首页卡片开发指南
 24. 更新README.md：反映最新的项目结构（modules目录、core/node、core/importexport等），更新功能特点和技术栈说明
 
+
+
+# 2026-03-29 修改记录
+
+1. 实现动态URL加载和模块安全加载，系统可在任意模块缺失时正常启动
+
+# 2026-03-30 修改记录
+
+1. 重新创建居民信息模块（代码已重建，模板文件待补充）
+2. 修复迁移冲突：将NodeModule类名改为Module，合并迁移文件
+3. 更新模块技术规范：添加动态URL加载机制
+4. 恢复居民信息模块模板文件：list.html, edit.html, view.html
+5. 修复 resident_info 模块模板语法错误，将 Jinja2 模板中的 Django 模板语法转换为 Jinja2 语法
+6. 修复 edit.html 模板中 csrf_token 标签语法错误，将 Django 模板语法 {% csrf_token %} 改为 Jinja2 语法 {{ csrf_token }}
+7. 修复 resident_info 模块所有模板语法错误，包括将 Django 模板语法转换为 Jinja2 语法，修复 default 过滤器、date 过滤器和 csrf_token 标签
+8. 在 ModuleService 中添加 create_module_taxonomies 方法，在安装模块时自动创建模块定义的词汇表
+
