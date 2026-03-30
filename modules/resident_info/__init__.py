@@ -1,1 +1,0 @@
-# resident_info module
