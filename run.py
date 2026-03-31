@@ -80,20 +80,18 @@ def init_modules():
     try:
         import django
         django.setup()
-        from core.node.services import NodeModuleService
+        from core.node.services import ModuleService
         
-        # 扫描并安装所有模块
-        modules = NodeModuleService.scan_modules()
-        installed_count = 0
+        # 扫描并注册所有模块（不安装）
+        modules = ModuleService.scan_modules()
+        registered_count = 0
         
         for m in modules:
-            module = NodeModuleService.register_module(m)
-            if NodeModuleService.install_module(m['id']):
-                NodeModuleService.enable_module(m['id'])
-                installed_count += 1
-                print(f"  已安装: {m['name']}")
+            module = ModuleService.register_module(m)
+            registered_count += 1
+            print(f"  已注册: {m['name']}")
         
-        print(f"模块初始化完成: {installed_count} 个模块")
+        print(f"模块注册完成: {registered_count} 个模块")
     except Exception as e:
         print(f"模块初始化失败: {e}")
 

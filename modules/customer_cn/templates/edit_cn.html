@@ -74,16 +74,6 @@
                     <input type="email" name="email2" class="form-control" value="{{ customer.email2|default('') if customer else '' }}">
                 </div>
             </div>
-            <div class="row">
-                <div class="col-md-6 mb-3">
-                    <label class="form-label">微信号</label>
-                    <input type="text" name="wechat" class="form-control" value="{{ customer.wechat|default('') if customer else '' }}">
-                </div>
-                <div class="col-md-6 mb-3">
-                    <label class="form-label">钉钉号</label>
-                    <input type="text" name="dingtalk" class="form-control" value="{{ customer.dingtalk|default('') if customer else '' }}">
-                </div>
-            </div>
         </div>
     </div>
     
@@ -121,12 +111,12 @@
             <div class="row">
                 <div class="col-md-6 mb-3">
                     <label class="form-label">邮政编码</label>
-                    <input type="text" name="postal_code" class="form-control" value="{{ customer.postal_code|default('') }}">
+                    <input type="text" name="postal_code" class="form-control" value="{{ customer.postal_code|default('') if customer else '' }}">
                 </div>
             </div>
             <div class="mb-3">
                 <label class="form-label">详细地址</label>
-                <input type="text" name="address" class="form-control" value="{{ customer.address|default('') }}">
+                <input type="text" name="address" class="form-control" value="{{ customer.address|default('') if customer else '' }}">
             </div>
         </div>
     </div>
@@ -159,7 +149,7 @@
             <div class="row">
                 <div class="col-md-4 mb-3">
                     <label class="form-label">所属行业</label>
-                    <input type="text" name="industry" class="form-control" value="{{ customer.industry|default('') }}">
+                    <input type="text" name="industry" class="form-control" value="{{ customer.industry|default('') if customer else '' }}">
                 </div>
                 <div class="col-md-4 mb-3">
                     <label class="form-label">企业性质</label>
@@ -174,7 +164,7 @@
                 </div>
                 <div class="col-md-4 mb-3">
                     <label class="form-label">注册资本</label>
-                    <input type="number" name="registered_capital" class="form-control" value="{{ customer.registered_capital|default('') }}">
+                    <input type="number" name="registered_capital" class="form-control" value="{{ customer.registered_capital|default('') if customer else '' }}">
                 </div>
             </div>
         </div>
@@ -200,16 +190,16 @@
                 </div>
                 <div class="col-md-6 mb-3">
                     <label class="form-label">信用额度</label>
-                    <input type="number" name="credit_limit" class="form-control" value="{{ customer.credit_limit|default('') }}">
+                    <input type="number" name="credit_limit" class="form-control" value="{{ customer.credit_limit|default('') if customer else '' }}">
                 </div>
             </div>
             <div class="mb-3">
                 <label class="form-label">网站</label>
-                <input type="url" name="website" class="form-control" value="{{ customer.website|default('') }}">
+                <input type="url" name="website" class="form-control" value="{{ customer.website|default('') if customer else '' }}">
             </div>
             <div class="mb-3">
                 <label class="form-label">备注</label>
-                <textarea name="notes" class="form-control" rows="3">{{ customer.notes|default('') }}</textarea>
+                <textarea name="notes" class="form-control" rows="3">{{ customer.notes|default('') if customer else '' }}</textarea>
             </div>
         </div>
     </div>

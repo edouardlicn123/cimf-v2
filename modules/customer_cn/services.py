@@ -67,6 +67,8 @@ class CustomerCnService:
     def create(user, data: Dict[str, Any]) -> CustomerCnFields:
         """创建国内客户"""
         node = NodeService.create('customer_cn', user, {})
+        if not node:
+            raise ValueError('创建节点失败')
         
         customer_code = data.get('customer_code')
         if not customer_code:
@@ -105,6 +107,8 @@ class CustomerCnService:
         if not customer:
             return None
         
+        if not customer.node_id:
+            raise ValueError('客户关联节点不存在')
         NodeService.update(customer.node_id, user, {})
         
         for key, value in data.items():

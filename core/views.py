@@ -379,6 +379,10 @@ def taxonomy_create(request):
         slug = request.POST.get('slug', '').strip()
         description = request.POST.get('description', '').strip()
         
+        if not name or not slug:
+            messages.error(request, '名称和标识不能为空')
+            return redirect('core:taxonomies')
+        
         Taxonomy.objects.create(
             name=name,
             slug=slug,
@@ -434,6 +438,11 @@ def taxonomy_edit(request, taxonomy_id: int):
         taxonomy.name = request.POST.get('name', '').strip()
         taxonomy.slug = request.POST.get('slug', '').strip()
         taxonomy.description = request.POST.get('description', '').strip()
+        
+        if not taxonomy.name or not taxonomy.slug:
+            messages.error(request, '名称和标识不能为空')
+            return redirect('core:taxonomy_edit', taxonomy_id)
+        
         taxonomy.save()
         
         messages.success(request, '词汇表更新成功')
@@ -495,9 +504,14 @@ def taxonomy_item_update(request, taxonomy_id: int, item_id: int):
         description = request.POST.get('description', '').strip()
         
         if name:
-            from core.services.taxonomy_service import TaxonomyService
-            TaxonomyService.update_item(item_id, name=name, description=description)
-            messages.success(request, '词汇项更新成功')
+            from core.models import TaxonomyItem
+            item = TaxonomyItem.objects.filter(id=item_id, taxonomy_id=taxonomy_id).first()
+            if item:
+                from core.services.taxonomy_service import TaxonomyService
+                TaxonomyService.update_item(item_id, name=name, description=description)
+                messages.success(request, '词汇项更新成功')
+            else:
+                messages.error(request, '词汇项不存在或不属于当前词汇表')
         
         return redirect('core:taxonomy_view', taxonomy_id)
     
@@ -511,9 +525,14 @@ def taxonomy_item_delete(request, taxonomy_id: int, item_id: int):
         messages.error(request, '需要系统管理员权限访问该页面')
         return redirect('core:dashboard')
     
-    from core.services.taxonomy_service import TaxonomyService
-    TaxonomyService.delete_item(item_id)
-    messages.success(request, '词汇项已删除')
+    from core.models import TaxonomyItem
+    item = TaxonomyItem.objects.filter(id=item_id, taxonomy_id=taxonomy_id).first()
+    if item:
+        from core.services.taxonomy_service import TaxonomyService
+        TaxonomyService.delete_item(item_id)
+        messages.success(request, '词汇项已删除')
+    else:
+        messages.error(request, '词汇项不存在或不属于当前词汇表')
     return redirect('core:taxonomy_view', taxonomy_id)
 
 
@@ -727,7 +746,10 @@ def cron_toggle_task(request, task_name: str):
         return JsonResponse({'success': False, 'error': '权限不足'}, status=403)
     
     import json
-    data = json.loads(request.body) if request.body else {}
+    try:
+        data = json.loads(request.body) if request.body else {}
+    except (json.JSONDecodeError, ValueError):
+        data = {}
     enabled = data.get('enabled', True)
     
     cron = get_cron_service()

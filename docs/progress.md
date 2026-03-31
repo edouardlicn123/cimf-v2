@@ -333,4 +333,15 @@
 9. 修复 resident_info 模块 bug：delete 方法逻辑错误、node_delete 参数传递错误、redirect 调用方式错误
 10. 修复 resident_info 模块 bug：redirect 使用硬编码 URL 改为命名 URL 反向解析，修复 edit.html 模板空指针问题
 11. 修复 edit.html 模板中多处空指针问题：访问属性时需先检查 resident 是否为 None
+12. 修复 models.py 中 id_card 和 phone 字段缺少 null=True 的问题
+13. 修改 init_db.py 模块初始化逻辑，只注册模块不安装/启用
+14. 修复 run.py 中 NodeModuleService 导入错误，改为 ModuleService
+
+# 2026-03-31 修改记录
+
+1. 全面 Bug 排查修复：customer/customer_cn services 节点创建返回值检查、core/views 词汇表操作验证、edit_cn.html 重复字段删除、view.html/view_cn.html date 过滤器空值检查
+2. 检查 core/views.py 和 core/node/views.py 的参数验证问题
+3. 继续排查类似问题：customer/templates/edit.html 8个空值检查、core/views.py taxonomy_edit 验证和 cron_toggle_task JSON 解析、TaxonomyService 添加 get_item 方法
+4. 排查类似问题：system_user_edit.html 5处空值检查、node/types/edit.html 和 node/edit.html 4处空值检查、homepage_settings.html 字典安全访问和硬编码URL修复
+5. 继续排查 edit_cn.html 5处空值检查修复：postal_code、address、industry、registered_capital、credit_limit、website、notes
 

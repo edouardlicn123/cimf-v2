@@ -148,9 +148,9 @@
             {% for i in "123" %}
             <div class="col-4">
                 <div class="card-slot" data-position="{{ i }}">
-                    {% if positions[i].module %}
+                    {% if positions.get(i, {}).get('module') %}
                         {% for module in available_modules %}
-                            {% if module.id == positions[i].module %}
+                            {% if module.id == positions.get(i, {}).get('module') %}
                             <div class="dashboard-card" draggable="true" data-module="{{ module.id }}" data-name="{{ module.name }}" data-icon="{{ module.icon }}">
                                 <i class="bi {{ module.icon }}"></i>
                                 <span>{{ module.name }}</span>
@@ -168,9 +168,9 @@
             {% for i in "456" %}
             <div class="col-4">
                 <div class="card-slot" data-position="{{ i }}">
-                    {% if positions[i].module %}
+                    {% if positions.get(i, {}).get('module') %}
                         {% for module in available_modules %}
-                            {% if module.id == positions[i].module %}
+                            {% if module.id == positions.get(i, {}).get('module') %}
                             <div class="dashboard-card" draggable="true" data-module="{{ module.id }}" data-name="{{ module.name }}" data-icon="{{ module.icon }}">
                                 <i class="bi {{ module.icon }}"></i>
                                 <span>{{ module.name }}</span>
@@ -227,7 +227,7 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log('Saving positions:', positions);
         console.log('CSRF Token:', getCsrfToken());
         
-        fetch('/api/user/dashboard/cards/save/', {
+        fetch('{{ url("core:api_dashboard_cards_save") }}', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

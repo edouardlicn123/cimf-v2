@@ -24,15 +24,15 @@
         <div class="card-body">
             <div class="mb-3">
                 <label class="form-label">用户名 *</label>
-                <input type="text" name="username" class="form-control" value="{{ user.username|default('') }}" {% if not is_create %}readonly{% endif %} required>
+                <input type="text" name="username" class="form-control" value="{{ user.username|default('') if user else '' }}" {% if not is_create %}readonly{% endif %} required>
             </div>
             <div class="mb-3">
                 <label class="form-label">昵称</label>
-                <input type="text" name="nickname" class="form-control" value="{{ user.nickname|default('') }}">
+                <input type="text" name="nickname" class="form-control" value="{{ user.nickname|default('') if user else '' }}">
             </div>
             <div class="mb-3">
                 <label class="form-label">邮箱</label>
-                <input type="email" name="email" class="form-control" value="{{ user.email|default('') }}">
+                <input type="email" name="email" class="form-control" value="{{ user.email|default('') if user else '' }}">
             </div>
             <div class="mb-3">
                 <label class="form-label">{% if is_create %}密码 *{% else %}新密码{% endif %}</label>
@@ -49,18 +49,18 @@
             <div class="mb-3">
                 <label class="form-label">角色</label>
                 <select name="role" class="form-select">
-                    <option value="employee" {% if user.role == 'employee' %}selected{% endif %}>三类用户</option>
-                    <option value="leader" {% if user.role == 'leader' %}selected{% endif %}>二类用户</option>
-                    <option value="manager" {% if user.role == 'manager' %}selected{% endif %}>一类用户</option>
+                    <option value="employee" {% if user and user.role == 'employee' %}selected{% endif %}>三类用户</option>
+                    <option value="leader" {% if user and user.role == 'leader' %}selected{% endif %}>二类用户</option>
+                    <option value="manager" {% if user and user.role == 'manager' %}selected{% endif %}>一类用户</option>
                 </select>
             </div>
             <div class="form-check">
-                <input class="form-check-input" type="checkbox" name="is_admin" id="is_admin" {% if user.is_admin %}checked{% endif %}>
+                <input class="form-check-input" type="checkbox" name="is_admin" id="is_admin" {% if user and user.is_admin %}checked{% endif %}>
                 <label class="form-check-label" for="is_admin">系统管理员</label>
             </div>
             {% if not is_create %}
             <div class="form-check mt-3">
-                <input class="form-check-input" type="checkbox" name="is_active" id="is_active" {% if user.is_active %}checked{% endif %}>
+                <input class="form-check-input" type="checkbox" name="is_active" id="is_active" {% if user and user.is_active %}checked{% endif %}>
                 <label class="form-check-label" for="is_active">账号启用</label>
             </div>
             {% endif %}

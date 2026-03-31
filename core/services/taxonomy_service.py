@@ -368,6 +368,12 @@ class TaxonomyService:
         return TaxonomyItem.objects.filter(taxonomy_id=taxonomy_id).order_by('weight', 'name')
     
     @staticmethod
+    def get_item(item_id: int):
+        """获取词汇项详情"""
+        from core.models import TaxonomyItem
+        return TaxonomyItem.objects.filter(id=item_id).first()
+    
+    @staticmethod
     def create_item(taxonomy_id: int, name: str, description: str = '', weight: int = None) -> models.Model:
         """创建词汇项"""
         from core.models import TaxonomyItem

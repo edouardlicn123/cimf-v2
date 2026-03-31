@@ -226,16 +226,14 @@ def init_database(with_data: bool = False, force: bool = False, dry_run: bool = 
     
     try:
         if not dry_run:
-            from core.node.services import NodeModuleService
+            from core.node.services import ModuleService
             
-            modules = NodeModuleService.scan_modules()
+            modules = ModuleService.scan_modules()
             installed_count = 0
             
             for m in modules:
-                module = NodeModuleService.register_module(m)
-                if NodeModuleService.install_module(m['id']):
-                    NodeModuleService.enable_module(m['id'])
-                    installed_count += 1
+                module = ModuleService.register_module(m)
+                installed_count += 1
             
             print(colored(f"  Node 模块初始化完成: {installed_count} 个模块", "green"))
         else:
