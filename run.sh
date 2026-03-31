@@ -368,8 +368,6 @@ show_init_menu() {
     echo "  2 → 初始化系统（重建数据库+创建管理员）"
     echo "  3 → 创建 config.env 文件"
     echo "  4 → 生成随机 SECRET_KEY"
-    echo "  5 → 初始化海外客户样本数据"
-    echo "  6 → 初始化国内客户样本数据"
     echo "  0 → 返回主菜单"
     echo
 }
@@ -377,7 +375,7 @@ show_init_menu() {
 run_init_menu() {
     while true; do
         show_init_menu
-        read -p "请输入选项 (0/1/2/3/4/5/6): " raw_input
+        read -p "请输入选项 (0/1/2/3/4): " raw_input
         
         choice=$(echo "$raw_input" | sed 's/[^0-9]//g' | head -c 1)
         
@@ -387,8 +385,6 @@ run_init_menu() {
             2) echo "→ 初始化系统"; init_system ;;
             3) echo "→ 创建 .env 文件"; create_env_file ;;
             4) echo "→ 生成 SECRET_KEY"; generate_secret_key ;;
-            5) echo "→ 初始化海外客户样本数据"; init_overseas_customers ;;
-            6) echo "→ 初始化国内客户样本数据"; init_domestic_customers ;;
             *) echo -e "${YELLOW}无效选项 '$choice'${NC}" ;;
         esac
         

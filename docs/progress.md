@@ -355,4 +355,10 @@
 14. 修复Node模块初始化警告：使用register_and_install替代register_module，确保NodeType在客户数据初始化前创建
 15. 为居民信息模块添加README文档（modules/resident_info/README.md）
 16. 修复模块安装后错误跳转到节点页的缩进bug（core/node/views.py:289）
+17. 添加数据库初始化选择功能：--reset-db 删除重建，--incremental 增量式，无参数时交互式选择
 
+
+
+# 2026-04-01 修改记录
+
+1. 删除run.sh中单独的海外/国内客户样本数据初始化菜单选项（功能已包含在初始化系统中）

@@ -17,10 +17,12 @@
     5. 可选：初始化节点类型
     
 用法：
-    python init_db.py                    # 仅创建表
-    python init_db.py --with-data        # 创建表 + 初始数据
-    python init_db.py --with-data --force  # 强制重置 admin 用户
-    python init_db.py --dry-run          # 模拟执行
+    python init_db.py                         # 仅创建表（数据库不存在时创建，存在时提示选择）
+    python init_db.py --with-data             # 创建表 + 初始数据
+    python init_db.py --with-data --force     # 强制重置 admin 用户
+    python init_db.py --with-data --reset-db  # 删除数据库后重新初始化
+    python init_db.py --with-data --incremental  # 增量式初始化（保留现有数据）
+    python init_db.py --dry-run               # 模拟执行
     
 环境变量：
     ADMIN_USERNAME: 管理员用户名 (默认: admin)
@@ -67,13 +69,51 @@ def _validate_and_fix_installed_apps(settings):
     print(colored(f"  已加载 Node 模块: {', '.join(loaded_node_modules) if loaded_node_modules else '无'}", "cyan"))
 
 
-def init_database(with_data: bool = False, force: bool = False, dry_run: bool = False):
+def ask_reset_mode(db_path: str) -> bool:
+    """
+    交互式询问用户初始化模式
+    
+    Args:
+        db_path: 数据库路径描述
+        
+    Returns:
+        bool: True 表示删除重建，False 表示增量式
+    """
+    print(colored(f"检测到已存在的数据库: {db_path}", "yellow"))
+    print(colored("请选择初始化模式：", "cyan"))
+    print(colored("  [1] 删除原有数据库并重新初始化（会丢失所有数据）", "white"))
+    print(colored("  [2] 增量式初始化（保留现有数据，仅更新结构）", "white"))
+    
+    while True:
+        try:
+            choice = input(colored("请选择 (1/2): ", "cyan")).strip()
+            if choice == '1':
+                return True
+            elif choice == '2':
+                return False
+            else:
+                print(colored("无效选择，请输入 1 或 2", "red"))
+        except (KeyboardInterrupt, EOFError):
+            print(colored("\n用户取消操作", "yellow"))
+            sys.exit(0)
+
+
+def init_database(with_data: bool = False, force: bool = False, dry_run: bool = False,
+                  reset_db: bool = False, incremental: bool = False):
     """
     初始化数据库核心逻辑：
-    1. 创建所有缺失的表（Django migrate）
-    2. 可选：重置系统设置默认值
-    3. 可选：创建/重置默认管理员用户
-    4. 可选：初始化词汇表数据
+    1. 可选：删除并重建数据库
+    2. 创建所有缺失的表（Django migrate）
+    3. 可选：重置系统设置默认值
+    4. 可选：创建/重置默认管理员用户
+    5. 可选：初始化词汇表数据
+    
+    Args:
+        with_data: 是否初始化初始数据
+        force: 是否强制重置管理员用户
+        dry_run: 是否模拟执行
+        reset_db: 是否删除数据库后重建
+        incremental: 是否增量式初始化
     """
     print(colored(f"CIMF 管理系统 - 数据库初始化工具 ({datetime.now().strftime('%Y-%m-%d %H:%M:%S')})", "cyan"))
     print(colored(f"当前环境: {os.environ.get('DJANGO_ENV', 'development')}", "cyan"))
@@ -82,6 +122,46 @@ def init_database(with_data: bool = False, force: bool = False, dry_run: bool = 
     if dry_run:
         print(colored("【DRY-RUN 模式】仅模拟执行，不会修改数据库", "yellow"))
         print("-" * 80)
+
+    # 导入数据库工具
+    from cimf_django.database import database_exists, drop_database, get_database_config
+    
+    # 检查数据库是否存在
+    db_exists = database_exists()
+    db_config = get_database_config()
+    db_path = str(db_config.get('NAME', 'unknown'))
+    
+    # 处理数据库删除逻辑
+    if db_exists:
+        if reset_db:
+            # --reset-db 参数：直接删除重建
+            print(colored("检测到已存在的数据库", "yellow"))
+            print(colored("【删除重建模式】正在删除原有数据库...", "yellow"))
+            if not dry_run:
+                drop_database()
+                print(colored("数据库已删除，将重新创建", "green"))
+            else:
+                print(colored(f"[模拟] 将删除数据库: {db_path}", "yellow"))
+        elif incremental:
+            # --incremental 参数：增量式
+            print(colored("检测到已存在的数据库", "yellow"))
+            print(colored("【增量式模式】保留现有数据，仅更新结构", "cyan"))
+        else:
+            # 无参数：交互式询问
+            should_reset = ask_reset_mode(db_path)
+            if should_reset:
+                print(colored("【删除重建模式】正在删除原有数据库...", "yellow"))
+                if not dry_run:
+                    drop_database()
+                    print(colored("数据库已删除，将重新创建", "green"))
+                else:
+                    print(colored(f"[模拟] 将删除数据库: {db_path}", "yellow"))
+            else:
+                print(colored("【增量式模式】保留现有数据，仅更新结构", "cyan"))
+    else:
+        print(colored("未检测到数据库文件，将执行全新初始化...", "cyan"))
+    
+    print("-" * 80)
 
     # 设置 Django settings
     os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'cimf_django.settings')
@@ -286,13 +366,24 @@ def main():
                         help="强制重置 admin 用户")
     parser.add_argument("--dry-run", action="store_true", 
                         help="模拟执行，不实际写入数据库")
+    parser.add_argument("--reset-db", action="store_true",
+                        help="删除原有数据库后重新初始化（会丢失所有数据）")
+    parser.add_argument("--incremental", action="store_true",
+                        help="增量式初始化（保留现有数据，仅更新结构）")
     args = parser.parse_args()
+
+    # 检查参数冲突
+    if args.reset_db and args.incremental:
+        print(colored("错误：--reset-db 和 --incremental 不能同时使用", "red"))
+        sys.exit(1)
 
     try:
         init_database(
             with_data=args.with_data,
             force=args.force,
-            dry_run=args.dry_run
+            dry_run=args.dry_run,
+            reset_db=args.reset_db,
+            incremental=args.incremental
         )
         print(colored("\n初始化流程完成。", "green"))
         if args.with_data:

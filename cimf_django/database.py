@@ -86,3 +86,75 @@ def _get_mysql_config(config: dict) -> dict:
             'charset': 'utf8mb4',
         },
     }
+
+
+def drop_database():
+    """
+    删除数据库
+    
+    SQLite: 删除数据库文件
+    MySQL: DROP DATABASE + CREATE DATABASE
+    """
+    db_config = get_database_config()
+    engine = db_config.get('ENGINE', '')
+    
+    if 'sqlite3' in engine:
+        # SQLite: 删除文件
+        db_path = Path(db_config['NAME'])
+        if db_path.exists():
+            db_path.unlink()
+            print(f"已删除 SQLite 数据库文件: {db_path}")
+    elif 'mysql' in engine:
+        # MySQL: DROP + CREATE DATABASE
+        try:
+            import pymysql
+        except ImportError:
+            raise ImportError("使用 MySQL 需要安装 pymysql: pip install pymysql")
+        
+        db_name = db_config.get('NAME', 'cimf')
+        conn = pymysql.connect(
+            host=db_config.get('HOST', 'localhost'),
+            port=int(db_config.get('PORT', 3306)),
+            user=db_config.get('USER', 'root'),
+            password=db_config.get('PASSWORD', ''),
+        )
+        with conn.cursor() as cursor:
+            cursor.execute(f"DROP DATABASE IF EXISTS {db_name}")
+            cursor.execute(f"CREATE DATABASE {db_name} CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci")
+        conn.commit()
+        conn.close()
+        print(f"已重建 MySQL 数据库: {db_name}")
+
+
+def database_exists() -> bool:
+    """
+    检查数据库是否存在
+    
+    Returns:
+        bool: 数据库是否存在
+    """
+    db_config = get_database_config()
+    engine = db_config.get('ENGINE', '')
+    
+    if 'sqlite3' in engine:
+        db_path = Path(db_config['NAME'])
+        return db_path.exists()
+    elif 'mysql' in engine:
+        try:
+            import pymysql
+            conn = pymysql.connect(
+                host=db_config.get('HOST', 'localhost'),
+                port=int(db_config.get('PORT', 3306)),
+                user=db_config.get('USER', 'root'),
+                password=db_config.get('PASSWORD', ''),
+            )
+            db_name = db_config.get('NAME', 'cimf')
+            with conn.cursor() as cursor:
+                cursor.execute(f"SHOW DATABASES LIKE '{db_name}'")
+                result = cursor.fetchone()
+            conn.close()
+            return result is not None
+        except Exception:
+            return False
+    
+    return False
