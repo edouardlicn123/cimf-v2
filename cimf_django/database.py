@@ -64,9 +64,12 @@ def _load_config(config_path: Path) -> dict:
 
 def _get_sqlite_config() -> dict:
     """获取 SQLite 配置"""
+    db_path = BASE_DIR / 'instance' / 'django.db'
+    # 确保 instance 目录存在
+    db_path.parent.mkdir(parents=True, exist_ok=True)
     return {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'instance' / 'django.db',
+        'NAME': db_path,
     }
 
 

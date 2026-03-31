@@ -232,7 +232,7 @@ def init_database(with_data: bool = False, force: bool = False, dry_run: bool = 
             installed_count = 0
             
             for m in modules:
-                module = ModuleService.register_module(m)
+                module = ModuleService.register_and_install(m)
                 installed_count += 1
             
             print(colored(f"  Node 模块初始化完成: {installed_count} 个模块", "green"))

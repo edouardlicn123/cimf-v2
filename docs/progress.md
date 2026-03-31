@@ -345,4 +345,12 @@
 4. 排查类似问题：system_user_edit.html 5处空值检查、node/types/edit.html 和 node/edit.html 4处空值检查、homepage_settings.html 字典安全访问和硬编码URL修复
 5. 继续排查 edit_cn.html 5处空值检查修复：postal_code、address、industry、registered_capital、credit_limit、website、notes
 6. 删除性别词汇表中“其他”选项，补全居民信息模块民族词汇表为55个民族+其他=56项
+7. 修复 module_scan 视图重定向 URL 错误和 node_type_create 视图 try-except 结构错误
+8. 修复 module_scan 视图重定向 URL 从 core:node_types 改为 node:modules
+9. 修复节点类型相关 URL 配置：添加缺失的 URL 路由，修正 views.py 和模板中的错误 URL 引用
+10. 修复 module_scan 视图重定向 URL 从 core:node_types 改为 node:node_types_list
+11. 修复 module_scan 重定向从 node_types_list 改为 node:index，扫描完成后返回模块管理页面
+12. 修复 module_scan 重定向到 node:modules（模块管理页面）
+13. 修复SQLite数据库初始化问题：在database.py中添加自动创建instance目录的逻辑
+14. 修复Node模块初始化警告：使用register_and_install替代register_module，确保NodeType在客户数据初始化前创建
 

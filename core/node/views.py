@@ -84,7 +84,7 @@ def node_type_create(request):
                 'is_active': True,
             })
             messages.success(request, '节点类型创建成功')
-            return redirect('core:node_types')
+            return redirect('node:index')
         except Exception as e:
             messages.error(request, str(e))
     
@@ -111,7 +111,7 @@ def node_type_edit(request, node_type_id: int):
         node_type.save()
         
         messages.success(request, '节点类型更新成功')
-        return redirect('core:node_types')
+    return redirect('node:modules')
     
     return render(request, 'core/node/types/edit.html', {
         'node_type': node_type,
@@ -128,7 +128,7 @@ def node_type_delete(request, node_type_id: int):
     
     NodeTypeService.delete(node_type_id)
     messages.success(request, '节点类型已删除')
-    return redirect('core:node_types')
+    return redirect('node:node_types_list')
 
 
 @login_required
@@ -145,7 +145,7 @@ def node_type_toggle(request, node_type_id: int):
         status = '启用' if node_type.is_active else '禁用'
         messages.success(request, f'节点类型已{status}')
     
-    return redirect('core:node_types')
+    return redirect('node:node_types_list')
 
 
 # ===== 通用节点 CRUD =====
@@ -273,7 +273,7 @@ def module_scan(request):
     if not new_modules and not cleaned:
         messages.info(request, '未发现新模块')
     
-    return redirect('core:node_types')
+    return redirect('node:modules')
 
 
 @login_required
@@ -286,7 +286,7 @@ def module_install(request, module_id: str):
     module_info = ModuleService._load_module_info(module_id)
     if not module_info:
         messages.error(request, f'模块 {module_id} 不存在')
-        return redirect('node:modules')
+    return redirect('node:node_types_list')
     
     module = ModuleService.register_module(module_info)
     ModuleService.install_module(module_id)
