@@ -43,7 +43,7 @@ DEFAULT_TAXONOMIES = [
         "name": "性别",
         "slug": "gender",
         "description": "性别分类",
-        "items": ["男", "女", "其他"]
+        "items": ["男", "女"]
     },
     {
         "name": "客户类型",

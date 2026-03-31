@@ -344,4 +344,5 @@
 3. 继续排查类似问题：customer/templates/edit.html 8个空值检查、core/views.py taxonomy_edit 验证和 cron_toggle_task JSON 解析、TaxonomyService 添加 get_item 方法
 4. 排查类似问题：system_user_edit.html 5处空值检查、node/types/edit.html 和 node/edit.html 4处空值检查、homepage_settings.html 字典安全访问和硬编码URL修复
 5. 继续排查 edit_cn.html 5处空值检查修复：postal_code、address、industry、registered_capital、credit_limit、website、notes
+6. 删除性别词汇表中“其他”选项，补全居民信息模块民族词汇表为55个民族+其他=56项
 
