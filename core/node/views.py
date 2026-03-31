@@ -286,7 +286,7 @@ def module_install(request, module_id: str):
     module_info = ModuleService._load_module_info(module_id)
     if not module_info:
         messages.error(request, f'模块 {module_id} 不存在')
-    return redirect('node:node_types_list')
+        return redirect('node:node_types_list')
     
     module = ModuleService.register_module(module_info)
     ModuleService.install_module(module_id)

@@ -353,4 +353,6 @@
 12. 修复 module_scan 重定向到 node:modules（模块管理页面）
 13. 修复SQLite数据库初始化问题：在database.py中添加自动创建instance目录的逻辑
 14. 修复Node模块初始化警告：使用register_and_install替代register_module，确保NodeType在客户数据初始化前创建
+15. 为居民信息模块添加README文档（modules/resident_info/README.md）
+16. 修复模块安装后错误跳转到节点页的缩进bug（core/node/views.py:289）
 
