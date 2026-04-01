@@ -1076,10 +1076,11 @@ def api_dashboard_cards(request):
                         if 'dashboard_cards' in mod_info or True:
                             available_modules.append(node_module.module_id)
                         
-                        if node_module.module_id in ['customer', 'customer_cn']:
+                        if node_module.module_id in ['customer', 'customer_cn', 'resident_info']:
                             service_map = {
                                 'customer': 'CustomerService',
-                                'customer_cn': 'CustomerCnService'
+                                'customer_cn': 'CustomerCnService',
+                                'resident_info': 'ResidentInfoService'
                             }
                             service_name = service_map.get(node_module.module_id)
                             if service_name:

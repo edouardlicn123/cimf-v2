@@ -275,14 +275,15 @@
         
         var moduleNames = {
             'customer': '海外客户',
-            'customer_cn': '国内客户'
+            'customer_cn': '国内客户',
+            'resident_info': '当前居民信息数'
         };
         var moduleName = moduleNames[moduleId] || moduleId;
         var total = stats ? stats.total : 0;
         var recent = stats ? stats.recent : 0;
         
         var card = document.createElement('a');
-        card.href = '/' + moduleId + '/';
+        card.href = '/modules/' + moduleId + '/';
         card.className = 'clock-card';
         card.setAttribute('draggable', 'true');
         card.setAttribute('data-module', moduleId);
