@@ -8,7 +8,7 @@ MODULE_INFO = {
     'name': '时钟',
     'type': 'system',
     'version': '1.0.0',
-    'author': '',
+    'author': 'edouardlicn',
     'description': '提供时钟、日历的展现功能。',
     'icon': 'bi-clock',
     'dashboard_cards': [
