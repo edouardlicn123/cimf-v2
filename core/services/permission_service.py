@@ -206,37 +206,48 @@ class PermissionService:
     
     @staticmethod
     def get_node_permissions() -> Dict[str, Dict]:
-        """获取节点权限，按节点类型分组"""
-        from core.node.models import NodeType
+        """获取节点权限，按节点类型分组（从模块配置动态读取）"""
+        from core.node.models import Module
+        from importlib import import_module
         
         node_permissions = {}
-        active_types = NodeType.objects.filter(is_active=True)
         
-        for node_type in active_types:
+        # 获取已安装且已启用的模块
+        active_modules = Module.objects.filter(
+            is_installed=True,
+            is_active=True,
+            module_type='node'
+        )
+        
+        for module in active_modules:
+            # 基础权限（自动添加）
             perms = [
-                (f'node.{node_type.slug}.create', f'{node_type.name} - 创建'),
-                (f'node.{node_type.slug}.read', f'{node_type.name} - 查看'),
-                (f'node.{node_type.slug}.update', f'{node_type.name} - 修改'),
-                (f'node.{node_type.slug}.delete', f'{node_type.name} - 删除'),
+                (f'node.{module.module_id}.create', f'{module.name} - 创建'),
+                (f'node.{module.module_id}.read', f'{module.name} - 查看'),
+                (f'node.{module.module_id}.update', f'{module.name} - 修改'),
+                (f'node.{module.module_id}.delete', f'{module.name} - 删除'),
             ]
             
-            if node_type.slug == 'customer':
-                perms.extend([
-                    (f'node.{node_type.slug}.view_others', f'{node_type.name} - 查看别人的内容'),
-                    (f'node.{node_type.slug}.edit_others', f'{node_type.name} - 修改别人的内容'),
-                    (f'node.{node_type.slug}.delete_others', f'{node_type.name} - 删除别人的内容'),
-                ])
+            # 从 module.py 读取自定义权限
+            icon = 'bi-folder'
+            try:
+                mod = import_module(f'modules.{module.path}.module')
+                if hasattr(mod, 'MODULE_INFO'):
+                    module_info = mod.MODULE_INFO
+                    icon = module_info.get('icon', 'bi-folder')
+                    
+                    # 添加模块自定义权限
+                    for perm in module_info.get('permissions', []):
+                        perms.append((
+                            f'node.{module.module_id}.{perm["key"]}',
+                            f'{module.name} - {perm["name"]}'
+                        ))
+            except (ImportError, ModuleNotFoundError, AttributeError):
+                pass
             
-            if node_type.slug == 'customer_cn':
-                perms.extend([
-                    (f'node.{node_type.slug}.view_others', f'{node_type.name} - 查看别人的内容'),
-                    (f'node.{node_type.slug}.edit_others', f'{node_type.name} - 修改别人的内容'),
-                    (f'node.{node_type.slug}.delete_others', f'{node_type.name} - 删除别人的内容'),
-                ])
-            
-            node_permissions[node_type.slug] = {
-                'name': node_type.name,
-                'icon': node_type.icon or 'bi-folder',
+            node_permissions[module.module_id] = {
+                'name': module.name,
+                'icon': icon,
                 'permissions': perms
             }
         

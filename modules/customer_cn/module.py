@@ -24,6 +24,11 @@ MODULE_INFO = {
     'models': ['CustomerCnFields'],
     'dependencies': [],
     'icon': 'bi-people',
+    'permissions': [
+        {'key': 'view_others', 'name': '查看别人的内容'},
+        {'key': 'edit_others', 'name': '修改别人的内容'},
+        {'key': 'delete_others', 'name': '删除别人的内容'},
+    ],
     'views': {
         'list': 'customer_list',
         'create': 'customer_create',
