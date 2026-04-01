@@ -81,7 +81,38 @@ install_venv() {
     local venv_pip
     venv_pip="$PROJECT_ROOT/venv/bin/pip"
     $venv_pip install --upgrade pip -i "$PIP_INDEX" -q
-    $venv_pip install -r "$PROJECT_ROOT/requirements.txt" -i "$PIP_INDEX" -q || true
+    
+    # 读取 requirements.txt 获取包列表
+    local requirements_file="$PROJECT_ROOT/requirements.txt"
+    if [[ -f "$requirements_file" ]]; then
+        # 过滤空行和注释，获取有效包名
+        local packages=()
+        while IFS= read -r line; do
+            # 跳过空行和注释
+            [[ -z "$line" || "$line" == \#* ]] && continue
+            # 提取包名（忽略版本号）
+            pkg=$(echo "$line" | sed 's/[>=<!\[].*//; s/#.*//')
+            packages+=("$pkg")
+        done < "$requirements_file"
+        
+        local total=${#packages[@]}
+        local current=0
+        
+        echo "共 $total 个依赖包"
+        echo
+        
+        for pkg in "${packages[@]}"; do
+            current=$((current + 1))
+            printf "  [%d/%d] %-30s" "$current" "$total" "$pkg"
+            if $venv_pip install "$pkg" -i "$PIP_INDEX" -q 2>/dev/null; then
+                echo -e " ${GREEN}✓${NC}"
+            else
+                echo -e " ${RED}✗${NC}"
+            fi
+        done
+    else
+        echo -e "${YELLOW}未找到 requirements.txt${NC}"
+    fi
     
     echo -e "${GREEN}虚拟环境创建完成${NC}"
 }
