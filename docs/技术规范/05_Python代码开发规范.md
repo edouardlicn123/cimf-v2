@@ -1242,6 +1242,81 @@ class Migration(migrations.Migration):
 ./venv/bin/python manage.py check nodes
 ```
 
+### 10.6 字段空值处理规范
+
+**核心原则**：根据 Django 官方最佳实践，不同类型字段的空值处理方式不同。
+
+#### 字段类型与空值对照表
+
+| 字段类型 | Model 定义 | 空值表示 | 说明 |
+|----------|------------|----------|------|
+| CharField | `blank=True`（不加 `null=True`） | `''` 空字符串 | 避免 NULL 和空字符串混淆 |
+| TextField | `blank=True`（不加 `null=True`） | `''` 空字符串 | 同上 |
+| EmailField | `blank=True`（不加 `null=True`） | `''` 空字符串 | 同上 |
+| URLField | `blank=True`（不加 `null=True`） | `''` 空字符串 | 同上 |
+| ForeignKey | `null=True, blank=True` | `None` | 外键必须使用 NULL |
+| OneToOneField | `null=True, blank=True` | `None` | 一对一必须使用 NULL |
+| DateField | `null=True, blank=True` | `None` | 日期字段使用 NULL |
+| DateTimeField | `null=True, blank=True` | `None` | 时间字段使用 NULL |
+| IntegerField | `null=True, blank=True` | `None` | 数值字段使用 NULL |
+| JSONField | `null=True, blank=True` | `None` | JSON 字段使用 NULL |
+
+#### Model 定义示例
+
+```python
+# 正确示例
+class CustomerFields(models.Model):
+    # CharField：只用 blank，不用 null
+    customer_name = models.CharField(max_length=200, verbose_name='客户名称')
+    phone = models.CharField(max_length=20, blank=True, verbose_name='电话')
+    email = models.EmailField(blank=True, verbose_name='邮箱')
+    notes = models.TextField(blank=True, verbose_name='备注')
+    
+    # ForeignKey：必须用 null=True
+    country = models.ForeignKey(
+        'core.TaxonomyItem',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='country_customers'
+    )
+    
+    # DateField：必须用 null=True
+    birth_date = models.DateField(null=True, blank=True, verbose_name='出生日期')
+
+# 错误示例：CharField 使用 null=True
+phone = models.CharField(max_length=20, blank=True, null=True)  # ✗ 不推荐
+```
+
+#### View 处理示例
+
+```python
+# 正确示例：视图中处理表单数据
+data = {
+    # CharField：空值 → 空字符串
+    'name': request.POST.get('name', '').strip(),
+    'phone': request.POST.get('phone', '').strip(),
+    'address': request.POST.get('address', '').strip(),
+    
+    # ForeignKey：空值 → None
+    'country_id': request.POST.get('country') or None,
+    'category_id': request.POST.get('category') or None,
+    
+    # DateField：空值 → None
+    'birth_date': request.POST.get('birth_date') or None,
+}
+
+# 错误示例：CharField 使用 or None
+'name': request.POST.get('name', '').strip() or None,  # ✗ 会导致 NOT NULL 错误
+```
+
+#### 原因说明
+
+1. **数据库层面**：空字符串 `''` 和 `NULL` 是不同的值
+2. **查询复杂性**：同时存在 `''` 和 `NULL` 时，查询需要同时处理两种情况
+3. **Django 约定**：Django 官方文档明确建议 CharField 不使用 `null=True`
+4. **一致性**：统一使用空字符串可简化业务逻辑
+
 ---
 
 ## 十一、定时任务规范
