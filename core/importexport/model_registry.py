@@ -20,18 +20,25 @@ class ModelRegistry:
     
     @classmethod
     def get_model(cls, slug: str):
-        """获取模型类"""
+        """动态获取模型类"""
         if slug in cls._registry and cls._registry[slug] is not None:
             return cls._registry[slug]
         
-        if slug == 'customer':
-            from modules.customer.models import CustomerFields
-            cls._registry[slug] = CustomerFields
-            return CustomerFields
-        elif slug == 'customer_cn':
-            from modules.customer_cn.models import CustomerCnFields
-            cls._registry[slug] = CustomerCnFields
-            return CustomerCnFields
+        # 动态导入模块模型
+        try:
+            from importlib import import_module
+            mod = import_module(f'modules.{slug}.models')
+            
+            # 查找 Fields 结尾的模型类
+            for attr_name in dir(mod):
+                attr = getattr(mod, attr_name)
+                if (attr_name.endswith('Fields') and 
+                    hasattr(attr, '_meta') and 
+                    hasattr(attr, 'node')):
+                    cls._registry[slug] = attr
+                    return attr
+        except (ImportError, ModuleNotFoundError):
+            pass
         
         return None
     

@@ -1076,22 +1076,19 @@ def api_dashboard_cards(request):
                         if 'dashboard_cards' in mod_info or True:
                             available_modules.append(node_module.module_id)
                         
-                        if node_module.module_id in ['customer', 'customer_cn', 'resident_info']:
-                            service_map = {
-                                'customer': 'CustomerService',
-                                'customer_cn': 'CustomerCnService',
-                                'resident_info': 'ResidentInfoService'
-                            }
-                            service_name = service_map.get(node_module.module_id)
-                            if service_name:
-                                stats_mod = import_module(f'modules.{module_path}.services')
-                                if hasattr(stats_mod, service_name):
-                                    service_class = getattr(stats_mod, service_name)
-                                    if hasattr(service_class, 'get_count'):
-                                        module_stats[node_module.module_id] = {
-                                            'total': service_class.get_count(),
-                                            'recent': getattr(service_class, 'get_recent_count', lambda d=7: 0)(7)
-                                        }
+                        # 动态获取支持统计的模块
+                        if mod_info.get('dashboard_stats', False):
+                            service_mod = import_module(f'modules.{module_path}.services')
+                            # 查找 Service 结尾的类
+                            for attr_name in dir(service_mod):
+                                attr = getattr(service_mod, attr_name)
+                                if (attr_name.endswith('Service') and 
+                                    hasattr(attr, 'get_count')):
+                                    module_stats[node_module.module_id] = {
+                                        'total': attr.get_count(),
+                                        'recent': getattr(attr, 'get_recent_count', lambda d=7: 0)(7)
+                                    }
+                                    break
                 except Exception:
                     pass
     except Exception:

@@ -398,30 +398,24 @@ class ExportService:
         'entity_reference', 'datetime', 'date',
     ]
     
-    FK_FIELD_NAMES = [
-        'customer_type', 'country', 'enterprise_type', 'customer_level',
-    ]
+    # 从字段类型判断是否需要特殊处理
+    FK_TYPES = ['fk', 'taxonomy', 'region']
     
-    FILTERABLE_FIELD_TYPES = [
-        'string', 'string_long', 'text', 'email', 'telephone',
-    ]
-    
-    FILTERABLE_FK_FIELDS = [
-        'customer_type', 'country', 'enterprise_type', 'customer_level',
-    ]
+    FILTERABLE_TYPES = ['string', 'string_long', 'text', 'email', 'telephone', 'fk']
     
     @classmethod
     def get_exportable_fields(cls, node_type_slug: str) -> List[Dict]:
-        """获取可导出的字段列表"""
-        from modules.customer.services import CustomerService
-        from modules.customer_cn.services import CustomerCnService
+        """动态获取可导出的字段列表"""
+        from importlib import import_module
         
-        SERVICE_FIELD_MAP = {
-            'customer': CustomerService.get_exportable_fields(),
-            'customer_cn': CustomerCnService.get_exportable_fields(),
-        }
+        try:
+            mod = import_module(f'modules.{node_type_slug}.module')
+            if hasattr(mod, 'MODULE_INFO'):
+                return mod.MODULE_INFO.get('export_fields', [])
+        except (ImportError, ModuleNotFoundError):
+            pass
         
-        return SERVICE_FIELD_MAP.get(node_type_slug, [])
+        return []
     
     @classmethod
     def get_fields_info(cls, node_type_slug: str, field_names: List[str]) -> List[Dict]:
@@ -433,11 +427,7 @@ class ExportService:
     def get_filterable_fields(cls, node_type_slug: str) -> List[Dict]:
         """获取可筛选的字段列表"""
         all_fields = cls.get_exportable_fields(node_type_slug)
-        filterable = []
-        for f in all_fields:
-            if f['type'] in cls.FILTERABLE_FIELD_TYPES or f['name'] in cls.FILTERABLE_FK_FIELDS:
-                filterable.append(f)
-        return filterable
+        return [f for f in all_fields if f['type'] in cls.FILTERABLE_TYPES]
     
     @classmethod
     def has_region_field(cls, node_type_slug: str) -> bool:
@@ -562,20 +552,29 @@ class ExportService:
     def _convert_to_row(cls, item, field_names: List[str], 
                         node_type_slug: str = None) -> Dict:
         """将数据对象转换为导出行"""
+        # 获取字段类型映射
+        fields = cls.get_exportable_fields(node_type_slug) if node_type_slug else []
+        field_type_map = {f['name']: f['type'] for f in fields}
+        
         row = {}
         for field_name in field_names:
-            value = cls._get_field_value(item, field_name)
+            field_type = field_type_map.get(field_name, 'string')
+            value = cls._get_field_value(item, field_name, field_type)
             row[field_name] = value
         return row
     
     @classmethod
-    def _get_field_value(cls, item, field_name: str) -> Any:
+    def _get_field_value(cls, item, field_name: str, field_type: str = 'string') -> Any:
         """获取字段值"""
-        if field_name in cls.FK_FIELD_NAMES:
+        if field_type in ['fk', 'taxonomy']:
             return cls._resolve_fk_field(item, field_name)
         
-        if field_name == 'region':
+        if field_type == 'region':
             return cls._resolve_region_field(item)
+        
+        if field_type == 'boolean':
+            value = getattr(item, field_name, False)
+            return '是' if value else '否'
         
         return getattr(item, field_name, '') or ''
     
@@ -597,16 +596,21 @@ class ExportService:
     
     @classmethod
     def _get_service_class(cls, node_type_slug: str):
-        """获取节点类型对应的服务类"""
-        from modules.customer.services import CustomerService
-        from modules.customer_cn.services import CustomerCnService
+        """动态获取服务类"""
+        try:
+            from importlib import import_module
+            mod = import_module(f'modules.{node_type_slug}.services')
+            
+            # 查找 Service 结尾的类
+            for attr_name in dir(mod):
+                attr = getattr(mod, attr_name)
+                if (attr_name.endswith('Service') and 
+                    hasattr(attr, 'get_list')):
+                    return attr
+        except (ImportError, ModuleNotFoundError):
+            pass
         
-        SERVICE_MAP = {
-            'customer': CustomerService,
-            'customer_cn': CustomerCnService,
-        }
-        
-        return SERVICE_MAP.get(node_type_slug)
+        return None
     
     @classmethod
     def _get_filtered_queryset(cls, node_type_slug: str, filters: List[Dict] = None):

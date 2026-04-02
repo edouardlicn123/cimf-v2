@@ -23,9 +23,21 @@ def try_include_module(module_slug):
         return []
 
 
-_known_modules = ['clock', 'customer', 'customer_cn', 'resident_info']
+def get_installed_module_slugs():
+    """动态获取所有已安装模块的 slug"""
+    try:
+        from core.node.models import NodeModule
+        modules = NodeModule.objects.filter(is_installed=True, is_active=True)
+        return [m.module_id for m in modules]
+    except Exception:
+        # 如果数据库未初始化，返回空列表
+        return []
+
+
+# 动态加载所有已安装模块
+_installed_slugs = get_installed_module_slugs()
 _dynamic_routes = []
-for _mod in _known_modules:
+for _mod in _installed_slugs:
     _dynamic_routes.extend(try_include_module(_mod))
 
 
