@@ -10,13 +10,13 @@
 {% endblock %}
 
 {% block admin_title_buttons %}
-<a href="{{ url('importexport:export_list') }}" class="btn btn-outline-secondary btn-sm">
+<a href="{{ url('modules:export_list') }}" class="btn btn-outline-secondary btn-sm">
     <i class="bi bi-arrow-left me-1"></i> 返回
 </a>
 {% endblock %}
 
 {% block admin_content %}
-<form method="post" id="exportForm" action="{{ url('importexport:export_select_fields', node_type.slug) }}">
+<form method="post" id="exportForm" action="{{ url('modules:export_select_fields', node_type.slug) }}">
     {{ csrf_token }}
     
     <!-- 选择字段 -->
@@ -145,7 +145,7 @@
 
 {% block admin_footer %}
 <div class="d-flex justify-content-between">
-    <a href="{{ url('importexport:export_list') }}" class="btn btn-secondary">
+    <a href="{{ url('modules:export_list') }}" class="btn btn-secondary">
         <i class="bi bi-arrow-left me-1"></i> 上一步
     </a>
     <button type="submit" form="exportForm" class="btn btn-primary">

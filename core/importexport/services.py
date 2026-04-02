@@ -59,6 +59,9 @@ class ImportService:
         from core.importexport.field_extractor import FieldDefExtractor
         
         model_class = ModelRegistry.get_model(node_type_slug)
+        if not model_class:
+            return []
+        
         return FieldDefExtractor.extract(model_class)
     
     @classmethod

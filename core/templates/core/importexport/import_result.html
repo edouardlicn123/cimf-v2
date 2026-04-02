@@ -8,7 +8,7 @@
 {% block admin_title %}导入结果 - {{ node_type.name }}{% endblock %}
 
 {% block admin_title_buttons %}
-<a href="{{ url('importexport:import_page', node_type.slug) }}" class="btn btn-primary">
+<a href="{{ url('modules:import_page', node_type.slug) }}" class="btn btn-primary">
     <i class="bi bi-arrow-clockwise me-1"></i> 继续导入
 </a>
 {% endblock %}
@@ -47,7 +47,7 @@
 <div class="card mb-4">
     <div class="card-header d-flex justify-content-between align-items-center">
         <h5 class="mb-0">错误详情</h5>
-        <a href="{{ url('importexport:download_errors', node_type.slug) }}" class="btn btn-sm btn-outline-danger">
+        <a href="{{ url('modules:download_errors', node_type.slug) }}" class="btn btn-sm btn-outline-danger">
             <i class="bi bi-download me-1"></i> 下载错误列表
         </a>
     </div>
@@ -75,10 +75,10 @@
 {% endif %}
 
 <div class="d-flex gap-2">
-    <a href="{{ url('importexport:import_list') }}" class="btn btn-secondary">
+    <a href="{{ url('modules:import_list') }}" class="btn btn-secondary">
         <i class="bi bi-arrow-left me-1"></i> 返回导入页
     </a>
-    <a href="{{ url('importexport:import_page', node_type.slug) }}" class="btn btn-primary">
+    <a href="{{ url('modules:import_page', node_type.slug) }}" class="btn btn-primary">
         <i class="bi bi-arrow-clockwise me-1"></i> 继续导入
     </a>
 </div>

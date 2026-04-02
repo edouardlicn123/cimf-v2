@@ -30,55 +30,6 @@ from core.node.models import NodeType, Node, Module
 User = get_user_model()
 
 
-DEFAULT_NODE_TYPES = [
-    {
-        'name': '客户信息（海外）',
-        'slug': 'customer',
-        'description': '海外客户信息管理',
-        'icon': 'bi-people',
-        'fields_config': [
-            {'field_type': 'string', 'name': 'customer_name', 'label': '客户名称', 'required': True, 'unique': True},
-            {'field_type': 'string', 'name': 'contact_person', 'label': '联系人', 'required': False},
-            {'field_type': 'telephone', 'name': 'phone', 'label': '电话', 'required': False},
-            {'field_type': 'email', 'name': 'email', 'label': '邮箱', 'required': False},
-            {'field_type': 'address', 'name': 'address', 'label': '地址', 'required': False},
-            {'field_type': 'entity_reference', 'name': 'customer_type', 'label': '客户类型', 'required': False, 'reference_type': 'taxonomy'},
-            {'field_type': 'string_long', 'name': 'notes', 'label': '备注', 'required': False},
-        ],
-        'is_active': True,
-    },
-    {
-        'name': '客户信息（国内）',
-        'slug': 'customer_cn',
-        'description': '国内客户信息管理',
-        'icon': 'bi-people',
-        'fields_config': [
-            {'field_type': 'string', 'name': 'customer_name', 'label': '客户名称', 'required': True, 'unique': True},
-            {'field_type': 'string', 'name': 'customer_code', 'label': '客户代码', 'required': False},
-            {'field_type': 'entity_reference', 'name': 'customer_type', 'label': '客户类型', 'required': False, 'reference_type': 'taxonomy'},
-            {'field_type': 'string', 'name': 'enterprise_name', 'label': '企业名称', 'required': False},
-            {'field_type': 'telephone', 'name': 'phone1', 'label': '电话1', 'required': False},
-            {'field_type': 'email', 'name': 'email1', 'label': '邮箱1', 'required': False},
-            {'field_type': 'telephone', 'name': 'phone2', 'label': '电话2', 'required': False},
-            {'field_type': 'email', 'name': 'email2', 'label': '邮箱2', 'required': False},
-            {'field_type': 'region_select', 'name': 'region', 'label': '省市区', 'required': False},
-            {'field_type': 'string', 'name': 'address', 'label': '详细地址', 'required': False},
-            {'field_type': 'string', 'name': 'postal_code', 'label': '邮政编码', 'required': False},
-            {'field_type': 'string', 'name': 'wechat', 'label': '微信号', 'required': False},
-            {'field_type': 'string', 'name': 'dingtalk', 'label': '钉钉号', 'required': False},
-            {'field_type': 'string', 'name': 'industry', 'label': '所属行业', 'required': False},
-            {'field_type': 'entity_reference', 'name': 'enterprise_type', 'label': '企业性质', 'required': False, 'reference_type': 'taxonomy'},
-            {'field_type': 'decimal', 'name': 'registered_capital', 'label': '注册资本', 'required': False},
-            {'field_type': 'entity_reference', 'name': 'customer_level', 'label': '客户等级', 'required': False, 'reference_type': 'taxonomy'},
-            {'field_type': 'decimal', 'name': 'credit_limit', 'label': '信用额度', 'required': False},
-            {'field_type': 'link', 'name': 'website', 'label': '网站', 'required': False},
-            {'field_type': 'text_long', 'name': 'notes', 'label': '备注', 'required': False},
-        ],
-        'is_active': True,
-    },
-]
-
-
 class NodeTypeService:
     """节点类型服务"""
     
@@ -160,16 +111,68 @@ class NodeTypeService:
         return Node.objects.filter(node_type_id=node_type_id).count()
     
     @staticmethod
+    def get_node_types_from_modules() -> List[Dict[str, Any]]:
+        """从模块配置中动态获取节点类型定义"""
+        from importlib import import_module
+        
+        node_types = []
+        modules_dir = 'modules'
+        
+        if not os.path.exists(modules_dir):
+            return node_types
+        
+        for item in os.listdir(modules_dir):
+            item_path = os.path.join(modules_dir, item)
+            
+            if not os.path.isdir(item_path):
+                continue
+            
+            module_file = os.path.join(item_path, 'module.py')
+            if not os.path.exists(module_file):
+                continue
+            
+            try:
+                mod = import_module(f'modules.{item}.module')
+                if hasattr(mod, 'MODULE_INFO'):
+                    module_info = mod.MODULE_INFO
+                    
+                    # 只处理 node 类型的模块
+                    if module_info.get('type') == 'node':
+                        node_type_config = module_info.get('node_type', {})
+                        
+                        # 如果模块没有 node_type 配置，使用模块基本信息
+                        if not node_type_config:
+                            node_type_config = {
+                                'name': module_info.get('name', item),
+                                'slug': module_info.get('id', item),
+                                'description': module_info.get('description', ''),
+                                'icon': module_info.get('icon', 'bi-folder'),
+                            }
+                        
+                        node_types.append(node_type_config)
+            except (ImportError, ModuleNotFoundError, AttributeError):
+                pass
+        
+        return node_types
+    
+    @staticmethod
     def init_default_node_types() -> None:
-        """初始化预置节点类型"""
-        for nt_data in DEFAULT_NODE_TYPES:
-            existing = NodeType.objects.filter(slug=nt_data['slug']).first()
+        """初始化预置节点类型（从模块配置动态读取）"""
+        # 从模块配置中获取节点类型定义
+        node_types_config = NodeTypeService.get_node_types_from_modules()
+        
+        for nt_data in node_types_config:
+            slug = nt_data.get('slug')
+            if not slug:
+                continue
+            
+            existing = NodeType.objects.filter(slug=slug).first()
             if existing:
                 continue
             
             NodeType.objects.create(
-                name=nt_data['name'],
-                slug=nt_data['slug'],
+                name=nt_data.get('name', slug),
+                slug=slug,
                 description=nt_data.get('description', ''),
                 icon=nt_data.get('icon', 'bi-folder'),
                 fields_config=nt_data.get('fields_config', []),

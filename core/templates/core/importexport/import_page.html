@@ -10,7 +10,7 @@
 {% endblock %}
 
 {% block admin_title_buttons %}
-<a href="{{ url('importexport:import_list') }}" class="btn btn-outline-secondary btn-sm">
+<a href="{{ url('modules:import_list') }}" class="btn btn-outline-secondary btn-sm">
     <i class="bi bi-arrow-left me-1"></i> 返回
 </a>
 {% endblock %}
@@ -27,7 +27,7 @@
             点击下方按钮下载 <strong>{{ node_type.name }}</strong> 的导入模板。
             模板包含所有字段，请按模板格式填写数据。
         </p>
-        <a href="{{ url('importexport:download_template', node_type.slug) }}" class="btn btn-success">
+        <a href="{{ url('modules:download_template', node_type.slug) }}" class="btn btn-success">
             <i class="bi bi-file-earmark-excel me-1"></i> 下载模板
         </a>
     </div>
@@ -119,7 +119,7 @@
 
 {% block admin_footer %}
 <div class="d-flex justify-content-between">
-    <a href="{{ url('importexport:import_list') }}" class="btn btn-secondary">
+    <a href="{{ url('modules:import_list') }}" class="btn btn-secondary">
         <i class="bi bi-arrow-left me-1"></i> 返回列表
     </a>
     <button type="button" class="btn btn-primary" onclick="confirmImport()">
@@ -173,7 +173,7 @@ async function uploadFile() {
     formData.append('file', file);
     
     try {
-        var response = await fetch("{{ url('importexport:upload_preview', node_type.slug) }}", {
+        var response = await fetch("{{ url('modules:upload_preview', node_type.slug) }}", {
             method: 'POST',
             body: formData,
             headers: {
@@ -246,7 +246,7 @@ function confirmImport() {
         return;
     }
     
-    window.location.href = "{{ url('importexport:do_import', node_type.slug) }}";
+    window.location.href = "{{ url('modules:do_import', node_type.slug) }}";
 }
 
 document.getElementById('uploadForm').addEventListener('submit', function(e) {
