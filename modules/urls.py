@@ -26,8 +26,8 @@ def try_include_module(module_slug):
 def get_installed_module_slugs():
     """动态获取所有已安装模块的 slug"""
     try:
-        from core.node.models import NodeModule
-        modules = NodeModule.objects.filter(is_installed=True, is_active=True)
+        from core.node.models import Module
+        modules = Module.objects.filter(is_installed=True, is_active=True)
         return [m.module_id for m in modules]
     except Exception:
         # 如果数据库未初始化，返回空列表

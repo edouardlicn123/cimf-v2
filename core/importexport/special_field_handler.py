@@ -20,6 +20,11 @@ class SpecialFieldPool:
         cls._handlers[field_name] = handler
     
     @classmethod
+    def is_special_field(cls, field_name: str) -> bool:
+        """检查是否为特殊字段"""
+        return field_name in cls._handlers
+    
+    @classmethod
     def handle_export(cls, field_name: str, value: Any) -> str:
         """处理导出时的特殊字段值"""
         if field_name in cls._handlers:

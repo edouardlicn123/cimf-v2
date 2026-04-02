@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <h2>正在导出 - {{ node_type.name }}</h2>
+    
+    <div class="card">
+        <div class="card-body text-center">
+            <div class="spinner-border text-primary mb-3" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <p>正在准备导出文件，请稍候...</p>
+        </div>
+    </div>
+    
+    <script>
+        setTimeout(function() {
+            window.location.href = "{{ url('modules:do_export', node_type.slug) }}";
+        }, 1000);
+    </script>
+</div>
+{% endblock %}

@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <h2>导入数据</h2>
+    <p>选择一个模块类型开始导入数据</p>
+    
+    <div class="row">
+        {% for node_type in node_types %}
+        <div class="col-md-4 mb-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">{{ node_type.name }}</h5>
+                    <a href="{{ url('modules:import_page', node_type.slug) }}" class="btn btn-primary">
+                        导入 {{ node_type.name }}
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

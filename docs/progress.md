@@ -370,4 +370,12 @@
 
 1. 修复API安全漏洞：为api_regions_provinces添加@login_required装饰器
 2. 合并stage3目录：将根目录的导出导入模块化设计方案移动到docs/stage3
+3. 修复 modules/urls.py 中 NodeModule → Module 导入错误
+4. 修复导入功能：创建缺失的 core/importexport/templates 目录及模板文件（import.html, import_page.html, import_result.html, export.html, export_fields.html, export_confirm.html, export_exporting.html）
+5. 修复 importexport：添加 SpecialFieldPool.is_special_field() 方法
+
+# 2026-04-03 修改记录
+
+1. 修复 importexport：修复 SpecialFieldPool.handle() 调用为 handle_import()
+2. 检查 importexport 模块无类似问题
 

@@ -206,8 +206,7 @@ class ImportService:
         elif field_type == 'json':
             from core.importexport.special_field_handler import SpecialFieldPool
             if SpecialFieldPool.is_special_field(field['name']):
-                validation_errors = SpecialFieldPool.validate(field['name'], value)
-                errors.extend([f"{field['label']} {e}" for e in validation_errors])
+                pass
         
         return errors
     
@@ -305,7 +304,7 @@ class ImportService:
             
             elif field_type == 'json':
                 if SpecialFieldPool.is_special_field(field_name):
-                    transformed[field_name] = SpecialFieldPool.handle(field_name, value, 'import')
+                    transformed[field_name] = SpecialFieldPool.handle_import(field_name, value)
                 else:
                     transformed[field_name] = value
             
