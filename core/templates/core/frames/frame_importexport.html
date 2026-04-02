@@ -26,7 +26,7 @@
           <ul class="nav flex-column mb-auto">
             <li class="nav-item">
               <a class="nav-link d-flex align-items-center py-2 px-2 rounded {% if active_section == 'export' %}active{% endif %}" 
-                 href="{{ url('importexport:export_list') }}">
+                 href="{{ url('modules:export_list') }}">
                 <i class="bi bi-box-arrow-up me-2 fs-6"></i>
                 导出
               </a>
@@ -37,7 +37,7 @@
           <ul class="nav flex-column mb-auto">
             <li class="nav-item">
               <a class="nav-link d-flex align-items-center py-2 px-2 rounded {% if active_section == 'import' %}active{% endif %}" 
-                 href="{{ url('importexport:import_list') }}">
+                 href="{{ url('modules:import_list') }}">
                 <i class="bi bi-box-arrow-down me-2 fs-6"></i>
                 导入
               </a>
