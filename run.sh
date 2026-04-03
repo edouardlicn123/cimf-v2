@@ -196,15 +196,11 @@ init_system() {
         fi
     fi
     
-    # 执行迁移和初始化
+    # 执行初始化（init_db.py 统一管理 migrations）
     local venv_python
     venv_python=$(get_venv_python)
     
-    echo -e "${BLUE}[1/2]${NC} 执行数据库迁移..."
-    $venv_python manage.py makemigrations
-    $venv_python manage.py migrate
-    
-    echo -e "${BLUE}[2/2]${NC} 初始化数据（管理员、系统设置等）..."
+    echo -e "${BLUE}[1/2]${NC} 初始化数据（migrations + 初始数据）..."
     $venv_python init_db.py --with-data --force
     
     echo -e "${GREEN}初始化完成！${NC}"

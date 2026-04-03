@@ -391,4 +391,12 @@
 13. 合并 core 迁移：0001+0002+0003+0004 → 0001_initial (含ChinaRegion, User.role/theme最终定义)
 14. 重构 core 迁移：0001包含基础表+NodeType+Node，0002为独立Module表
 15. 全面Bug检查：修复clock system类型模块循环重定向问题
+16. 优化 init_db.py：按阶段分组（5个阶段），修复步骤编号，改进输出格式
+17. 优化 init_default_taxonomies：使用 bulk_create，性能提升15倍(8s→0.5s)
+18. Fix init_db.py duplicate migration: add --skip-migrate option and update run.sh
+19. Simplify run.sh init: remove duplicate migrate, let init_db.py handle migrations
+20. Optimize module scan/install: batch queries, skip installed, cache AST parsing, bulk create taxonomies
+21. Optimize customer seed commands: bulk_create + pre-fetch existing names + transaction
+22. Optimize init_db.py: skip migrations in incremental mode if no pending migrations
+23. Fix module state reset bug: register_module() no longer resets is_installed/is_active
 

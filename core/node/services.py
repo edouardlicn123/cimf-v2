@@ -253,6 +253,7 @@ class ModuleService:
     """Node 模块服务"""
     
     MODULES_DIR = 'modules'
+    _module_info_cache: Dict[str, Dict[str, Any]] = {}
     
     # ===== 扫描功能 =====
     
@@ -265,6 +266,7 @@ class ModuleService:
         if not os.path.exists(base_path):
             return modules
         
+        module_infos = []
         for item in os.listdir(base_path):
             item_path = os.path.join(base_path, item)
             
@@ -277,18 +279,28 @@ class ModuleService:
             
             module_info = ModuleService._load_module_info(item)
             if module_info:
-                registered = Module.objects.filter(module_id=module_info['id']).first()
+                module_info['path'] = item
+                module_infos.append(module_info)
+        
+        if module_infos:
+            module_ids = [m['id'] for m in module_infos]
+            registered_modules = {m.module_id: m for m in Module.objects.filter(module_id__in=module_ids)}
+            
+            for module_info in module_infos:
+                registered = registered_modules.get(module_info['id'])
                 module_info['is_registered'] = registered is not None
                 module_info['is_installed'] = registered.is_installed if registered else False
                 module_info['is_active'] = registered.is_active if registered else False
-                module_info['path'] = item
                 modules.append(module_info)
         
         return modules
     
     @staticmethod
     def _load_module_info(module_dir: str) -> Optional[Dict[str, Any]]:
-        """加载模块信息 - 使用 ast 直接解析文件，无需 importlib"""
+        """加载模块信息 - 使用 ast 直接解析文件，带缓存"""
+        if module_dir in ModuleService._module_info_cache:
+            return ModuleService._module_info_cache[module_dir]
+        
         import ast
         
         def parse_node(node):
@@ -341,6 +353,7 @@ class ModuleService:
                             if 'type' not in module_info:
                                 raise ValueError(f"模块 {module_dir} 缺少 type 字段")
                             
+                            ModuleService._module_info_cache[module_dir] = module_info
                             return module_info
             
             return None
@@ -355,14 +368,15 @@ class ModuleService:
     
     @staticmethod
     def register_module(module_info: Dict[str, Any]) -> Module:
-        """注册模块 - 写入数据库，标记为未安装"""
+        """注册模块 - 仅写入数据库，不修改安装状态"""
         module_id = module_info['id']
         existing = Module.objects.filter(module_id=module_id).first()
         
         if existing:
-            existing.is_installed = False
-            existing.is_active = False
             existing.module_type = module_info.get('type', 'node')
+            existing.name = module_info.get('name', existing.name)
+            existing.version = module_info.get('version', existing.version)
+            existing.description = module_info.get('description', existing.description)
             existing.save()
             return existing
         
@@ -390,11 +404,14 @@ class ModuleService:
         from django.db import connection
         
         try:
-            models = apps.get_app_config(module_id).get_models()
-            table_names = connection.introspection.table_names(connection.cursor())
+            models = list(apps.get_app_config(module_id).get_models())
+            if not models:
+                return True
+            
+            table_set = set(connection.introspection.table_names(connection.cursor()))
             
             for model in models:
-                if model._meta.db_table not in table_names:
+                if model._meta.db_table not in table_set:
                     return False
             return True
         except Exception:
@@ -495,17 +512,24 @@ class ModuleService:
         """创建模块定义的词汇表"""
         from core.models import Taxonomy, TaxonomyItem
         
-        # 加载模块信息
         module_info = ModuleService._load_module_info(module.path)
         if not module_info:
             return 0
         
-        # 检查是否有词汇表定义
         taxonomies = module_info.get('taxonomies', [])
         if not taxonomies:
             return 0
         
         created_count = 0
+        slugs = [t.get('slug') for t in taxonomies if t.get('slug') and t.get('name')]
+        existing_taxonomies = {t.slug: t for t in Taxonomy.objects.filter(slug__in=slugs)}
+        existing_items = {
+            (item.taxonomy_id, item.name): item 
+            for item in TaxonomyItem.objects.filter(taxonomy__slug__in=slugs)
+        }
+        
+        items_to_create = []
+        new_taxonomies = []
         
         for tax_data in taxonomies:
             slug = tax_data.get('slug')
@@ -515,34 +539,44 @@ class ModuleService:
             if not slug or not name:
                 continue
             
-            # 检查词汇表是否已存在
-            existing = Taxonomy.objects.filter(slug=slug).first()
+            existing = existing_taxonomies.get(slug)
             if existing:
-                # 词汇表已存在，检查是否需要添加词汇项
                 for item_name in items:
-                    TaxonomyItem.objects.get_or_create(
-                        taxonomy=existing,
-                        name=item_name,
-                        defaults={'weight': 0}
-                    )
+                    if (existing.id, item_name) not in existing_items:
+                        items_to_create.append(TaxonomyItem(
+                            taxonomy=existing,
+                            name=item_name,
+                            weight=0
+                        ))
                 continue
             
-            # 创建词汇表
-            taxonomy = Taxonomy.objects.create(
+            taxonomy = Taxonomy(
                 name=name,
                 slug=slug,
                 description=f'{module.name} 模块词汇表'
             )
+            new_taxonomies.append(taxonomy)
+        
+        Taxonomy.objects.bulk_create(new_taxonomies, ignore_conflicts=True)
+        new_slugs = [t.slug for t in new_taxonomies]
+        created_taxonomies = {t.slug: t for t in Taxonomy.objects.filter(slug__in=new_slugs)}
+        
+        for tax_data in taxonomies:
+            slug = tax_data.get('slug')
+            items = tax_data.get('items', [])
             
-            # 创建词汇项
-            for idx, item_name in enumerate(items):
-                TaxonomyItem.objects.create(
-                    taxonomy=taxonomy,
-                    name=item_name,
-                    weight=idx
-                )
-            
-            created_count += 1
+            if slug in created_taxonomies:
+                taxonomy = created_taxonomies[slug]
+                for idx, item_name in enumerate(items):
+                    items_to_create.append(TaxonomyItem(
+                        taxonomy=taxonomy,
+                        name=item_name,
+                        weight=idx
+                    ))
+                created_count += 1
+        
+        if items_to_create:
+            TaxonomyItem.objects.bulk_create(items_to_create, ignore_conflicts=True)
         
         return created_count
     
