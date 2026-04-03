@@ -384,4 +384,6 @@
 6. 修复模块安装逻辑：添加表存在性验证，迁移失败时抛出异常而非静默跳过
 7. 更新模块技术规范：补充安装流程、迁移验证、错误处理规范（v2.6→v2.7）
 8. 修复 _check_tables_exist 函数：使用 Django ORM introspection 替代原始 SQL，兼容 Django 6.0
+9. 合并 resident_info 迁移文件：0001 + 0002 + 0003 → 0001
+10. 合并 customer 迁移文件：0001 + 0002 → 0001 (添加linkedin字段)
 
