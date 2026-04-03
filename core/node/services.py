@@ -391,15 +391,11 @@ class ModuleService:
         
         try:
             models = apps.get_app_config(module_id).get_models()
+            table_names = connection.introspection.table_names(connection.cursor())
+            
             for model in models:
-                table_name = model._meta.db_table
-                with connection.cursor() as cursor:
-                    cursor.execute(
-                        "SELECT name FROM sqlite_master WHERE type='table' AND name=?",
-                        [table_name]
-                    )
-                    if not cursor.fetchone():
-                        return False
+                if model._meta.db_table not in table_names:
+                    return False
             return True
         except Exception:
             return False
