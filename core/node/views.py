@@ -150,33 +150,55 @@ def node_type_toggle(request, node_type_id: int):
 
 # ===== 通用节点 CRUD =====
 
+def _check_module_installed(node_type_slug: str):
+    """检查模块是否已安装并启用（防止循环重定向），未安装则抛出 404"""
+    from core.node.models import Module
+    from django.http import Http404
+    
+    module = Module.objects.filter(
+        module_id=node_type_slug,
+        is_installed=True,
+        is_active=True
+    ).first()
+    
+    if not module:
+        raise Http404(f'模块 "{node_type_slug}" 未安装或未启用')
+    
+    return module
+
+
 @login_required
 def node_list(request, node_type_slug: str):
     """通用节点列表（用于未来扩展的节点类型）"""
+    _check_module_installed(node_type_slug)
     return redirect('modules:node_list', node_type_slug=node_type_slug)
 
 
 @login_required
 def node_create(request, node_type_slug: str):
     """通用节点创建（用于未来扩展的节点类型）"""
-    return redirect('modules:node_list', node_type_slug=node_type_slug)
+    _check_module_installed(node_type_slug)
+    return redirect('modules:node_create', node_type_slug=node_type_slug)
 
 
 @login_required
 def node_view(request, node_type_slug: str, node_id: int):
     """通用节点查看"""
+    _check_module_installed(node_type_slug)
     return redirect('modules:node_view', node_type_slug=node_type_slug, node_id=node_id)
 
 
 @login_required
 def node_edit(request, node_type_slug: str, node_id: int):
     """通用节点编辑"""
-    return redirect('modules:node_view', node_type_slug=node_type_slug, node_id=node_id)
+    _check_module_installed(node_type_slug)
+    return redirect('modules:node_edit', node_type_slug=node_type_slug, node_id=node_id)
 
 
 @login_required
 def node_delete(request, node_type_slug: str, node_id: int):
     """通用节点删除"""
+    _check_module_installed(node_type_slug)
     node = NodeService.get_by_id(node_id)
     if node:
         NodeService.delete(node_id)

@@ -21,6 +21,7 @@
 """
 
 from typing import List, Optional, Dict, Any
+from io import StringIO
 import os
 import importlib.util
 from django.contrib.auth import get_user_model
@@ -383,18 +384,36 @@ class ModuleService:
     # ===== 安装功能 =====
     
     @staticmethod
+    def _check_tables_exist(module_id: str) -> bool:
+        """检查模块的表是否已存在"""
+        from django.apps import apps
+        from django.db import connection
+        
+        try:
+            models = apps.get_app_config(module_id).get_models()
+            for model in models:
+                table_name = model._meta.db_table
+                with connection.cursor() as cursor:
+                    cursor.execute(
+                        "SELECT name FROM sqlite_master WHERE type='table' AND name=?",
+                        [table_name]
+                    )
+                    if not cursor.fetchone():
+                        return False
+            return True
+        except Exception:
+            return False
+    
+    @staticmethod
     def install_module(module_id: str) -> bool:
         """安装模块 - 完成数据库结构操作"""
         from django.apps import apps
         from django.core.management import call_command
+        from django.db import connection
         
         module = Module.objects.filter(module_id=module_id).first()
         if not module:
             return False
-        
-        # 检查是否已安装
-        if module.is_installed:
-            return True
         
         # 检查模块目录是否存在
         module_path = os.path.join(ModuleService.MODULES_DIR, module_id)
@@ -403,17 +422,45 @@ class ModuleService:
         
         # 检查 migrations 目录是否存在
         migrations_path = os.path.join(module_path, 'migrations')
+        
+        # 如果标记为已安装，先验证表是否真正存在
+        if module.is_installed and os.path.exists(migrations_path):
+            if not ModuleService._check_tables_exist(module_id):
+                # 表不存在但标记为已安装，说明迁移可能失败过
+                # 取消安装标记，重新执行迁移
+                module.is_installed = False
+                module.save()
+        
+        # 如果已安装且表存在，跳过迁移
+        if module.is_installed:
+            return True
+        
+        # 执行迁移
         if os.path.exists(migrations_path):
-            # 简化处理：直接执行 migrate，使用 --run-syncdb 确保表存在
-            try:
-                call_command('makemigrations', module_id, verbosity=0, interactive=False)
-            except Exception:
-                pass
+            migration_errors = []
             
+            # 1. 执行 makemigrations
             try:
-                call_command('migrate', module_id, verbosity=0, interactive=False, run_syncdb=True)
-            except Exception:
-                pass
+                out = StringIO()
+                call_command('makemigrations', module_id, verbosity=1, interactive=False, stdout=out)
+            except Exception as e:
+                migration_errors.append(f'makemigrations 失败: {e}')
+            
+            # 2. 执行 migrate
+            try:
+                out = StringIO()
+                call_command('migrate', module_id, verbosity=1, interactive=False, run_syncdb=True, stdout=out)
+            except Exception as e:
+                migration_errors.append(f'migrate 失败: {e}')
+            
+            # 3. 验证迁移是否成功
+            if not ModuleService._check_tables_exist(module_id):
+                migration_errors.append(f'迁移后表仍未创建，模块 {module_id} 可能配置不正确')
+            
+            # 如果有迁移错误，记录并抛出
+            if migration_errors:
+                error_msg = '; '.join(migration_errors)
+                raise RuntimeError(f'模块 {module_id} 安装失败: {error_msg}')
         
         # 同步 NodeType（仅 node 类型模块需要）
         if module.module_type == 'node':
@@ -433,7 +480,9 @@ class ModuleService:
     def register_and_install(module_info: Dict[str, Any]) -> Module:
         """注册并安装模块"""
         module = ModuleService.register_module(module_info)
-        ModuleService.install_module(module.module_id)
+        success = ModuleService.install_module(module.module_id)
+        if not success:
+            raise RuntimeError(f"模块 {module.module_id} 安装失败")
         ModuleService.enable_module(module.module_id)
         module.refresh_from_db()
         return module
