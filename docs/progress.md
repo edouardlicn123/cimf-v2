@@ -386,4 +386,9 @@
 8. 修复 _check_tables_exist 函数：使用 Django ORM introspection 替代原始 SQL，兼容 Django 6.0
 9. 合并 resident_info 迁移文件：0001 + 0002 + 0003 → 0001
 10. 合并 customer 迁移文件：0001 + 0002 → 0001 (添加linkedin字段)
+11. 优化 install_module 逻辑：已有迁移文件的模块不再使用 run_syncdb 参数
+12. 合并 core 迁移：删除 NodeModule 相关迁移(0006,0008,0009)，新建 0006_module 直接创建 Module 表
+13. 合并 core 迁移：0001+0002+0003+0004 → 0001_initial (含ChinaRegion, User.role/theme最终定义)
+14. 重构 core 迁移：0001包含基础表+NodeType+Node，0002为独立Module表
+15. 全面Bug检查：修复clock system类型模块循环重定向问题
 

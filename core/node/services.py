@@ -443,9 +443,16 @@ class ModuleService:
                 migration_errors.append(f'makemigrations 失败: {e}')
             
             # 2. 执行 migrate
+            # 检查是否有迁移文件（已有迁移文件的 app 不能使用 run_syncdb）
+            migration_files = [f for f in os.listdir(migrations_path) if f.startswith('0') and f.endswith('.py')]
+            has_migrations = len(migration_files) > 1 or (len(migration_files) == 1 and '0001_initial.py' in migration_files)
+            
             try:
                 out = StringIO()
-                call_command('migrate', module_id, verbosity=1, interactive=False, run_syncdb=True, stdout=out)
+                if has_migrations:
+                    call_command('migrate', module_id, verbosity=1, interactive=False, stdout=out)
+                else:
+                    call_command('migrate', module_id, verbosity=1, interactive=False, run_syncdb=True, stdout=out)
             except Exception as e:
                 migration_errors.append(f'migrate 失败: {e}')
             

@@ -9,7 +9,7 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ('core', '0005_nodetype_node'),
+        ('core', '0001_initial'),
     ]
 
     operations = [

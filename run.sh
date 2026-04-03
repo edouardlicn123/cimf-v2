@@ -469,7 +469,7 @@ show_menu() {
     echo -e "  ${WHITE}CIMF 管理系统 - 管理菜单${NC}"
     echo -e "${CYAN}▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄${NC}"
     echo
-    echo "  1 → 启动开发服务器"
+    echo "  1 → 启动服务器"
     echo "  2 → 初始化"
     echo "  3 → 维护"
     echo "  0 → 退出"

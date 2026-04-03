@@ -151,18 +151,19 @@ def node_type_toggle(request, node_type_id: int):
 # ===== 通用节点 CRUD =====
 
 def _check_module_installed(node_type_slug: str):
-    """检查模块是否已安装并启用（防止循环重定向），未安装则抛出 404"""
+    """检查节点模块是否已安装并启用（防止循环重定向），未安装或非node类型则抛出 404"""
     from core.node.models import Module
     from django.http import Http404
     
     module = Module.objects.filter(
         module_id=node_type_slug,
         is_installed=True,
-        is_active=True
+        is_active=True,
+        module_type='node'
     ).first()
     
     if not module:
-        raise Http404(f'模块 "{node_type_slug}" 未安装或未启用')
+        raise Http404(f'节点模块 "{node_type_slug}" 未安装、未启用或不是节点类型')
     
     return module
 
