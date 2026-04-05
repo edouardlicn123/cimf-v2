@@ -55,6 +55,7 @@ _base_apps = [
     'django.contrib.staticfiles',
     'rest_framework',
     'core',
+    'core.smtp',
     'modules',
 ]
 
@@ -71,6 +72,11 @@ if os.path.isdir(_nodes_dir):
             template_dir = os.path.join(module_path, 'templates')
             if os.path.isdir(template_dir):
                 _module_template_dirs.append(Path(template_dir))
+
+# 调整顺序：核心应用 → smtp → 业务模块 → modules 占位符
+# 将 _node_modules 移到 modules 占位符之前
+if 'modules' in _base_apps:
+    _base_apps.remove('modules')
 
 INSTALLED_APPS = _base_apps + _node_modules
 

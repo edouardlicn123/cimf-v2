@@ -399,4 +399,13 @@
 21. Optimize customer seed commands: bulk_create + pre-fetch existing names + transaction
 22. Optimize init_db.py: skip migrations in incremental mode if no pending migrations
 23. Fix module state reset bug: register_module() no longer resets is_installed/is_active
+24. Bug check: fix duplicate @login_required decorator, all forms have csrf_token
+
+# 2026-04-04 修改记录
+
+1. Implement SMTP email module: models, services, forms, views, templates (Phase 1-2, 4-5)
+2. Complete SMTP async: add EmailSendingTask, update cron_service, update doc #35
+3. SMTP config: add batch_size, rate_limit, log_days, failed_notify, notify_email, system_url, skip_verify options
+4. Fix SMTP bugs: notification logic and create missing history.html template
+5. Bug check: add form validation for failed_notify + notify_email, add template error display
 

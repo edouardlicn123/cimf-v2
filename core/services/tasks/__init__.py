@@ -15,5 +15,7 @@
 from .base import CronTask
 from .time_sync_task import TimeSyncTask
 from .cache_cleanup_task import CacheCleanupTask
+from .email_sending_task import EmailSendingTask
+from .email_cleanup_task import EmailCleanupTask
 
-__all__ = ['CronTask', 'TimeSyncTask', 'CacheCleanupTask']
+__all__ = ['CronTask', 'TimeSyncTask', 'CacheCleanupTask', 'EmailSendingTask', 'EmailCleanupTask']

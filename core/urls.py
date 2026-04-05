@@ -18,6 +18,7 @@
 from django.urls import path
 from . import views
 from core.node import views as node_views
+from core.smtp import views as smtp_views
 
 app_name = 'core'
 
@@ -36,6 +37,12 @@ urlpatterns = [
     path('system/permissions/', views.system_permissions, name='system_permissions'),
     path('system/cron/', views.cron_manager, name='cron_manager'),
     path('system/permission-check/', views.permission_check, name='permission_check'),
+    
+    # SMTP 邮件配置
+    path('system/smtp/', smtp_views.smtp_config, name='smtp_config'),
+    path('system/smtp/test/', smtp_views.smtp_test, name='smtp_test'),
+    path('system/smtp/history/', smtp_views.smtp_history, name='smtp_history'),
+    path('system/smtp/cleanup/', smtp_views.smtp_cleanup_logs, name='smtp_cleanup_logs'),
     
     # Cron API
     path('api/cron/status/', views.cron_status, name='cron_status'),

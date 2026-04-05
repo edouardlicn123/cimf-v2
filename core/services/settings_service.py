@@ -133,9 +133,31 @@ class SettingsService:
         'cron_time_sync_enabled': 'true',
         'cron_cache_cleanup_enabled': 'true',
         'cron_cache_cleanup_interval': '10800',
+        'cron_email_sending_enabled': 'true',
+        'smtp_send_interval': '100',
+        'cron_email_cleanup_enabled': 'true',
+        'cron_email_cleanup_interval': '86400',
         
         'maintenance_mode': 'false',
         'allow_registration': 'false',
+        
+        'smtp_enabled': 'false',
+        'smtp_provider': 'gmail_tls',
+        'smtp_host': 'smtp.gmail.com',
+        'smtp_port': '587',
+        'smtp_use_ssl': 'false',
+        'smtp_use_tls': 'true',
+        'smtp_username': '',
+        'smtp_from_email': '',
+        'smtp_from_name': '仙芙CIMF',
+        'smtp_timeout': '30',
+        'smtp_skip_verify': 'false',
+        'smtp_batch_size': '10',
+        'smtp_rate_limit': '0',
+        'smtp_log_days': '30',
+        'smtp_failed_notify': 'false',
+        'smtp_notify_email': '',
+        'smtp_system_url': '',
     }
     
     CACHE_KEY = 'system_settings_all'

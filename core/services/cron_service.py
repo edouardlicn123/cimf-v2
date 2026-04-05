@@ -218,7 +218,7 @@ def init_cron_service():
         return
     os.environ['CIMF_CRON_INITIALIZED'] = '1'
     
-    from core.services.tasks import TimeSyncTask, CacheCleanupTask
+    from core.services.tasks import TimeSyncTask, CacheCleanupTask, EmailSendingTask, EmailCleanupTask
     
     cron = get_cron_service()
     
@@ -229,6 +229,8 @@ def init_cron_service():
     
     cron.register(TimeSyncTask())
     cron.register(CacheCleanupTask())
+    cron.register(EmailSendingTask())
+    cron.register(EmailCleanupTask())
     cron.set_app_ready(True)
     cron.start()
     logger.info("Cron 服务初始化完成")

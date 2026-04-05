@@ -102,7 +102,14 @@ core/templates/core/smtp/          # SMTP 模板目录
 | `smtp_from_email` | string | `` | 发件人邮箱 |
 | `smtp_from_name` | string | 系统名称 | 发件人显示名称 |
 | `smtp_timeout` | int | `30` | 连接超时时间（秒） |
+| `smtp_skip_verify` | bool | `false` | 跳过证书验证（用于自签名证书） |
 | `smtp_enabled` | bool | `false` | 是否启用邮件服务 |
+| `smtp_batch_size` | int | `10` | 每批发送数量 |
+| `smtp_rate_limit` | int | `0` | 每分钟发送上限（0=不限制） |
+| `smtp_log_days` | int | `30` | 日志保留天数 |
+| `smtp_failed_notify` | bool | `false` | 失败时发送通知 |
+| `smtp_notify_email` | string | `` | 通知邮箱 |
+| `smtp_system_url` | string | `` | 系统访问地址（邮件链接用） |
 
 ### 3.2 邮件模板表（新建模型）
 
@@ -350,68 +357,107 @@ class TemplateService:
 
 ---
 
-## 6. 异步任务设计
+## 6. 异步任务设计（简化方案）
 
-### 6.1 使用 django-q2
+### 6.1 使用 Cron 轮询
 
-django-q2 支持多种 Broker，项目使用 ORM Broker（数据库），无需额外安装 Redis。
+采用简化的 Cron 轮询方案，复用现有的 `CronService` 定时任务调度系统，无需额外依赖。
 
-```python
-# tasks.py
-from django.core.mail import send_mail, send_html_mail
-from django.utils import timezone
-from django_q.tasks import async_task
-from core.smtp.models import EmailLog
+**实现文件：**
+- `core/services/tasks/email_sending_task.py` - 邮件发送任务
+- `core/services/cron_service.py` - 任务注册
 
-def send_email_task(log_id: int):
-    """
-    异步发送邮件任务
-    
-    说明：
-        从 EmailLog 读取邮件内容并发送，发送后更新记录状态。
-        由 EmailService.send_email() 调用 async_task() 触发。
-    """
-    try:
-        log = EmailLog.objects.get(id=log_id)
-        log.status = 'sending'
-        log.save(update_fields=['status'])
-        
-        # 使用 Django 内置邮件模块发送
-        if log.html_body:
-            from django.core.mail import EmailMultiAlternatives
-            msg = EmailMultiAlternatives(
-                subject=log.subject,
-                body=log.text_body or '',
-                from_email=log.from_email,
-                to=[log.to_email],
-            )
-            msg.attach_alternative(log.html_body, "text/html")
-            msg.send()
-        else:
-            send_mail(
-                subject=log.subject,
-                message=log.text_body or '',
-                from_email=log.from_email,
-                recipient_list=[log.to_email],
-                fail_silently=False,
-            )
-        
-        log.status = 'sent'
-        log.sent_at = timezone.now()
-        log.save(update_fields=['status', 'sent_at'])
-        
-    except Exception as e:
-        EmailLog.objects.filter(id=log_id).update(
-            status='failed',
-            error_message=str(e),
-        )
+**工作流程：**
+
+```
+用户调用 EmailService.send_email()
+         ↓
+    创建 EmailLog(status=pending)
+         ↓
+    Cron 每60秒检查待发送邮件
+         ↓
+    EmailService.process_pending_emails()
+         ↓
+    发送成功 → EmailLog(status=sent)
+    发送失败 → 重试 (最多3次)
 ```
 
-### 6.2 重试策略
+**任务类实现：**
 
-- 最大重试次数：3 次
-- 重试间隔：指数退避（30s, 60s, 120s）
-- 超过重试次数标记为失败，记录错误信息
+```python
+class EmailSendingTask(CronTask):
+    """邮件发送任务类"""
+    
+    name = "email_sending"
+    default_interval = 100  # 默认100秒
+
+    @property
+    def setting_key_enabled(self) -> str:
+        return "cron_email_sending_enabled"
+
+    @property
+    def setting_key_interval(self) -> str:
+        return "smtp_send_interval"
+
+    def execute(self):
+        from core.smtp.services import EmailService
+        count = EmailService.process_pending_emails()
+        logger.info(f"邮件发送任务完成: 发送 {count} 封邮件")
+```
+
+**配置项：**
+
+| 配置 Key | 默认值 | 说明 |
+|----------|--------|------|
+| `cron_email_sending_enabled` | `true` | 是否启用邮件发送任务 |
+| `smtp_send_interval` | `100` | 发送间隔（秒） |
+| `smtp_batch_size` | `10` | 每批发送数量 |
+| `smtp_rate_limit` | `0` | 每分钟发送上限（0=不限制） |
+| `smtp_retry_count` | `3` | 最大重试次数 |
+
+### 6.2 日志清理任务
+
+```python
+class EmailCleanupTask(CronTask):
+    """邮件日志清理任务类"""
+    
+    name = "email_cleanup"
+    default_interval = 86400  # 24小时
+
+    @property
+    def setting_key_enabled(self) -> str:
+        return "cron_email_cleanup_enabled"
+
+    def execute(self):
+        from core.smtp.services import EmailService
+        count = EmailService.cleanup_old_logs()
+        logger.info(f"邮件日志清理完成: 清理 {count} 条记录")
+```
+
+**配置项：**
+
+| 配置 Key | 默认值 | 说明 |
+|----------|--------|------|
+| `cron_email_cleanup_enabled` | `true` | 是否启用日志清理任务 |
+| `cron_email_cleanup_interval` | `86400` | 执行间隔（秒，24小时） |
+| `smtp_log_days` | `30` | 日志保留天数 |
+
+### 6.3 失败通知
+
+当启用失败通知时，系统会在检测到邮件发送失败时发送通知邮件：
+- 通知邮箱：`smtp_notify_email`
+- 触发条件：1小时内有超过重试次数的失败邮件
+
+### 6.4 优势
+
+### 6.3 优势
+
+| 对比项 | django-q2 方案 | Cron 方案 |
+|--------|---------------|-----------|
+| 额外依赖 | 需要 django-q2 | 无 |
+| 配置复杂度 | 需要配置 Broker | 无需配置 |
+| 实时性 | 接近实时 | 延迟 ≤ 间隔时间 |
+| 实现复杂度 | 复杂 | 简单 |
 
 ---
 
@@ -550,9 +596,9 @@ EmailService.send_template_email(
 3. 实现 `EmailService` 邮件发送
 
 ### 阶段三：异步集成（0.5天）
-1. 添加 `django-q2` 依赖
-2. 实现异步发送任务
-3. 配置重试策略
+1. 添加 Cron 邮件发送任务 `email_sending_task.py`
+2. 注册任务到 `cron_service.py`
+3. 配置默认设置项
 
 ### 阶段四：管理界面（1天）
 1. 创建配置表单 `forms.py`
@@ -574,12 +620,7 @@ EmailService.send_template_email(
 
 ## 11. 依赖更新
 
-### requirements.txt 新增
-
-```
-# 异步任务队列
-django-q2>=1.7,<2.0
-```
+**无需额外依赖**，异步功能复用现有的 `CronService` 定时任务调度系统。
 
 ### settings.py 新增
 
@@ -593,16 +634,6 @@ EMAIL_USE_SSL = False
 EMAIL_HOST_USER = ''
 EMAIL_HOST_PASSWORD = ''
 DEFAULT_FROM_EMAIL = ''
-
-# Django-Q2 配置
-Q_CLUSTER = {
-    'name': 'cimf',
-    'workers': 2,
-    'recycle': 500,
-    'timeout': 300,
-    'retry': 360,
-    'orm': 'default',  # 使用默认数据库作为 Broker
-}
 ```
 
 ---
@@ -638,10 +669,20 @@ Q_CLUSTER = {
 | 配置错误 | 无法发送 | 提供测试功能，配置前验证 |
 | 密码泄露 | 账户被盗 | 加密存储，日志脱敏 |
 
+
 ---
 
 ## 15. 总结
 
-本方案为 CIMF 系统提供完整的邮件发送能力，采用模块化设计，与现有架构无缝集成。通过预置服务商配置降低使用门槛，通过异步任务提高系统响应性能，通过模板系统支持多样化邮件需求。
+本方案为 CIMF 系统提供完整的邮件发送能力，采用模块化设计，与现有架构无缝集成。通过预置服务商配置降低使用门槛，通过 Cron 轮询方案实现异步发送（无需额外依赖），通过模板系统支持多样化邮件需求。
 
-预计开发周期：**4-5 天**
+**实际开发周期：3 天**
+
+**实现状态：✅ 已完成**
+
+- 模型层：EmailTemplate、EmailLog ✅
+- 服务层：SmtpService、EmailService、TemplateService ✅
+- 异步任务：EmailSendingTask、EmailCleanupTask（Cron 方案）✅
+- 管理界面：配置表单、视图、模板 ✅
+- 邮件模板：base、verification_code、notification ✅
+- 高级功能：批量发送、速率限制、日志清理、失败通知 ✅

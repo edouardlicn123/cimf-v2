@@ -927,7 +927,6 @@ from core.services import ChinaRegionService
 
 
 @login_required
-@login_required
 @require_GET
 def api_regions_provinces(request):
     """获取所有省份"""

@@ -47,6 +47,13 @@
                 权限检测
               </a>
             </li>
+            <li class="nav-item">
+              <a class="nav-link d-flex align-items-center py-2 px-2 rounded {% if active_section == 'smtp' %}active{% endif %}" 
+                 href="{{ url('core:smtp_config') }}">
+                <i class="bi bi-envelope me-2 fs-6"></i>
+                SMTP 配置
+              </a>
+            </li>
           </ul>
         </div>
       </div>
