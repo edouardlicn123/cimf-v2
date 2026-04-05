@@ -224,3 +224,32 @@ class SmtpService:
         settings.EMAIL_HOST_USER = config.get('username', '')
         settings.EMAIL_HOST_PASSWORD = config.get('password', '')
         settings.DEFAULT_FROM_EMAIL = f"{config.get('from_name', '仙芙CIMF')} <{config.get('from_email', '')}>"
+    
+    @classmethod
+    def get_system_url(cls, request=None) -> str:
+        """
+        获取系统访问地址
+        
+        优先级：
+        1. 配置中的 system_url
+        2. 当前请求的域名（如果有）
+        3. 空字符串
+        
+        Args:
+            request: Django 请求对象，用于获取当前域名
+            
+        Returns:
+            系统访问地址（不含末尾斜杠）
+        """
+        config = cls.get_current_config()
+        system_url = config.get('system_url', '').strip()
+        
+        if system_url:
+            return system_url.rstrip('/')
+        
+        if request:
+            host = request.get_host()
+            scheme = 'https' if request.is_secure() else 'http'
+            return f'{scheme}://{host}'
+        
+        return ''

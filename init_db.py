@@ -259,6 +259,17 @@ def init_database(with_data: bool = False, force: bool = False, dry_run: bool = 
     except Exception as e:
         print(colored(f"    ✗ 词汇表数据初始化失败: {str(e)}", "red"))
 
+    print_step("2.4", "初始化邮件模板")
+    try:
+        if not dry_run:
+            from core.smtp.services.template_service import TemplateService
+            created_count = TemplateService.init_default_templates()
+            print(colored(f"    ✓ 邮件模板初始化完成，共创建 {created_count} 个模板", "green"))
+        else:
+            print(colored("    [模拟] 将调用 TemplateService.init_default_templates()", "yellow"))
+    except Exception as e:
+        print(colored(f"    ✗ 邮件模板初始化失败: {str(e)}", "red"))
+
     # ===== 【阶段3】用户管理 =====
     print_section("阶段3：用户管理")
     

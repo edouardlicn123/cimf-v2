@@ -325,3 +325,108 @@ CIMF 系统检测到最近有 {failed_count} 封邮件发送失败，请检查 S
         ).delete()
         
         return deleted_count
+
+    @classmethod
+    def send_verification_code(
+        cls,
+        to: str,
+        code: str,
+        expire_minutes: int = 5,
+        request=None,
+        async_send: bool = True,
+    ) -> Union[bool, int]:
+        """
+        发送验证码邮件
+        
+        参数：
+            to: 收件人邮箱
+            code: 验证码
+            expire_minutes: 有效期（分钟）
+            request: Django 请求对象（用于获取系统URL）
+            async_send: 是否异步发送
+        """
+        system_url = SmtpService.get_system_url(request)
+        context = {
+            'code': code,
+            'expire_minutes': expire_minutes,
+            'system_url': system_url,
+            'year': timezone.now().year,
+        }
+        return cls.send_template_email(
+            to=to,
+            template_name='verification_code',
+            context=context,
+            async_send=async_send,
+        )
+
+    @classmethod
+    def send_password_reset(
+        cls,
+        to: str,
+        reset_link: str,
+        expire_hours: int = 24,
+        request=None,
+        async_send: bool = True,
+    ) -> Union[bool, int]:
+        """
+        发送密码重置邮件
+        
+        参数：
+            to: 收件人邮箱
+            reset_link: 重置链接
+            expire_hours: 有效期（小时）
+            request: Django 请求对象
+            async_send: 是否异步发送
+        """
+        system_url = SmtpService.get_system_url(request)
+        context = {
+            'reset_link': reset_link,
+            'expire_hours': expire_hours,
+            'system_url': system_url,
+            'year': timezone.now().year,
+        }
+        return cls.send_template_email(
+            to=to,
+            template_name='password_reset',
+            context=context,
+            async_send=async_send,
+        )
+
+    @classmethod
+    def send_notification(
+        cls,
+        to: Union[str, List[str]],
+        title: str,
+        message: str,
+        action_url: str = '',
+        action_text: str = '',
+        request=None,
+        async_send: bool = True,
+    ) -> Union[bool, int]:
+        """
+        发送通知邮件
+        
+        参数：
+            to: 收件人邮箱
+            title: 通知标题
+            message: 通知内容
+            action_url: 操作链接（可选）
+            action_text: 操作按钮文字（可选）
+            request: Django 请求对象
+            async_send: 是否异步发送
+        """
+        system_url = SmtpService.get_system_url(request)
+        context = {
+            'title': title,
+            'message': message,
+            'action_url': action_url,
+            'action_text': action_text,
+            'system_url': system_url,
+            'year': timezone.now().year,
+        }
+        return cls.send_template_email(
+            to=to,
+            template_name='notification',
+            context=context,
+            async_send=async_send,
+        )

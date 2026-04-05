@@ -409,3 +409,9 @@
 4. Fix SMTP bugs: notification logic and create missing history.html template
 5. Bug check: add form validation for failed_notify + notify_email, add template error display
 
+# 2026-04-05 修改记录
+
+1. Bug check complete: no critical bugs found, code quality is good
+2. Update bug排查规范.md: add system checks, command tables, new module checklist (8.1-8.9)
+3. 完成邮件模板功能：添加 TemplateService.init_default_templates() 初始化默认模板（验证码、密码重置、通知），EmailService 添加 send_verification_code()、send_password_reset()、send_notification() 便捷方法，init_db.py 添加阶段2.4邮件模板初始化步骤
+
