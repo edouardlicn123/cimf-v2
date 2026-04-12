@@ -18,7 +18,7 @@
 
 # 系统版本号
 VERSION_MAJOR = '1'      # 大版本号
-VERSION_MINOR = 453        # 小版本号（整数，每次修改+1）
+VERSION_MINOR = 454        # 小版本号（整数，每次修改+1）
 
 def get_version_display():
     """

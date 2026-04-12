@@ -582,4 +582,5 @@
 13. 实现协作工具tool功能：ToolType模型、tools视图、URL路由、协作工具模板、calc示例模块
 14. 更新A02_模块技术规范：添加tool模块views.py规范、模板继承规范、无models.py模块安装处理、类型过滤逻辑更新
 15. 完成 WhatsApp 发送模块（whatsapp）的开发：\n- 创建模块目录结构和所有文件（models, services, views, urls, templates）\n- 添加 logs.html 模板\n- 修复 urls.py 导入问题\n- 创建数据库迁移并执行\n- 安装并启用模块\n- 安装 wabridge SDK 依赖
+16. 修复 dashboard_card 模板路径：移除 modules/ 前缀，因为模板目录已自动加入 Django 搜索路径
 

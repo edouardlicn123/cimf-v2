@@ -33,8 +33,13 @@ def api_dashboard_cards(request):
 
     available_modules = []
     module_stats = {}
+    module_templates = {}
+    rendered_cards = {}
     try:
         from importlib import import_module
+        from django.template import engines
+
+        jinja2_engine = engines['jinja2']
 
         active_modules = Module.objects.filter(is_active=True)
         for node_module in active_modules:
@@ -44,8 +49,30 @@ def api_dashboard_cards(request):
                     mod = import_module(f'modules.{module_path}.module')
                     if hasattr(mod, 'MODULE_INFO'):
                         mod_info = mod.MODULE_INFO
-                        if 'dashboard_cards' in mod_info or True:
+                        if 'dashboard_cards' in mod_info:
                             available_modules.append(node_module.module_id)
+                        
+                        # 检测 dashboard_cards 配置，提取模板路径
+                        if 'dashboard_cards' in mod_info:
+                            cards = mod_info['dashboard_cards']
+                            if cards and isinstance(cards, list):
+                                for card in cards:
+                                    if 'template' in card:
+                                        template_path = card['template']
+                                        module_templates[node_module.module_id] = template_path
+                                        
+                                        # 预渲染模块卡片模板
+                                        try:
+                                            full_template_path = template_path
+                                            template = jinja2_engine.get_template(full_template_path)
+                                            stats = module_stats.get(node_module.module_id, {})
+                                            rendered_cards[node_module.module_id] = template.render({
+                                                'module_id': node_module.module_id,
+                                                'stats': stats,
+                                            })
+                                        except Exception:
+                                            pass
+                                        break
                         
                         if mod_info.get('dashboard_stats', False):
                             service_mod = import_module(f'modules.{module_path}.services')
@@ -69,6 +96,8 @@ def api_dashboard_cards(request):
             'positions': default_positions,
             'available_modules': available_modules,
             'module_stats': module_stats,
+            'module_templates': module_templates,
+            'rendered_cards': rendered_cards,
         }
     })
 
