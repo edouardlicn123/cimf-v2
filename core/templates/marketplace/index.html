@@ -1,0 +1,141 @@
+{% extends "frames/frame_module.html" %}
+
+{% set show_header = false %}
+
+{% block admin_title_content %}模块市场{% endblock %}
+
+{% block admin_content %}
+<div class="row">
+    <div class="col-12">
+        <!-- 提示 -->
+        <div class="border rounded p-3 mb-4 bg-light">
+            <i class="bi bi-info-circle text-primary me-1"></i>
+            从市场下载模块后，需要在模块管理页面进行安装和启用操作。<br>
+            <i class="bi bi-info-circle text-primary me-1"></i>
+            更新模块后需要重启服务器。
+        </div>
+        
+        {% if not modules %}
+        <div class="alert alert-info">
+            <i class="bi bi-info-circle"></i> 暂无可用的模块
+        </div>
+        {% else %}
+        <div class="row">
+            {% for module in modules %}
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            <i class="bi bi-box"></i> {{ module.name }}
+                        </h5>
+                        <p class="card-text text-muted">{{ module.description }}</p>
+                        <p class="card-text">
+                            <small class="text-secondary">
+                                {% if module.installed and module.installed_version %}
+                                当前版本: {{ module.installed_version }} → 市场版本: {{ module.market_version }}
+                                {% else %}
+                                版本: {{ module.market_version|default('-') }}
+                                {% endif %}
+                            </small>
+                        </p>
+                        {% if module.installed and module.has_update %}
+                        <button type="button" 
+                                class="btn btn-warning btn-download"
+                                data-module-id="{{ module.id }}"
+                                data-action="upgrade">
+                            <i class="bi bi-arrow-up-circle"></i> 升级
+                        </button>
+                        {% elif module.installed %}
+                        <button type="button" 
+                                class="btn btn-secondary"
+                                disabled>
+                            <i class="bi bi-check-lg"></i> 已是最新
+                        </button>
+                        {% else %}
+                        <button type="button" 
+                                class="btn btn-primary btn-download"
+                                data-module-id="{{ module.id }}"
+                                data-action="install">
+                            <i class="bi bi-download"></i> 下载
+                        </button>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+(function() {
+    document.querySelectorAll('.btn-download').forEach(function(btn) {
+        if (btn.dataset.bound) return;
+        btn.dataset.bound = 'true';
+        
+        btn.addEventListener('click', function() {
+            const moduleId = this.dataset.moduleId;
+            const action = this.dataset.action || 'install';
+            const originalHtml = this.innerHTML;
+            const isUpgrade = action === 'upgrade';
+            
+            this.disabled = true;
+            this.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> ' + (isUpgrade ? '升级中...' : '下载中...');
+            
+            fetch('/market/install/' + moduleId + '/', {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}',
+                },
+                body: 'module_id=' + encodeURIComponent(moduleId),
+            })
+            .then(function(response) {
+                if (response.redirected) {
+                    alert('请先登录');
+                    return { success: false, error: '请先登录' };
+                }
+                return response.json();
+            })
+            .then(function(data) {
+                if (data.success) {
+                    btn.innerHTML = '<i class="bi bi-check-lg"></i> ' + (isUpgrade ? '升级成功' : '下载成功');
+                    btn.classList.remove(isUpgrade ? 'btn-warning' : 'btn-primary');
+                    btn.classList.add('btn-success');
+                    
+                    setTimeout(function() {
+                        window.location.reload();
+                    }, 1500);
+                } else {
+                    btn.innerHTML = '<i class="bi bi-x-lg"></i> 失败';
+                    btn.classList.remove(isUpgrade ? 'btn-warning' : 'btn-primary');
+                    btn.classList.add('btn-danger');
+                    alert((isUpgrade ? '升级' : '下载') + '失败: ' + (data.error || '未知错误'));
+                    setTimeout(function() {
+                        btn.disabled = false;
+                        btn.innerHTML = originalHtml;
+                        btn.classList.remove('btn-danger');
+                        btn.classList.add(isUpgrade ? 'btn-warning' : 'btn-primary');
+                    }, 2000);
+                }
+            })
+            .catch(function(error) {
+                btn.innerHTML = '<i class="bi bi-x-lg"></i> 失败';
+                btn.classList.remove(isUpgrade ? 'btn-warning' : 'btn-primary');
+                btn.classList.add('btn-danger');
+                alert((isUpgrade ? '升级' : '下载') + '失败: ' + error);
+                setTimeout(function() {
+                    btn.disabled = false;
+                    btn.innerHTML = originalHtml;
+                    btn.classList.remove('btn-danger');
+                    btn.classList.add(isUpgrade ? 'btn-warning' : 'btn-primary');
+                }, 2000);
+            });
+        });
+    });
+})();
+</script>
+{% endblock scripts %}

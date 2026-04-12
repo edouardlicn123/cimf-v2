@@ -1,0 +1,29 @@
+{% extends "frames/frame_importexport.html" %}
+
+{% set show_nav = true %}
+{% set show_header = false %}
+
+{% set active_section = 'export' %}
+
+{% block admin_title_content %}
+  导出数据
+{% endblock %}
+
+{% block admin_content %}
+<p>选择一个模块类型开始导出数据</p>
+
+<div class="row">
+    {% for node_type in node_types %}
+    <div class="col-md-4 mb-3">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">{{ node_type.name }}</h5>
+                <a href="{{ url('modules:export_select_fields', node_type.slug) }}" class="btn btn-primary">
+                    导出 {{ node_type.name }}
+                </a>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

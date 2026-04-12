@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% set show_header = false %}
+{% set use_custom_main = true %}
+
+{% block title %}{% block admin_title %}{% endblock %} - {{ system_name|default('仙芙CIMF') }}{% endblock %}
+
+{% block admin_title_buttons %}{% endblock %}
+
+{% block main_content %}
+<div class="d-flex flex-column" style="min-height: 100vh;">
+  <div class="flex-grow-1 px-4 py-2" style="background: var(--bg-body, #ffffff);">
+    {% block admin_content %}{% endblock %}
+  </div>
+</div>
+{% endblock %}
