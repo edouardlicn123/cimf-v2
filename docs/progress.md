@@ -605,4 +605,6 @@
 17. 修复市场模块下载链接文件名：使用 cimf-{module}.zip 格式
 18. 修复 resident_info 模块 dashboard_card.html 模板：CSS类名改为 module-card、根元素改为 div、背景色改为 linear-gradient 渐变、添加拖拽属性和模块标识
 19. 修复首页功能卡片拖动保存问题及居民信息卡片链接
+20. 修复功能卡片链接问题：前端 renderCards 函数将预渲染的 div 卡片转换为带链接的 a 标签
+21. 简化功能卡片点击跳转逻辑：使用 onclick 事件处理 div 卡片点击跳转
 

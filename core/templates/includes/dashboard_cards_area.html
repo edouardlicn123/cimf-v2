@@ -383,6 +383,13 @@
                             
                             if (moduleContents[moduleId]) {
                                 slot.innerHTML = moduleContents[moduleId];
+                                var card = slot.querySelector('.module-card');
+                                if (card) {
+                                    card.onclick = function() {
+                                        window.location.href = '/modules/' + moduleId + '/';
+                                    };
+                                    card.style.cursor = 'pointer';
+                                }
                             } else {
                                 var card = createCustomerCard(moduleId, parseInt(position), moduleStats[moduleId]);
                                 card.dataset.module = moduleId;
