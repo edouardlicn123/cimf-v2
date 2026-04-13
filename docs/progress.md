@@ -600,4 +600,5 @@
 12. 更新 A02_模块技术规范文档：clock-card 改为 module-card，模块内联样式定义背景色，动态模板变量等
 13. 更新A02模块技术规范：明确功能卡片概念、补充模块类型表格、简化API返回字段、添加背景色设计指南和动态变量扩展示例
 14. 功能卡片颜色配置迁移：将渐变色定义从模板移至module.py的dashboard_cards配置（color_start/color_end）
+15. 修复时钟卡片显示：统一 CSS 类名与 updateClock() 函数匹配
 
