@@ -57,6 +57,8 @@ MODULE_INFO = {
             'id': 'customer_card',
             'name': '客户信息卡片',
             'template': 'customer/dashboard_card.html',
+            'color_start': '#0a58ca',
+            'color_end': '#0a58ca',
         }
     ],
     'views': {

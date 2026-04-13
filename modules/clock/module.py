@@ -17,6 +17,8 @@ MODULE_INFO = {
             'id': 'clock_card',
             'name': '时钟卡片',
             'template': 'clock/dashboard_card.html',
+            'color_start': '#0d6efd',
+            'color_end': '#0a58ca',
         }
     ],
 }

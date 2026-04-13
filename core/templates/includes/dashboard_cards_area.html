@@ -380,11 +380,7 @@
                             var moduleId = cardData.module;
                             if (availableModules.indexOf(moduleId) === -1) return;
                             
-                            if (moduleId === 'clock') {
-                                var card = createClockCard(parseInt(position));
-                                card.dataset.module = moduleId;
-                                slot.appendChild(card);
-                            } else if (moduleContents[moduleId]) {
+                            if (moduleContents[moduleId]) {
                                 slot.innerHTML = moduleContents[moduleId];
                             } else {
                                 var card = createCustomerCard(moduleId, parseInt(position), moduleStats[moduleId]);
@@ -462,15 +458,31 @@
         var fromSlot = draggingCard.closest('.card-slot');
         if (fromSlot === toSlot) return;
         
+        // 获取目标槽位中的卡片（如果有）
+        var toCard = toSlot.querySelector('.module-card');
         var newPosition = parseInt(toSlot.dataset.position);
+        var fromPosition = parseInt(fromSlot.dataset.position);
         
+        // 将拖拽的卡片放到目标槽位
         toSlot.innerHTML = '';
         toSlot.appendChild(draggingCard);
         
-        draggingCard.classList.remove('dragging');
-        draggingCard.classList.add('dragging');
+        // 如果目标槽位有卡片，将其放到源槽位（交换）
+        if (toCard) {
+            fromSlot.innerHTML = '';
+            fromSlot.appendChild(toCard);
+            
+            // 交换两个卡片在数据中的位置
+            var tempModule = positions[fromPosition];
+            positions[fromPosition] = positions[newPosition];
+            positions[newPosition] = tempModule;
+        } else {
+            // 目标槽位为空，更新数据
+            positions[newPosition] = positions[fromPosition];
+            positions[fromPosition] = {module: null, size: 'medium', config: {}};
+        }
         
-        applyCardColor(draggingCard, newPosition);
+        draggingCard.classList.remove('dragging');
         
         saveCardPositions();
         

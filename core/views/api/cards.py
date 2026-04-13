@@ -33,7 +33,6 @@ def api_dashboard_cards(request):
 
     available_modules = []
     module_stats = {}
-    module_templates = {}
     module_contents = {}
     try:
         from importlib import import_module
@@ -58,13 +57,25 @@ def api_dashboard_cards(request):
                                 for card in cards:
                                     if 'template' in card:
                                         template_path = card['template']
-                                        module_templates[node_module.module_id] = template_path
                                         
                                         try:
                                             template = jinja2_engine.get_template(template_path)
-                                            module_contents[node_module.module_id] = template.render({
+                                            render_context = {
                                                 'module_id': node_module.module_id,
-                                            })
+                                                'module_card_color_start': card.get('color_start', '#0d6efd'),
+                                                'module_card_color_end': card.get('color_end', '#0a58ca'),
+                                            }
+                                            
+                                            if module_path == 'whatsapp':
+                                                try:
+                                                    wa_mod = import_module(f'modules.{module_path}.services')
+                                                    if hasattr(wa_mod, 'WhatsAppService'):
+                                                        wa_status = wa_mod.WhatsAppService.get_status()
+                                                        render_context['wa_connected'] = wa_status.get('connected', False)
+                                                except Exception:
+                                                    pass
+                                            
+                                            module_contents[node_module.module_id] = template.render(render_context)
                                         except Exception:
                                             pass
                                         break
@@ -91,7 +102,6 @@ def api_dashboard_cards(request):
             'positions': default_positions,
             'available_modules': available_modules,
             'module_stats': module_stats,
-            'module_templates': module_templates,
             'module_contents': module_contents,
         }
     })
