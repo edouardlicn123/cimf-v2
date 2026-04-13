@@ -593,4 +593,7 @@
 5. 修复首页卡片 404：改为后端预渲染模块内容 (module_contents)，前端直接使用
 6. 修改 frame_myinfo.html：首页设置 → 功能卡片
 7. 修改 frame_myinfo.html：导航设置 → 导航卡片
+8. 修复功能卡片显示：按 data-module 属性设置模块专属背景色
+9. 重命名 clock-card 为 module-card；恢复各模块背景色（方案1：模块内定义）
+10. 功能卡片和导航卡片：从圆角改为直角
 

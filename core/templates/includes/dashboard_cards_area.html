@@ -18,45 +18,30 @@
     height: 150px;
     min-height: 150px;
     border: 1px solid var(--border);
-    transition: all 0.2s ease;
     background-color: var(--bg-surface);
 }
 .card-slot.drag-over {
     border-color: var(--primary);
     background-color: var(--primary-light);
 }
-.card-slot .clock-card,
-.card-slot > .clock-card {
+.module-card {
     height: 100%;
-    min-height: 100px;
     width: 100%;
-    margin: 0;
-}
-.clock-card {
     cursor: grab;
     transition: transform 0.2s ease, box-shadow 0.2s ease;
-    background-color: var(--primary) !important;
-    color: #ffffff !important;
-    border: none !important;
+    border: none;
+    border-radius: 0;
     box-shadow: var(--shadow);
-    width: 100% !important;
 }
-.clock-card:hover {
+.module-card:hover {
     box-shadow: var(--shadow-hover);
     transform: translateY(-2px);
 }
-.clock-card:active {
+.module-card:active {
     cursor: grabbing;
 }
-.clock-card.dragging {
+.module-card.dragging {
     opacity: 0.5;
-}
-.clock-card .clock-time {
-    font-family: 'Courier New', monospace;
-    letter-spacing: 2px;
-}
-.clock-card .clock-weekday {
-    opacity: 0.8;
 }
 </style>
 
@@ -202,7 +187,7 @@
         var positions = {};
         var slots = document.querySelectorAll('.card-slot');
         slots.forEach(function(slot) {
-            var card = slot.querySelector('.clock-card');
+            var card = slot.querySelector('.module-card');
             if (card) {
                 positions[slot.dataset.position] = {
                     module: card.dataset.module || 'clock'
@@ -243,7 +228,7 @@
         var textColor = isOdd ? '#fff' : 'var(--primary)';
         
         var card = document.createElement('div');
-        card.className = 'clock-card';
+        card.className = 'clock-card module-card';
         card.setAttribute('draggable', 'true');
         card.setAttribute('data-module', 'clock');
         card.style.cssText = 'background-color:' + bgColor + ' !important;color:' + textColor + ' !important;border:none;height:100%;padding:0.75rem;display:flex;flex-direction:column;justify-content:center;align-items:center;cursor:grab;';
@@ -272,7 +257,7 @@
         
         var card = document.createElement('a');
         card.href = '/modules/' + moduleId + '/';
-        card.className = 'clock-card';
+        card.className = 'clock-card module-card';
         card.setAttribute('draggable', 'true');
         card.setAttribute('data-module', moduleId);
         card.style.cssText = 'background-color:' + bgColor + ' !important;color:' + textColor + ' !important;border:none;height:100%;padding:0.75rem;display:flex;flex-direction:column;justify-content:center;align-items:center;cursor:grab;text-decoration:none;';
@@ -286,17 +271,17 @@
     }
 
     function createRenderedCard(htmlContent, moduleId, position) {
-        var isOdd = (position % 2 === 1);
+        var temp = document.createElement('div');
+        temp.innerHTML = htmlContent;
+        var card = temp.firstElementChild;
         
-        var wrapper = document.createElement('div');
-        wrapper.className = 'clock-card module-card';
-        wrapper.setAttribute('draggable', 'true');
-        wrapper.setAttribute('data-module', moduleId);
-        wrapper.style.cssText = 'height:100%;border:none;cursor:grab;';
+        if (card) {
+            card.classList.add('clock-card', 'module-card');
+            card.setAttribute('draggable', 'true');
+            card.dataset.module = moduleId;
+        }
         
-        wrapper.innerHTML = htmlContent;
-        
-        return wrapper;
+        return card || temp;
     }
 
     function createModuleCard(moduleId, templatePath, stats, position) {
@@ -395,19 +380,17 @@
                             var moduleId = cardData.module;
                             if (availableModules.indexOf(moduleId) === -1) return;
                             
-                            slot.innerHTML = '';
-                            var card;
-                            
                             if (moduleId === 'clock') {
-                                card = createClockCard(parseInt(position));
+                                var card = createClockCard(parseInt(position));
+                                card.dataset.module = moduleId;
+                                slot.appendChild(card);
                             } else if (moduleContents[moduleId]) {
-                                card = createRenderedCard(moduleContents[moduleId], moduleId, parseInt(position));
+                                slot.innerHTML = moduleContents[moduleId];
                             } else {
-                                card = createCustomerCard(moduleId, parseInt(position), moduleStats[moduleId]);
+                                var card = createCustomerCard(moduleId, parseInt(position), moduleStats[moduleId]);
+                                card.dataset.module = moduleId;
+                                slot.appendChild(card);
                             }
-                            
-                            card.dataset.module = moduleId;
-                            slot.appendChild(card);
                         }
                     });
                 }
@@ -421,7 +404,7 @@
     }
 
     function initDragAndDrop() {
-        var cards = document.querySelectorAll('.clock-card');
+        var cards = document.querySelectorAll('.module-card');
         var slots = document.querySelectorAll('.card-slot');
         
         cards.forEach(function(card) {
@@ -438,7 +421,7 @@
     }
 
     function onDragStart(e) {
-        draggingCard = e.target.closest('.clock-card');
+        draggingCard = e.target.closest('.module-card');
         draggingCard.classList.add('dragging');
         e.dataTransfer.effectAllowed = 'move';
         e.dataTransfer.setData('text/plain', '');
