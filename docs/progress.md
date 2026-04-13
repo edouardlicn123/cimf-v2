@@ -603,4 +603,6 @@
 15. 修复时钟卡片显示：统一 CSS 类名与 updateClock() 函数匹配
 16. 市场模块更新到1.1.7：resident_info和customer_cn
 17. 修复市场模块下载链接文件名：使用 cimf-{module}.zip 格式
+18. 修复 resident_info 模块 dashboard_card.html 模板：CSS类名改为 module-card、根元素改为 div、背景色改为 linear-gradient 渐变、添加拖拽属性和模块标识
+19. 修复首页功能卡片拖动保存问题及居民信息卡片链接
 

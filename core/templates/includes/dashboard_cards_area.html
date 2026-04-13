@@ -50,6 +50,7 @@
     'use strict';
 
     var draggingCard = null;
+    var cardPositions = {};
 
     // 农历数据
     var lunarInfo = [
@@ -367,14 +368,14 @@
             .then(function(response) { return response.json(); })
             .then(function(data) {
                 if (data.success && data.data) {
-                    var positions = data.data.positions || {};
+                    cardPositions = data.data.positions || {};
                     var availableModules = data.data.available_modules || {};
                     var moduleStats = data.data.module_stats || {};
                     var moduleContents = data.data.module_contents || {};
                     
                     slots.forEach(function(slot) {
                         var position = slot.dataset.position;
-                        var cardData = positions[position];
+                        var cardData = cardPositions[position];
                         
                         if (cardData && cardData.module) {
                             var moduleId = cardData.module;
@@ -473,13 +474,13 @@
             fromSlot.appendChild(toCard);
             
             // 交换两个卡片在数据中的位置
-            var tempModule = positions[fromPosition];
-            positions[fromPosition] = positions[newPosition];
-            positions[newPosition] = tempModule;
+            var tempModule = cardPositions[fromPosition];
+            cardPositions[fromPosition] = cardPositions[newPosition];
+            cardPositions[newPosition] = tempModule;
         } else {
             // 目标槽位为空，更新数据
-            positions[newPosition] = positions[fromPosition];
-            positions[fromPosition] = {module: null, size: 'medium', config: {}};
+            cardPositions[newPosition] = cardPositions[fromPosition];
+            cardPositions[fromPosition] = {module: null, size: 'medium', config: {}};
         }
         
         draggingCard.classList.remove('dragging');
