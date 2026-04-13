@@ -584,3 +584,13 @@
 15. 完成 WhatsApp 发送模块（whatsapp）的开发：\n- 创建模块目录结构和所有文件（models, services, views, urls, templates）\n- 添加 logs.html 模板\n- 修复 urls.py 导入问题\n- 创建数据库迁移并执行\n- 安装并启用模块\n- 安装 wabridge SDK 依赖
 16. 修复 dashboard_card 模板路径：移除 modules/ 前缀，因为模板目录已自动加入 Django 搜索路径
 
+# 2026-04-13 修改记录
+
+1. 优化 createModuleCard 实现真正的动态模板加载
+2. 改为全部动态加载：移除预渲染，使用纯前端动态加载模块卡片模板
+3. 检查模块：创建 resident_info/whatsapp 的 dashboard_card.html；customer_cn 未注册（仅 migrations）
+4. 修复 customer_cn 模块：添加 dashboard_cards 配置和 dashboard_card.html 模板
+5. 修复首页卡片 404：改为后端预渲染模块内容 (module_contents)，前端直接使用
+6. 修改 frame_myinfo.html：首页设置 → 功能卡片
+7. 修改 frame_myinfo.html：导航设置 → 导航卡片
+

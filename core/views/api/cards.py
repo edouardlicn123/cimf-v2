@@ -34,7 +34,7 @@ def api_dashboard_cards(request):
     available_modules = []
     module_stats = {}
     module_templates = {}
-    rendered_cards = {}
+    module_contents = {}
     try:
         from importlib import import_module
         from django.template import engines
@@ -52,7 +52,6 @@ def api_dashboard_cards(request):
                         if 'dashboard_cards' in mod_info:
                             available_modules.append(node_module.module_id)
                         
-                        # 检测 dashboard_cards 配置，提取模板路径
                         if 'dashboard_cards' in mod_info:
                             cards = mod_info['dashboard_cards']
                             if cards and isinstance(cards, list):
@@ -61,14 +60,10 @@ def api_dashboard_cards(request):
                                         template_path = card['template']
                                         module_templates[node_module.module_id] = template_path
                                         
-                                        # 预渲染模块卡片模板
                                         try:
-                                            full_template_path = template_path
-                                            template = jinja2_engine.get_template(full_template_path)
-                                            stats = module_stats.get(node_module.module_id, {})
-                                            rendered_cards[node_module.module_id] = template.render({
+                                            template = jinja2_engine.get_template(template_path)
+                                            module_contents[node_module.module_id] = template.render({
                                                 'module_id': node_module.module_id,
-                                                'stats': stats,
                                             })
                                         except Exception:
                                             pass
@@ -97,7 +92,7 @@ def api_dashboard_cards(request):
             'available_modules': available_modules,
             'module_stats': module_stats,
             'module_templates': module_templates,
-            'rendered_cards': rendered_cards,
+            'module_contents': module_contents,
         }
     })
 

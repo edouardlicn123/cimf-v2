@@ -328,7 +328,30 @@
             '<div class="card-count" style="font-size:2rem;font-weight:bold;">' + total + '</div>' +
             '<div class="card-subtitle" style="font-size:0.75rem;opacity:0.75;margin-top:4px;">本周新增 ' + recent + ' 条</div>';
         
+        loadModuleTemplate(card, moduleId, templatePath);
+        
         return card;
+    }
+    
+    function loadModuleTemplate(card, moduleId, templatePath) {
+        if (!templatePath) return;
+        
+        fetch('/modules/' + moduleId + '/templates/' + templatePath, {credentials: 'include'})
+            .then(function(response) { return response.text(); })
+            .then(function(html) {
+                if (html) {
+                    card.innerHTML = html;
+                    card.style.cssText = '';
+                    card.classList.add('module-custom-card');
+                    var pos = card.closest('.card-slot');
+                    if (pos) {
+                        pos.classList.add('custom-loaded');
+                    }
+                }
+            })
+            .catch(function(err) {
+                console.error('加载模块模板失败:', moduleId, err);
+            });
     }
 
     function updateClock() {
@@ -362,8 +385,7 @@
                     var positions = data.data.positions || {};
                     var availableModules = data.data.available_modules || {};
                     var moduleStats = data.data.module_stats || {};
-                    var moduleTemplates = data.data.module_templates || {};
-                    var renderedCards = data.data.rendered_cards || {};
+                    var moduleContents = data.data.module_contents || {};
                     
                     slots.forEach(function(slot) {
                         var position = slot.dataset.position;
@@ -378,11 +400,8 @@
                             
                             if (moduleId === 'clock') {
                                 card = createClockCard(parseInt(position));
-                            } else if (renderedCards[moduleId]) {
-                                // 使用预渲染的模块卡片模板
-                                card = createRenderedCard(renderedCards[moduleId], moduleId, parseInt(position));
-                            } else if (moduleTemplates[moduleId]) {
-                                card = createModuleCard(moduleId, moduleTemplates[moduleId], moduleStats[moduleId], parseInt(position));
+                            } else if (moduleContents[moduleId]) {
+                                card = createRenderedCard(moduleContents[moduleId], moduleId, parseInt(position));
                             } else {
                                 card = createCustomerCard(moduleId, parseInt(position), moduleStats[moduleId]);
                             }
