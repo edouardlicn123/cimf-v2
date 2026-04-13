@@ -602,4 +602,5 @@
 14. 功能卡片颜色配置迁移：将渐变色定义从模板移至module.py的dashboard_cards配置（color_start/color_end）
 15. 修复时钟卡片显示：统一 CSS 类名与 updateClock() 函数匹配
 16. 市场模块更新到1.1.7：resident_info和customer_cn
+17. 修复市场模块下载链接文件名：使用 cimf-{module}.zip 格式
 
