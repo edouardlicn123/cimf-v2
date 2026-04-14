@@ -276,7 +276,15 @@ def upload_preview(request, node_type_slug):
         
         validation = ImportService.validate_data(node_type_slug, parsed_rows)
         
+        field_to_header = {v: k for k, v in header_to_field.items()}
         preview_rows = parsed_rows[:10]
+        preview_display = []
+        for row in preview_rows:
+            display_row = {}
+            for field_name, value in row.items():
+                header = field_to_header.get(field_name, field_name)
+                display_row[header] = value
+            preview_display.append(display_row)
         
         request.session['import_data'] = {
             'filename': filename,
@@ -292,7 +300,7 @@ def upload_preview(request, node_type_slug):
                 'filename': filename,
                 'total_rows': len(parsed_rows),
                 'headers': headers,
-                'preview': preview_rows,
+                'preview': preview_display,
                 'valid_count': validation['valid_count'],
                 'error_count': validation['error_count'],
                 'errors': validation['errors'][:20],

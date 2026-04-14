@@ -38,10 +38,19 @@
                 <p>错误行数：<span id="errorCount" class="text-danger"></span></p>
             </div>
             
+            <div id="previewSection" class="mb-3" style="display: none;">
+                <h6>数据预览（前10行）：</h6>
+                <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+                    <table id="previewTable" class="table table-sm table-bordered table-striped">
+                        <thead></thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+            
             <div id="errorList" class="mb-3" style="display: none;">
                 <h6>错误列表：</h6>
-                <ul class="text-danger">
-                </ul>
+                <ul class="text-danger" style="max-height: 200px; overflow-y: auto;"></ul>
             </div>
             
             <form action="{{ url('modules:do_import', node_type.slug) }}" method="post">
@@ -86,6 +95,41 @@ document.getElementById('uploadForm').addEventListener('submit', async function(
             document.getElementById('totalRows').textContent = result.data.total_rows;
             document.getElementById('validCount').textContent = result.data.valid_count;
             document.getElementById('errorCount').textContent = result.data.error_count;
+            
+            const previewSection = document.getElementById('previewSection');
+            const previewTable = document.getElementById('previewTable');
+            const thead = previewTable.querySelector('thead');
+            const tbody = previewTable.querySelector('tbody');
+            thead.innerHTML = '';
+            tbody.innerHTML = '';
+            
+            if (result.data.preview && result.data.preview.length > 0) {
+                previewSection.style.display = 'block';
+                
+                const headerRow = document.createElement('tr');
+                result.data.headers.forEach(function(h) {
+                    const th = document.createElement('th');
+                    th.textContent = h;
+                    headerRow.appendChild(th);
+                });
+                thead.appendChild(headerRow);
+                
+                result.data.preview.forEach(function(row) {
+                    const tr = document.createElement('tr');
+                    result.data.headers.forEach(function(h) {
+                        const td = document.createElement('td');
+                        td.textContent = row[h] || '';
+                        td.style.maxWidth = '200px';
+                        td.style.overflow = 'hidden';
+                        td.style.textOverflow = 'ellipsis';
+                        td.style.whiteSpace = 'nowrap';
+                        tr.appendChild(td);
+                    });
+                    tbody.appendChild(tr);
+                });
+            } else {
+                previewSection.style.display = 'none';
+            }
             
             const errorList = document.getElementById('errorList');
             const errorUl = errorList.querySelector('ul');
