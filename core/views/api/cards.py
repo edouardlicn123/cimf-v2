@@ -66,6 +66,20 @@ def api_dashboard_cards(request):
                                                 'module_card_color_end': card.get('color_end', '#0a58ca'),
                                             }
                                             
+                                            if mod_info.get('dashboard_stats', False):
+                                                service_mod = import_module(f'modules.{module_path}.services')
+                                                for attr_name in dir(service_mod):
+                                                    attr = getattr(service_mod, attr_name)
+                                                    if (attr_name.endswith('Service') and 
+                                                        hasattr(attr, 'get_count')):
+                                                        render_context['total'] = attr.get_count()
+                                                        render_context['recent'] = getattr(attr, 'get_recent_count', lambda d=7: 0)(7)
+                                                        module_stats[node_module.module_id] = {
+                                                            'total': attr.get_count(),
+                                                            'recent': getattr(attr, 'get_recent_count', lambda d=7: 0)(7)
+                                                        }
+                                                        break
+                                            
                                             if module_path == 'whatsapp':
                                                 try:
                                                     wa_mod = import_module(f'modules.{module_path}.services')
@@ -96,7 +110,7 @@ def api_dashboard_cards(request):
     except Exception:
         pass
 
-    return JsonResponse({
+    response = JsonResponse({
         'success': True,
         'data': {
             'positions': default_positions,
@@ -105,6 +119,10 @@ def api_dashboard_cards(request):
             'module_contents': module_contents,
         }
     })
+    response['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+    response['Pragma'] = 'no-cache'
+    response['Expires'] = '0'
+    return response
 
 
 @login_required
