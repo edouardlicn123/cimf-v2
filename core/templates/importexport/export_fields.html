@@ -15,14 +15,19 @@
     
     <div class="card mb-4">
         <div class="card-body">
-            <h5>选择字段</h5>
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="mb-0">选择字段</h5>
+                <div>
+                    <button type="button" class="btn btn-sm btn-outline-primary" onclick="selectAll()">全选</button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="selectNone()">全不选</button>
+                </div>
+            </div>
             <div class="row">
                 {% for field in fields %}
                 <div class="col-md-4">
                     <div class="form-check">
-                        <input class="form-check-input" type="checkbox" name="field_{{ loop.index }}" 
-                               value="{{ field.name }}" id="field_{{ loop.index }}"
-                               {% if field.selected %}checked{% endif %}>
+                        <input class="form-check-input field-checkbox" type="checkbox" name="field_{{ loop.index }}" 
+                               value="{{ field.name }}" id="field_{{ loop.index }}" checked>
                         <label class="form-check-label" for="field_{{ loop.index }}">
                             {{ field.label }}
                         </label>
@@ -94,6 +99,14 @@
 <script>
 let filterCount = 1;
 const filterFields = {{ filterable_fields | tojson }};
+
+function selectAll() {
+    document.querySelectorAll('.field-checkbox').forEach(cb => cb.checked = true);
+}
+
+function selectNone() {
+    document.querySelectorAll('.field-checkbox').forEach(cb => cb.checked = false);
+}
 
 function addFilter() {
     if (filterCount >= 6) {

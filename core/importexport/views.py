@@ -66,8 +66,13 @@ def export_select_fields(request, node_type_slug):
         return redirect('modules:export_list')
     
     if request.method == 'POST':
-        fields_raw = request.POST.get('fields', '')
-        selected_fields = [f.strip() for f in fields_raw.split(',') if f.strip()]
+        selected_fields = []
+        for key in request.POST:
+            if key.startswith('field_'):
+                value = request.POST.get(key)
+                if value and value.strip():
+                    selected_fields.append(value.strip())
+        
         if not selected_fields:
             messages.error(request, '请至少选择一个导出字段')
             return redirect('modules:export_select_fields', node_type_slug)
@@ -130,7 +135,7 @@ def export_confirm(request, node_type_slug):
         return redirect('modules:export_exporting', node_type_slug)
     
     if not selected_fields:
-        return redirect('importexport:export_select_fields', node_type_slug)
+        return redirect('modules:export_select_fields', node_type_slug)
     
     fields_info = ExportService.get_fields_info(node_type_slug, selected_fields)
     record_count = ExportService.get_record_count(node_type_slug, filters)
@@ -276,14 +281,13 @@ def upload_preview(request, node_type_slug):
         
         validation = ImportService.validate_data(node_type_slug, parsed_rows)
         
-        field_to_header = {v: k for k, v in header_to_field.items()}
         preview_rows = parsed_rows[:10]
         preview_display = []
         for row in preview_rows:
             display_row = {}
-            for field_name, value in row.items():
-                header = field_to_header.get(field_name, field_name)
-                display_row[header] = value
+            for header in headers:
+                field_name = header_to_field.get(header)
+                display_row[header] = row.get(field_name, '') if field_name else ''
             preview_display.append(display_row)
         
         request.session['import_data'] = {

@@ -46,7 +46,10 @@ class ImportService:
         """读取 CSV 文件"""
         import csv
         
-        decoded_file = file.read().decode('utf-8-sig')
+        file_content = file.read()
+        if hasattr(file, 'seek'):
+            file.seek(0)
+        decoded_file = file_content.decode('utf-8-sig')
         reader = csv.reader(decoded_file.splitlines())
         rows = list(reader)
         
@@ -63,7 +66,10 @@ class ImportService:
         """读取 XLSX 文件"""
         from openpyxl import load_workbook
         
-        wb = load_workbook(filename=io.BytesIO(file.read()), data_only=True)
+        file_content = file.read()
+        if hasattr(file, 'seek'):
+            file.seek(0)
+        wb = load_workbook(filename=io.BytesIO(file_content), data_only=True)
         ws = wb.active
         
         rows = list(ws.values)
