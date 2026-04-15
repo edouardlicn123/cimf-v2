@@ -226,6 +226,14 @@ class ExportService:
             from importlib import import_module
             mod = import_module(f'modules.{node_type_slug}.services')
             
+            # 优先查找与 node_type_slug 同名的 Service
+            service_name = f'{node_type_slug.title().replace("_", "")}Service'
+            if hasattr(mod, service_name):
+                attr = getattr(mod, service_name)
+                if hasattr(attr, 'get_list'):
+                    return attr
+            
+            # 否则遍历查找第一个 Service
             for attr_name in dir(mod):
                 attr = getattr(mod, attr_name)
                 if (attr_name.endswith('Service') and 
