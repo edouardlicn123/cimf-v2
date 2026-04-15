@@ -634,4 +634,5 @@
 2. 修复导出字段选择页面：1) 默认全选字段 2) 添加全选/全不选按钮 3) 修复字段收集逻辑 bug
 3. 全面检查导入导出功能并修复 4 个 bug：1) URL redirect 错误 2) 上传预览字段映射问题 3) XLSX 文件读取指针问题 4) CSV 文件读取指针问题
 4. 修复导出功能两个 bug：1) _get_service_class 优先匹配同名 Service 2) 补充 resident_info 表缺失的 phone2/phone3/death_reason 列
+5. 实现导入导出自动发现机制：1) 重构 FieldDefExtractor 字段提取器 2) ExportService 支持自动从 Django 模型发现字段 3) 支持模块补充指定机制 4) 直接查询模块模型而非通过 Service
 

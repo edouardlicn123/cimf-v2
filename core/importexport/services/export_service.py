@@ -3,9 +3,10 @@
 ExportService - 导出服务
 
 提供通用的数据导出功能，支持 CSV/Excel 格式
+支持自动发现模块字段，无需模块主动配置
 """
 
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional, Type
 from django.http import HttpResponse
 from django.db.models import Q
 from datetime import datetime
@@ -31,17 +32,47 @@ class ExportService:
     
     @classmethod
     def get_exportable_fields(cls, node_type_slug: str) -> List[Dict]:
-        """动态获取可导出的字段列表"""
-        from importlib import import_module
+        """
+        动态获取可导出的字段列表
         
+        优先级：
+        1. 模块配置的 export_fields（支持覆盖/补充/排除）
+        2. 自动从 Django 模型发现
+        """
+        from core.importexport.model_registry import ModelRegistry
+        from core.importexport.field_extractor import FieldDefExtractor
+        
+        module_config = cls._get_module_export_config(node_type_slug)
+        
+        if module_config is not None:
+            auto_fields = cls._auto_discover_fields(node_type_slug, ModelRegistry, FieldDefExtractor)
+            return FieldDefExtractor.merge_with_module_config(auto_fields, module_config)
+        
+        return cls._auto_discover_fields(node_type_slug, ModelRegistry, FieldDefExtractor)
+    
+    @classmethod
+    def _auto_discover_fields(cls, node_type_slug: str, 
+                              ModelRegistry, 
+                              FieldDefExtractor) -> List[Dict]:
+        """自动从 Django 模型发现字段"""
+        model_class = ModelRegistry.get_model(node_type_slug)
+        if model_class:
+            return FieldDefExtractor.extract(model_class)
+        return []
+    
+    @classmethod
+    def _get_module_export_config(cls, node_type_slug: str) -> Optional[List[Dict]]:
+        """获取模块配置的导出字段定义"""
         try:
+            from importlib import import_module
             mod = import_module(f'modules.{node_type_slug}.module')
             if hasattr(mod, 'MODULE_INFO'):
-                return mod.MODULE_INFO.get('export_fields', [])
+                config = mod.MODULE_INFO.get('export_fields')
+                if config:
+                    return config
         except (ImportError, ModuleNotFoundError):
             pass
-        
-        return []
+        return None
     
     @classmethod
     def get_fields_info(cls, node_type_slug: str, field_names: List[str]) -> List[Dict]:
@@ -57,7 +88,7 @@ class ExportService:
     
     @classmethod
     def has_region_field(cls, node_type_slug: str) -> bool:
-        """检查节点类型是否有省市区字段"""
+        """检查节点类型是否有省市区 JSON 字段"""
         all_fields = cls.get_exportable_fields(node_type_slug)
         return any(f['name'] == 'region' for f in all_fields)
     
@@ -66,11 +97,12 @@ class ExportService:
                     filters: List[Dict] = None, limit: int = 5) -> List[Dict]:
         """获取数据预览"""
         queryset = cls._get_filtered_queryset(node_type_slug, filters)
-        fields = cls.get_fields_info(node_type_slug, field_names)
+        fields_info = cls.get_fields_info(node_type_slug, field_names)
+        field_type_map = {f['name']: f['type'] for f in fields_info}
         
         preview_data = []
         for item in queryset[:limit]:
-            row = cls._convert_to_row(item, field_names, node_type_slug)
+            row = cls._convert_to_row(item, field_names, field_type_map, node_type_slug)
             preview_data.append(row)
         
         return preview_data
@@ -86,18 +118,19 @@ class ExportService:
                export_format: str = 'csv', filters: List[Dict] = None) -> HttpResponse:
         """执行导出"""
         queryset = cls._get_filtered_queryset(node_type_slug, filters)
-        fields = cls.get_fields_info(node_type_slug, field_names)
+        fields_info = cls.get_fields_info(node_type_slug, field_names)
+        field_type_map = {f['name']: f['type'] for f in fields_info}
         
         rows = []
         for item in queryset:
-            rows.append(cls._convert_to_row(item, field_names, node_type_slug))
+            rows.append(cls._convert_to_row(item, field_names, field_type_map, node_type_slug))
         
         filename = cls.generate_filename(node_type_slug, export_format)
         
         if export_format == cls.FORMAT_CSV:
-            return cls._export_csv(rows, fields, filename)
+            return cls._export_csv(rows, fields_info, filename)
         else:
-            return cls._export_xlsx(rows, fields, filename)
+            return cls._export_xlsx(rows, fields_info, filename)
     
     @classmethod
     def generate_filename(cls, node_type_slug: str, export_format: str) -> str:
@@ -176,43 +209,70 @@ class ExportService:
     
     @classmethod
     def _convert_to_row(cls, item, field_names: List[str], 
+                        field_type_map: Dict[str, str],
                         node_type_slug: str = None) -> Dict:
         """将数据对象转换为导出行"""
-        fields = cls.get_exportable_fields(node_type_slug) if node_type_slug else []
-        field_type_map = {f['name']: f['type'] for f in fields}
-        
         row = {}
+        
         for field_name in field_names:
             field_type = field_type_map.get(field_name, 'string')
             value = cls._get_field_value(item, field_name, field_type)
             row[field_name] = value
+        
         return row
     
     @classmethod
-    def _get_field_value(cls, item, field_name: str, field_type: str = 'string') -> Any:
+    def _get_field_value(cls, obj: Any, field_name: str, field_type: str = 'string') -> Any:
         """获取字段值"""
+        if obj is None:
+            return ''
+        
         if field_type in ['fk', 'taxonomy']:
-            return cls._resolve_fk_field(item, field_name)
+            return cls._resolve_fk_field(obj, field_name)
         
         if field_type == 'region':
-            return cls._resolve_region_field(item)
+            return cls._resolve_region_field(obj)
         
         if field_type == 'boolean':
-            value = getattr(item, field_name, False)
+            value = getattr(obj, field_name, False)
             return '是' if value else '否'
         
-        return getattr(item, field_name, '') or ''
+        if field_type == 'datetime':
+            value = getattr(obj, field_name, None)
+            if value:
+                return value.strftime('%Y-%m-%d %H:%M:%S')
+            return ''
+        
+        if field_type == 'date':
+            value = getattr(obj, field_name, None)
+            if value:
+                return value.strftime('%Y-%m-%d')
+            return ''
+        
+        return getattr(obj, field_name, '') or ''
     
     @classmethod
-    def _resolve_fk_field(cls, item, field_name: str) -> str:
+    def _resolve_fk_field(cls, obj: Any, field_name: str) -> str:
         """解析 FK 字段，返回名称"""
-        obj = getattr(item, field_name, None)
-        return obj.name if obj and hasattr(obj, 'name') else ''
+        fk_obj = getattr(obj, field_name, None)
+        if fk_obj is None:
+            return ''
+        
+        if hasattr(fk_obj, 'name'):
+            return fk_obj.name
+        return str(fk_obj)
     
     @classmethod
-    def _resolve_region_field(cls, item) -> str:
+    def _resolve_region_field(cls, obj: Any) -> str:
         """解析省市区 JSON 字段"""
-        region = getattr(item, 'region', None) or {}
+        region = getattr(obj, 'region', None) or {}
+        if isinstance(region, str):
+            import json
+            try:
+                region = json.loads(region)
+            except (json.JSONDecodeError, TypeError):
+                return region
+        
         province = region.get('province', '')
         city = region.get('city', '')
         district = region.get('district', '')
@@ -220,43 +280,30 @@ class ExportService:
         return ' '.join(parts) if parts else ''
     
     @classmethod
-    def _get_service_class(cls, node_type_slug: str):
-        """动态获取服务类"""
-        try:
-            from importlib import import_module
-            mod = import_module(f'modules.{node_type_slug}.services')
-            
-            # 优先查找与 node_type_slug 同名的 Service
-            service_name = f'{node_type_slug.title().replace("_", "")}Service'
-            if hasattr(mod, service_name):
-                attr = getattr(mod, service_name)
-                if hasattr(attr, 'get_list'):
-                    return attr
-            
-            # 否则遍历查找第一个 Service
-            for attr_name in dir(mod):
-                attr = getattr(mod, attr_name)
-                if (attr_name.endswith('Service') and 
-                    hasattr(attr, 'get_list')):
-                    return attr
-        except (ImportError, ModuleNotFoundError):
-            pass
-        
-        return None
-    
-    @classmethod
     def _get_filtered_queryset(cls, node_type_slug: str, filters: List[Dict] = None):
         """获取应用筛选条件后的 QuerySet"""
-        service = cls._get_service_class(node_type_slug)
-        if not service:
-            raise ValueError(f"Unknown node type: {node_type_slug}")
+        from core.importexport.model_registry import ModelRegistry
         
-        queryset = service.get_list()
+        model_class = ModelRegistry.get_model(node_type_slug)
+        if not model_class:
+            from core.node.models import Node
+            queryset = Node.objects.filter(node_type__slug=node_type_slug)
+            return cls._apply_filters(queryset, filters, node_type_slug, None, None)
+        
+        queryset = model_class.objects.all()
         
         if not filters:
             return queryset
         
+        return cls._apply_filters(queryset, filters, node_type_slug, model_class)
+    
+    @classmethod
+    def _apply_filters(cls, queryset, filters: List[Dict], 
+                      node_type_slug: str, model_class: Type = None,
+                      model_related_name: str = None):
+        """应用筛选条件"""
         import json
+        
         for f in filters:
             field = f.get('field', '')
             value = f.get('value', '')
@@ -269,20 +316,29 @@ class ExportService:
                     region_data = json.loads(value) if isinstance(value, str) else value
                 except (json.JSONDecodeError, TypeError):
                     region_data = {}
+                q = Q()
                 province = region_data.get('province', '')
                 city = region_data.get('city', '')
                 district = region_data.get('district', '')
-                q = Q()
+                
+                prefix = model_related_name or f'{node_type_slug}_fields'
                 if province:
-                    q &= Q(**{f'region__province__icontains': province})
+                    q &= Q(**{f'{prefix}__region__province__icontains': province})
                 if city:
-                    q &= Q(**{f'region__city__icontains': city})
+                    q &= Q(**{f'{prefix}__region__city__icontains': city})
                 if district:
-                    q &= Q(**{f'region__district__icontains': district})
+                    q &= Q(**{f'{prefix}__region__district__icontains': district})
+                
                 queryset = queryset.filter(q)
-            elif field in cls.FILTERABLE_FK_FIELDS:
-                queryset = queryset.filter(**{f'{field}__name__icontains': value})
-            elif field in cls.FILTERABLE_FIELD_TYPES:
-                queryset = queryset.filter(**{f'{field}__icontains': value})
+            elif model_class and hasattr(model_class, field):
+                field_obj = model_class._meta.get_field(field)
+                prefix = model_related_name or f'{node_type_slug}_fields'
+                if isinstance(field_obj, models.ForeignKey):
+                    queryset = queryset.filter(**{f'{prefix}__{field}__name__icontains': value})
+                elif hasattr(field_obj, 'name') or field in ['charfield', 'textfield']:
+                    queryset = queryset.filter(**{f'{prefix}__{field}__icontains': value})
         
         return queryset
+
+
+from django.db import models
