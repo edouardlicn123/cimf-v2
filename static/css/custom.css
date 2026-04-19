@@ -38,5 +38,23 @@
 
 /* 示例：如果想全局强制某个字体大小或行高，可以在这里写（但通常不推荐） */
 /* body {
-    font-size: 15px !important;
+     font-size: 15px !important;
 } */
+
+/* 导航菜单悬停特效 */
+.main-nav .nav-link {
+    transition: opacity 0.2s ease;
+    opacity: 1;
+}
+.main-nav:hover .nav-link {
+    opacity: 0.7;
+}
+.main-nav:hover .nav-link:hover {
+    opacity: 1;
+}
+
+/* 取消导航链接hover下划线 */
+.navbar .nav-link:hover,
+.navbar-nav .nav-link:hover {
+    text-decoration: none;
+}

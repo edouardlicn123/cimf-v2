@@ -640,4 +640,11 @@
 
 1. 修复Bug: 服务层外键未检查、API缺少认证、表单user_id风险、模板空值处理
 2. 更新A02_模块技术规范：添加models字段、SQL钩子函数、region字段类型、修正tool类型显示位置、添加模块市场配置
+3. 顶部导航菜单增加hover特效：默认100%不透明，hover时当前链接保持100%，其他链接80%透明度
+
+# 2026-04-20 修改记录
+
+1. 修复多个模块bug：calc eval危险使用、whatsapp .get()无异常处理、clock模板默认值、whatsapp Jinja2时间格式化
+2. 二次修复模块bug：customer/customer_cn Jinja2 date语法、whatsapp/resident_info外键检查、resident_info模板字段访问
+3. 第三次Bug检查：验证确认所有高优先级问题已修复
 

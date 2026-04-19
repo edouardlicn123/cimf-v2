@@ -23,7 +23,7 @@
         <div class="collapse navbar-collapse" id="navbarContent">
             
             <!-- 中间主导航 -->
-            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0 main-nav">
                 <li class="nav-item">
                     <a class="nav-link fw-bold {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}" 
                        href="{{ url('core:dashboard') }}">
@@ -41,7 +41,7 @@
                 <!-- 协作工具 -->
                 <li class="nav-item">
                     <a class="nav-link fw-bold" href="{{ url('core:tools_index') }}">
-                        协作工具
+辅助工具
                     </a>
                 </li>
                 
@@ -95,7 +95,7 @@
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link d-flex align-items-center" href="{{ url('core:logout') }}">
+                        <a class="nav-link d-flex align-items-center fw-bold" href="{{ url('core:logout') }}">
                             <i class="bi bi-box-arrow-right me-1"></i>
                             退出登录
                         </a>
