@@ -44,7 +44,7 @@
                             {% for log in logs %}
                             <tr>
                                 <td>
-                                    <small>{{ log.created_at|date("Y-m-d H:i") }}</small>
+                                    {% if log.created_at %}<small>{{ log.created_at|date("Y-m-d H:i") }}</small>{% else %}<small class="text-muted">-</small>{% endif %}
                                     {% if log.sent_at %}
                                     <br><small class="text-muted">发送: {{ log.sent_at|date("H:i:s") }}</small>
                                     {% endif %}

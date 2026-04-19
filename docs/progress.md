@@ -636,3 +636,8 @@
 4. 修复导出功能两个 bug：1) _get_service_class 优先匹配同名 Service 2) 补充 resident_info 表缺失的 phone2/phone3/death_reason 列
 5. 实现导入导出自动发现机制：1) 重构 FieldDefExtractor 字段提取器 2) ExportService 支持自动从 Django 模型发现字段 3) 支持模块补充指定机制 4) 直接查询模块模型而非通过 Service
 
+# 2026-04-19 修改记录
+
+1. 修复Bug: 服务层外键未检查、API缺少认证、表单user_id风险、模板空值处理
+2. 更新A02_模块技术规范：添加models字段、SQL钩子函数、region字段类型、修正tool类型显示位置、添加模块市场配置
+

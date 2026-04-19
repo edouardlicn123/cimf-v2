@@ -22,11 +22,11 @@ class SampleDataService:
         results = {'overseas': 0, 'domestic': 0}
         
         admin_user = User.objects.filter(is_admin=True).first()
-        
+
         customer_node_type = NodeType.objects.filter(slug='customer').first()
         customer_cn_node_type = NodeType.objects.filter(slug='customer_cn').first()
-        
-        if not customer_node_type or not customer_cn_node_type:
+
+        if not admin_user or not customer_node_type or not customer_cn_node_type:
             return results
         
         for data in OVERSEAS_CUSTOMERS:

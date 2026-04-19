@@ -9,8 +9,10 @@ from django.http import JsonResponse
 from django.db import connection
 from django.utils import timezone
 from django.core.cache import cache
+from core.decorators import login_required
 
 
+@login_required
 def health_check(request):
     """系统健康检查端点
     
@@ -67,6 +69,7 @@ def health_check(request):
     return JsonResponse(checks, status=status_code)
 
 
+@login_required
 def detailed_health_check(request):
     """详细健康检查端点"""
     start_time = time.time()
@@ -127,6 +130,7 @@ def detailed_health_check(request):
     return JsonResponse(checks, status=status_code)
 
 
+@login_required
 def api_version(request):
     """API 版本信息"""
     return JsonResponse({
