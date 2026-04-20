@@ -384,7 +384,7 @@
                             if (moduleContents[moduleId]) {
                                 slot.innerHTML = moduleContents[moduleId];
                                 var card = slot.querySelector('.module-card');
-                                if (card) {
+                                if (card && moduleContents[moduleId] && moduleContents[moduleId].frontpage_card_clickable !== false) {
                                     card.onclick = function() {
                                         window.location.href = '/modules/' + moduleId + '/';
                                     };
