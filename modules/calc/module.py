@@ -8,4 +8,5 @@ MODULE_INFO = {
     'author': '',
     'description': '简易计算器工具',
     'icon': 'bi-calculator',
+    'frontpage_card_clickable': False,
 }

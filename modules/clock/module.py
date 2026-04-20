@@ -7,7 +7,7 @@ MODULE_INFO = {
     'id': 'clock',
     'name': '时钟',
     'type': 'system',
-    'version': '1.0.0',
+    'version': '1.1.0',
     'author': 'edouardlicn',
     'description': '提供时钟、日历的展现功能。',
     'icon': 'bi-clock',
