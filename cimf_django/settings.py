@@ -48,6 +48,14 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
+# ----- IP 访问限制配置 -----
+IP_RESTRICTION_ENABLED = os.getenv('IP_RESTRICTION_ENABLED', 'false').lower() == 'true'
+_ip_whitelist_str = os.getenv('IP_WHITELIST', '').strip()
+IP_WHITELIST = [ip.strip() for ip in _ip_whitelist_str.split(',') if ip.strip()]
+
+if IP_RESTRICTION_ENABLED and not IP_WHITELIST:
+    raise ValueError("IP限制已启用但白名单为空！请在config.env中配置IP_WHITELIST")
+
 # Application definition
 
 # 基础应用（必须保留）
@@ -78,6 +86,7 @@ if os.path.isdir(_nodes_dir):
 INSTALLED_APPS = _base_apps
 
 MIDDLEWARE = [
+    'cimf_django.middleware.IPWhitelistMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',

@@ -648,4 +648,5 @@
 2. 二次修复模块bug：customer/customer_cn Jinja2 date语法、whatsapp/resident_info外键检查、resident_info模板字段访问
 3. 第三次Bug检查：验证确认所有高优先级问题已修复
 4. Clock卡片链接修复：添加frontpage_card_clickable配置
+5. IP访问限制功能：config.env配置、中间件、启动验证
 
