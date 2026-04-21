@@ -156,33 +156,29 @@ class ImportService:
     
     @classmethod
     def _validate_field(cls, field: Dict, value: Any) -> List[str]:
-        """验证单个字段"""
+        """验证单个字段
+
+        注意：对于外键(FK)字段，只验证数据类型是否有效，不验证值是否在词汇表中存在。
+        外键值的映射和自动创建在数据转换阶段处理。
+        """
         errors = []
-        
+
         if not value:
             if field['required']:
                 errors.append(f"{field['label']} 不能为空")
             return errors
-        
+
         field_type = field['type']
-        
+
         if field_type == 'email':
             if not cls._is_valid_email(value):
                 errors.append(f"{field['label']} 邮箱格式不正确")
-        
-        elif field_type == 'fk':
-            from core.importexport.fk_resolver import FKResolverPool
-            fk_model = field.get('fk_model')
-            if fk_model:
-                resolved = FKResolverPool.resolve(fk_model, value)
-                if not resolved:
-                    errors.append(f"{field['label']} '{value}' 不存在")
-        
+
         elif field_type == 'json':
             from core.importexport.special_field_handler import SpecialFieldPool
             if SpecialFieldPool.is_special_field(field['name']):
                 pass
-        
+
         return errors
     
     @classmethod
@@ -203,22 +199,28 @@ class ImportService:
         model_class = ModelRegistry.get_model(node_type_slug)
         fields = cls.get_importable_fields(node_type_slug)
         field_map = {f['name']: f for f in fields}
-        
+
         success_count = 0
         errors = []
-        
+        warnings = []
+
         node_type = NodeType.objects.filter(slug=node_type_slug).first()
         if not node_type:
             raise ValueError(f"未找到节点类型: {node_type_slug}")
-        
+
         for idx, row in enumerate(rows, start=1):
             try:
                 transformed = cls._transform_row(row, node_type_slug, field_map)
-                
+
                 existing = cls._find_existing(model_class, transformed)
-                
+
                 if existing:
                     if skip_duplicates:
+                        warnings.append({
+                            'row': idx,
+                            'data': row,
+                            'message': '记录已存在，已跳过',
+                        })
                         continue
                     instance = existing
                 else:
@@ -228,22 +230,24 @@ class ImportService:
                         updated_by=user,
                     )
                     instance = model_class.objects.create(node=node)
-                
+
                 for key, value in transformed.items():
                     setattr(instance, key, value)
-                
+
                 instance.save()
                 success_count += 1
-                
+
             except Exception as e:
                 errors.append({
                     'row': idx,
                     'data': row,
                     'errors': [str(e)],
                 })
-        
+
         return {
             'success_count': success_count,
+            'warning_count': len(warnings),
+            'warning_details': warnings,
             'error_count': len(errors),
             'errors': errors,
         }
@@ -273,7 +277,7 @@ class ImportService:
                         (node_type_slug, field_name),
                         field_name
                     )
-                    resolved = FKResolverPool.resolve(fk_model, value, taxonomy_slug)
+                    resolved = FKResolverPool.resolve(fk_model, value, taxonomy_slug, auto_create=True)
                     if resolved is not None:
                         transformed[field_name] = resolved
             
