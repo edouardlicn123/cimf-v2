@@ -631,13 +631,18 @@ def module_enable(request, module_id: str):
     if not PermissionService.can_access_admin(request.user):
         messages.error(request, '需要系统管理员权限访问该页面')
         return redirect('core:dashboard')
-    
+
     ok, err = ModuleService.verify_dependencies(module_id)
     if not ok:
         messages.error(request, f'无法启用模块：{err}')
         return redirect('core:modules_manage')
-    
-    ModuleService.install_module(module_id)
+
+    if not ModuleService._check_tables_exist(module_id):
+        ok, msg = ModuleService.install_module(module_id)
+        if not ok:
+            messages.error(request, f'安装失败：{msg}')
+            return redirect('core:modules_manage')
+
     module = ModuleService.enable_module(module_id)
     if module:
         messages.success(request, f'模块 {module.name} 已启用')

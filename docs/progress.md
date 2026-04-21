@@ -650,3 +650,8 @@
 4. Clock卡片链接修复：添加frontpage_card_clickable配置
 5. IP访问限制功能：config.env配置、中间件、启动验证
 
+# 2026-04-21 修改记录
+
+1. 模块安装流程修复：下载后自动注册、扫描自动安装、register_and_install完善、启用逻辑优化
+2. 导入功能修复：自动创建词汇表项、添加8个居民信息词汇表、修复education映射
+

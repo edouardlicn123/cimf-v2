@@ -56,7 +56,7 @@ class ModuleService:
         
         for m in scanned:
             module = ModuleService.register_module(m)
-            if m.get('is_installed') and not module.is_installed:
+            if not module.is_installed:
                 try:
                     ModuleService.install_module(m['id'])
                 except Exception:
@@ -345,6 +345,11 @@ except Exception as e:
     @staticmethod
     def register_and_install(module_info: Dict[str, Any]) -> Module:
         module = ModuleService.register_module(module_info)
+        if module:
+            if not module.is_installed:
+                ModuleService.install_module(module_info['id'])
+            if not module.is_active:
+                ModuleService.enable_module(module_info['id'])
         return module
     
     @staticmethod

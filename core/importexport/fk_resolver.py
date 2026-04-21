@@ -32,22 +32,39 @@ class FKResolverPool:
         return cls._default_resolve(fk_model, value, taxonomy_slug)
     
     @staticmethod
-    def _default_resolve(fk_model, value: str, taxonomy_slug: Optional[str] = None) -> Any:
-        """默认解析逻辑"""
-        from core.models import TaxonomyItem
-        
+    def _default_resolve(fk_model, value: str, taxonomy_slug: Optional[str] = None, auto_create: bool = True) -> Any:
+        """默认解析逻辑，支持自动创建词汇表项"""
+        from core.models import TaxonomyItem, Taxonomy
+
+        if not value:
+            return None
+
         model_name = fk_model._meta.model_name
-        
+
         if model_name == 'taxonomyitem':
             if taxonomy_slug:
                 item = TaxonomyItem.objects.filter(
                     taxonomy__slug=taxonomy_slug,
                     name=value
                 ).first()
+
+                if not item and auto_create:
+                    taxonomy = Taxonomy.objects.filter(slug=taxonomy_slug).first()
+                    if not taxonomy:
+                        taxonomy = Taxonomy.objects.create(
+                            name=taxonomy_slug,
+                            slug=taxonomy_slug,
+                            description=f'自动创建的词汇表: {taxonomy_slug}'
+                        )
+                    item = TaxonomyItem.objects.create(
+                        taxonomy=taxonomy,
+                        name=value,
+                        weight=0
+                    )
             else:
                 item = TaxonomyItem.objects.filter(name=value).first()
             return item
-        
+
         try:
             if hasattr(fk_model, 'name'):
                 return fk_model.objects.filter(name=value).first()
@@ -55,5 +72,5 @@ class FKResolverPool:
                 return fk_model.objects.filter(customer_name=value).first()
         except Exception:
             pass
-        
+
         return None

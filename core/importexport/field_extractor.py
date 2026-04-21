@@ -46,7 +46,7 @@ class FieldDefExtractor:
         'nation': 'nation',
         'political_status': 'political_status',
         'marital_status': 'marital_status',
-        'education': 'education',
+        'education': 'education_level',
         'health_status': 'health_status',
         'gender': 'gender',
         'relation': 'resident_relation',

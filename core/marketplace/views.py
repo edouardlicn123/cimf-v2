@@ -36,6 +36,23 @@ def market_install(request, module_id: str):
     """下载安装模块"""
     if request.method != 'POST':
         return JsonResponse({'success': False, 'error': '仅支持 POST 请求'})
-    
+
     result = MarketService.download_and_extract(module_id)
+    if not result.get('success'):
+        return JsonResponse(result)
+
+    try:
+        from core.node.services import ModuleService
+
+        module = ModuleService.register_module({
+            'id': module_id,
+            'path': module_id,
+        })
+        if module:
+            result['message'] = '下载成功，请在模块管理页面完成安装和启用'
+            result['registered'] = True
+    except Exception as e:
+        result['success'] = False
+        result['error'] = f'注册失败: {str(e)}'
+
     return JsonResponse(result)
