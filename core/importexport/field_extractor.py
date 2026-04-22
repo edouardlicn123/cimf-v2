@@ -76,6 +76,7 @@ class FieldDefExtractor:
             
             if isinstance(field, models.ForeignKey):
                 field_info['fk_to'] = field.related_model._meta.model_name
+                field_info['fk_model'] = field.related_model
                 field_info['taxonomy'] = cls.FK_TAXONOMY_MAP.get(field.name)
             
             if hasattr(field, 'choices') and field.choices:
