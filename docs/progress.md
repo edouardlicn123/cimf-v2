@@ -677,4 +677,10 @@
 17. 修改网页标题为页面标题-仙芙CIMF格式（为各子模板添加title块）
 18. 修复网页标题格式问题，为剩余页面添加title块
 19. 模仿daisyUI风格修改事务总览卡片
+20. 补全主题CSS中的entry-card样式（图标3.5rem）
+21. 修改tools/importexport页面卡片为entry-card样式
+22. 修复entry-card按钮位置统一到底部
+23. 修复entry-card按钮固定右下角（添加flex布局）
+24. 修复entry-card按钮固定右下角完整版
+25. 修复whatsapp模块（安装wabridge依赖）
 

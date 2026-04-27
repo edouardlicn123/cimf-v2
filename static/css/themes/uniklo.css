@@ -344,6 +344,8 @@ main.container,
   border: 1px solid var(--border-light);
   transition: var(--transition);
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
 .entry-card:hover {
@@ -367,6 +369,9 @@ main.container,
 
 .entry-card-body {
   padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
 }
 
 .entry-card-title {
@@ -379,12 +384,14 @@ main.container,
   color: var(--text-muted);
   font-size: 0.875rem;
   margin-bottom: 1rem;
+  flex: 1;
 }
 
 .entry-card-actions {
   display: flex;
   gap: 0.5rem;
   justify-content: flex-end;
+  margin-top: auto;
 }
 
 /* ──────────────────────────────────────────────

@@ -20,11 +20,11 @@
         <div class="entry-card-figure">
           <i class="bi {{ node_type.icon|default('bi-folder') }}"></i>
         </div>
-        <div class="entry-card-body d-flex flex-column">
+        <div class="entry-card-body">
           <h5 class="entry-card-title">
             {{ node_type.name }}
           </h5>
-          <p class="entry-card-desc flex-grow-1">
+          <p class="entry-card-desc">
             {{ node_type.description|default('暂无描述') }}
           </p>
           <div class="entry-card-actions">

@@ -17,12 +17,18 @@
 <div class="row">
     {% for node_type in node_types %}
     <div class="col-md-4 mb-3">
-        <div class="card">
-            <div class="card-body">
-                <h5 class="card-title">{{ node_type.name }}</h5>
-                <a href="{{ url('modules:export_select_fields', node_type.slug) }}" class="btn btn-primary">
-                    导出 {{ node_type.name }}
-                </a>
+        <div class="entry-card h-100">
+            <div class="entry-card-figure">
+                <i class="bi {{ node_type.icon|default('bi-folder') }}"></i>
+            </div>
+            <div class="entry-card-body">
+                <h5 class="entry-card-title">{{ node_type.name }}</h5>
+                <p class="entry-card-desc">{{ node_type.description|default('暂无描述') }}</p>
+                <div class="entry-card-actions">
+                    <a href="{{ url('modules:export_select_fields', node_type.slug) }}" class="btn btn-primary btn-sm">
+                        导出 {{ node_type.name }}
+                    </a>
+                </div>
             </div>
         </div>
     </div>

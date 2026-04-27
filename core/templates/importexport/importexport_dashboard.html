@@ -14,35 +14,43 @@
 {% block admin_content %}
 <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
   <div class="col">
-    <div class="card shadow-sm border-0 rounded-3 h-100">
-      <div class="card-body d-flex flex-column">
-        <h5 class="card-title">
-          <i class="bi bi-box-arrow-up me-2 text-primary"></i>
+    <div class="entry-card h-100">
+      <div class="entry-card-figure">
+        <i class="bi bi-box-arrow-up"></i>
+      </div>
+      <div class="entry-card-body">
+        <h5 class="entry-card-title">
           数据导出
         </h5>
-        <p class="card-text text-muted small flex-grow-1">
+        <p class="entry-card-desc">
           将已启用的节点模块数据导出为 CSV/XLSX 格式
         </p>
-        <a href="{{ url('modules:export_list') }}" class="btn btn-primary">
-          <i class="bi bi-arrow-right me-1"></i> 进入
-        </a>
+        <div class="entry-card-actions">
+          <a href="{{ url('modules:export_list') }}" class="btn btn-primary btn-sm">
+            <i class="bi bi-arrow-right me-1"></i> 进入
+          </a>
+        </div>
       </div>
     </div>
   </div>
   
   <div class="col">
-    <div class="card shadow-sm border-0 rounded-3 h-100">
-      <div class="card-body d-flex flex-column">
-        <h5 class="card-title">
-          <i class="bi bi-box-arrow-down me-2 text-success"></i>
+    <div class="entry-card h-100">
+      <div class="entry-card-figure">
+        <i class="bi bi-box-arrow-down"></i>
+      </div>
+      <div class="entry-card-body">
+        <h5 class="entry-card-title">
           数据导入
         </h5>
-        <p class="card-text text-muted small flex-grow-1">
+        <p class="entry-card-desc">
           从 CSV/XLSX 文件导入数据到节点模块
         </p>
-        <a href="{{ url('modules:import_list') }}" class="btn btn-success">
-          <i class="bi bi-arrow-right me-1"></i> 进入
-        </a>
+        <div class="entry-card-actions">
+          <a href="{{ url('modules:import_list') }}" class="btn btn-primary btn-sm">
+            <i class="bi bi-arrow-right me-1"></i> 进入
+          </a>
+        </div>
       </div>
     </div>
   </div>

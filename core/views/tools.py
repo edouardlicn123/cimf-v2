@@ -16,6 +16,7 @@
     - core.node.models: Module, ToolType
 """
 
+import os
 from functools import wraps
 from django.shortcuts import render, redirect
 from core.node.models import Module, ToolType
@@ -32,14 +33,37 @@ def login_required(func):
     return wrapper
 
 
+def _load_module_info(module_id: str) -> dict:
+    """动态加载模块的 MODULE_INFO"""
+    try:
+        import importlib.util
+        module_path = os.path.join('modules', module_id, 'module.py')
+        spec = importlib.util.spec_from_file_location(f'modules.{module_id}.module', module_path)
+        if spec and spec.loader:
+            module = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(module)
+            return getattr(module, 'MODULE_INFO', {})
+    except Exception:
+        pass
+    return {}
+
+
 @login_required
 def tools_index(request):
-    """协作工具首页 - 显示 tool 类型的工具模块"""
-    tool_type_ids = Module.objects.filter(
+    """协作工具首页 - 完全动态显示 tool 类型的工具模块"""
+    tool_modules = Module.objects.filter(
         module_type='tool',
         is_active=True
-    ).values_list('module_id', flat=True)
-    tools = ToolType.objects.filter(slug__in=tool_type_ids, is_active=True)
+    )
+    tools = []
+    for mod in tool_modules:
+        module_info = _load_module_info(mod.module_id)
+        tools.append({
+            'slug': mod.module_id,
+            'name': module_info.get('name', mod.module_id),
+            'description': module_info.get('description', ''),
+            'icon': module_info.get('icon', 'bi-wrench'),
+        })
     return render(request, 'tools/tools_dashboard.html', {
         'tools': tools,
         'active_section': 'dashboard',
@@ -49,11 +73,19 @@ def tools_index(request):
 @login_required
 def tools_page(request, tool_slug: str, tool_id: int = None):
     """协作工具页面 - 动态加载对应工具的视图"""
-    tool_type_ids = Module.objects.filter(
+    tool_modules = Module.objects.filter(
         module_type='tool',
         is_active=True
-    ).values_list('module_id', flat=True)
-    tools = ToolType.objects.filter(slug__in=tool_type_ids, is_active=True)
+    )
+    tools = []
+    for mod in tool_modules:
+        module_info = _load_module_info(mod.module_id)
+        tools.append({
+            'slug': mod.module_id,
+            'name': module_info.get('name', mod.module_id),
+            'description': module_info.get('description', ''),
+            'icon': module_info.get('icon', 'bi-wrench'),
+        })
     
     try:
         tool_views = __import__(f'modules.{tool_slug}.views', fromlist=[''])
