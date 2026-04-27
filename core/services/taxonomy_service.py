@@ -376,12 +376,11 @@ class TaxonomyService:
     
     @staticmethod
     def create_taxonomy(name: str, slug: str, description: str = '') -> models.Model:
-        """创建词汇表"""
+        """创建词汇表（存在则更新，不存在则创建）"""
         from core.models import Taxonomy
-        taxonomy = Taxonomy.objects.create(
-            name=name,
+        taxonomy, created = Taxonomy.objects.update_or_create(
             slug=slug,
-            description=description
+            defaults={'name': name, 'description': description}
         )
         return taxonomy
     
@@ -475,42 +474,32 @@ class TaxonomyService:
         """初始化预置分类数据，返回创建的词汇表数量"""
         from core.models import Taxonomy, TaxonomyItem
         
-        existing_slugs = set(Taxonomy.objects.values_list('slug', flat=True))
-        target_slugs = {tax['slug'] for tax in DEFAULT_TAXONOMIES}
-        to_create_slugs = target_slugs - existing_slugs
-        
-        if not to_create_slugs:
-            return 0
-        
-        taxonomies_to_create = [
-            Taxonomy(
-                name=tax['name'],
-                slug=tax['slug'],
-                description=tax.get('description', '')
-            )
-            for tax in DEFAULT_TAXONOMIES
-            if tax['slug'] in to_create_slugs
-        ]
-        
-        Taxonomy.objects.bulk_create(taxonomies_to_create)
-        
-        created_taxonomies = {t.slug: t for t in Taxonomy.objects.filter(slug__in=to_create_slugs)}
-        
-        items_to_create = []
+        count = 0
         for tax in DEFAULT_TAXONOMIES:
-            taxonomy = created_taxonomies.get(tax['slug'])
-            if taxonomy:
-                for idx, item_name in enumerate(tax['items']):
+            taxonomy, created = Taxonomy.objects.update_or_create(
+                slug=tax['slug'],
+                defaults={
+                    'name': tax['name'],
+                    'description': tax.get('description', '')
+                }
+            )
+            if created:
+                count += 1
+            
+            existing_item_names = set(taxonomy.items.values_list('name', flat=True))
+            items_to_create = []
+            for idx, item_name in enumerate(tax['items']):
+                if item_name not in existing_item_names:
                     items_to_create.append(TaxonomyItem(
                         taxonomy=taxonomy,
                         name=item_name,
                         weight=idx
                     ))
+            
+            if items_to_create:
+                TaxonomyItem.objects.bulk_create(items_to_create, batch_size=500)
         
-        if items_to_create:
-            TaxonomyItem.objects.bulk_create(items_to_create, batch_size=500)
-        
-        return len(to_create_slugs)
+        return count
     
     @staticmethod
     def generate_items_ai(taxonomy_id: int, count: int = 10) -> List[str]:

@@ -15,7 +15,11 @@ from core.services import TaxonomyService
 def taxonomies(request):
     """词汇表列表"""
     page_num = request.GET.get('page', 1)
+    search = request.GET.get('search', '').strip()
+    
     all_taxonomies = Taxonomy.objects.all()
+    if search:
+        all_taxonomies = all_taxonomies.filter(name__icontains=search)
     
     paginator = Paginator(all_taxonomies, 10)
     page_obj = paginator.get_page(page_num)
@@ -30,6 +34,7 @@ def taxonomies(request):
         'prev_page': page_obj.previous_page_number() if page_obj.has_previous() else None,
         'next_page': page_obj.next_page_number() if page_obj.has_next() else None,
         'active_section': 'taxonomies',
+        'search': search,
     })
 
 

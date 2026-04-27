@@ -3,6 +3,8 @@
 {% set show_nav = true %}
 {% set show_header = false %}
 
+{% block title %}词汇表 - {{ system_name|default('仙芙CIMF') }}{% endblock %}
+
 {% block admin_title_content %}词汇表{% endblock %}
 
 {% block admin_buttons_content %}
@@ -12,6 +14,26 @@
 {% endblock %}
 
 {% block admin_content %}
+<div class="row">
+    <div class="col-12 mb-3">
+        <div class="card">
+            <div class="card-body">
+                <form method="get" class="row g-3 align-items-center">
+                    <div class="col-auto">
+                        <input type="text" name="search" class="form-control" placeholder="搜索名称..." value="{{ search|default('') }}">
+                    </div>
+                    <div class="col-auto">
+                        <button type="submit" class="btn btn-primary">搜索</button>
+                        {% if search %}
+                        <a href="{{ url('core:taxonomies') }}" class="btn btn-secondary">清除</a>
+                        {% endif %}
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="row">
     <div class="col-12">
         <div class="card">
@@ -58,7 +80,7 @@
     <ul class="pagination justify-content-center">
         {% if page_obj.has_previous %}
         <li class="page-item">
-            <a class="page-link" href="{{ url('core:taxonomies') }}?page={{ page_obj.previous_page_number }}">上一页</a>
+            <a class="page-link" href="{{ url('core:taxonomies') }}?page={{ page_obj.previous_page_number }}{% if search %}&search={{ search }}{% endif %}">上一页</a>
         </li>
         {% else %}
         <li class="page-item disabled">
@@ -68,13 +90,13 @@
         
         {% for p in page_obj.paginator.page_range %}
         <li class="page-item {% if p == page_obj.number %}active{% endif %}">
-            <a class="page-link" href="{{ url('core:taxonomies') }}?page={{ p }}">{{ p }}</a>
+            <a class="page-link" href="{{ url('core:taxonomies') }}?page={{ p }}{% if search %}&search={{ search }}{% endif %}">{{ p }}</a>
         </li>
         {% endfor %}
         
         {% if page_obj.has_next %}
         <li class="page-item">
-            <a class="page-link" href="{{ url('core:taxonomies') }}?page={{ page_obj.next_page_number }}">下一页</a>
+            <a class="page-link" href="{{ url('core:taxonomies') }}?page={{ page_obj.next_page_number }}{% if search %}&search={{ search }}{% endif %}">下一页</a>
         </li>
         {% else %}
         <li class="page-item disabled">

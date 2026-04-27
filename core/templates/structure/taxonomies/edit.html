@@ -3,6 +3,8 @@
 {% set show_nav = true %}
 {% set show_header = false %}
 
+{% block title %}{% if taxonomy %}编辑{% else %}新建{% endif %}词汇表 - {{ system_name|default('仙芙CIMF') }}{% endblock %}
+
 {% block admin_title_content %}{% if taxonomy %}编辑{% else %}新建{% endif %}词汇表{% endblock %}
 
 {% block admin_content %}

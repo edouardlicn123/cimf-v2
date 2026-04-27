@@ -5,6 +5,8 @@
 
 {% set active_section = 'export' %}
 
+{% block title %}确认导出 - {{ system_name|default('仙芙CIMF') }}{% endblock %}
+
 {% block admin_title_content %}
   确认导出 - {{ node_type.name }}
 {% endblock %}

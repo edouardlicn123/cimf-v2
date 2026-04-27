@@ -3,6 +3,8 @@
 {% set show_nav = true %}
 {% set show_header = false %}
 
+{% block title %}{% if node_type %}编辑{% else %}新建{% endif %}节点类型 - {{ system_name|default('仙芙CIMF') }}{% endblock %}
+
 {% block admin_title_content %}{% if node_type %}编辑{% else %}新建{% endif %}节点类型{% endblock %}
 
 {% block admin_content %}

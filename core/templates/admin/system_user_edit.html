@@ -3,6 +3,8 @@
 {% set show_nav = true %}
 {% set show_header = false %}
 
+{% block title %}{% if is_create %}新建{% else %}编辑{% endif %}用户 - {{ system_name|default('仙芙CIMF') }}{% endblock %}
+
 {% block admin_title_content %}{% if is_create %}新建{% else %}编辑{% endif %}用户{% endblock %}
 
 {% block admin_buttons_content %}

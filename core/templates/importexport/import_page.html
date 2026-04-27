@@ -5,6 +5,8 @@
 
 {% set active_section = 'import' %}
 
+{% block title %}导入 {{ node_type.name }} - {{ system_name|default('仙芙CIMF') }}{% endblock %}
+
 {% block admin_title_content %}
   导入 {{ node_type.name }}
 {% endblock %}
