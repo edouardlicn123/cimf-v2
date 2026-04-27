@@ -271,13 +271,13 @@ class ImportService:
                 continue
             
             if field_type == 'fk':
-                fk_model = field.get('fk_model')
-                if fk_model:
+                fk_to = field.get('fk_to')
+                if fk_to:
                     taxonomy_slug = cls.FK_TAXONOMY_OVERRIDES.get(
                         (node_type_slug, field_name),
                         field_name
                     )
-                    resolved = FKResolverPool.resolve(fk_model, value, taxonomy_slug, auto_create=True)
+                    resolved = FKResolverPool.resolve(fk_to, value, taxonomy_slug, auto_create=True)
                     if resolved is not None:
                         transformed[field_name] = resolved
             

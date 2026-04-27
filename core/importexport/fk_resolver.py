@@ -19,27 +19,33 @@ class FKResolverPool:
         cls._resolvers[model_name] = resolver
     
     @classmethod
-    def resolve(cls, fk_model, value: str, taxonomy_slug: Optional[str] = None, auto_create: bool = True) -> Any:
+    def resolve(cls, fk_model_or_name, value: str, taxonomy_slug: Optional[str] = None, auto_create: bool = True) -> Any:
         """解析外键值"""
         if not value:
             return None
 
-        model_name = fk_model._meta.model_name
+        if isinstance(fk_model_or_name, str):
+            model_name = fk_model_or_name
+        else:
+            model_name = fk_model_or_name._meta.model_name
 
         if model_name in cls._resolvers:
             return cls._resolvers[model_name].resolve(value, taxonomy_slug)
 
-        return cls._default_resolve(fk_model, value, taxonomy_slug, auto_create)
+        return cls._default_resolve(fk_model_or_name, value, taxonomy_slug, auto_create)
     
     @staticmethod
-    def _default_resolve(fk_model, value: str, taxonomy_slug: Optional[str] = None, auto_create: bool = True) -> Any:
+    def _default_resolve(fk_model_or_name, value: str, taxonomy_slug: Optional[str] = None, auto_create: bool = True) -> Any:
         """默认解析逻辑，支持自动创建词汇表项"""
         from core.models import TaxonomyItem, Taxonomy
 
         if not value:
             return None
 
-        model_name = fk_model._meta.model_name
+        if isinstance(fk_model_or_name, str):
+            model_name = fk_model_or_name
+        else:
+            model_name = fk_model_or_name._meta.model_name
 
         if model_name == 'taxonomyitem':
             if taxonomy_slug:
