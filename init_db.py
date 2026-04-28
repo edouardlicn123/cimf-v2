@@ -158,6 +158,54 @@ def _init_modules_parallel(dry_run: bool) -> dict:
     return results
 
 
+def verify_module_taxonomies() -> list:
+    """
+    验证所有已安装模块的词汇表是否正确创建
+    
+    Returns:
+        list: 错误信息列表，空列表表示验证通过
+    """
+    from core.node.services import ModuleService
+    from core.node.models import Module
+    from core.models import Taxonomy, TaxonomyItem
+    
+    errors = []
+    modules = Module.objects.filter(is_installed=True)
+    
+    for module in modules:
+        module_info = ModuleService._load_module_info(module.path)
+        if not module_info:
+            continue
+        
+        taxonomies_config = module_info.get('taxonomies', [])
+        if not taxonomies_config:
+            continue
+        
+        for tax_data in taxonomies_config:
+            slug = tax_data.get('slug')
+            name = tax_data.get('name', '')
+            items = tax_data.get('items', [])
+            
+            if not slug:
+                continue
+            
+            # 验证词汇表是否存在
+            taxonomy = Taxonomy.objects.filter(slug=slug).first()
+            if not taxonomy:
+                errors.append(f"模块 '{module.name}': 词汇表 '{slug}' ({name}) 不存在")
+                continue
+            
+            # 验证词汇项是否完整
+            existing_items = set(taxonomy.items.values_list('name', flat=True))
+            expected_items = set(items)
+            missing_items = expected_items - existing_items
+            
+            if missing_items:
+                errors.append(f"模块 '{module.name}': 词汇表 '{slug}' 缺少 {len(missing_items)} 个词汇项: {', '.join(sorted(missing_items))}")
+    
+    return errors
+
+
 def ask_reset_mode(db_path: str) -> bool:
     """
     交互式询问用户初始化模式
@@ -433,6 +481,21 @@ def init_database(with_data: bool = False, force: bool = False, dry_run: bool = 
     except Exception as e:
         print(colored(f"    ✗ 业务模块初始化失败: {str(e)}", "red"))
 
+    # ===== 验证模块词汇表 =====
+    print_section("验证模块词汇表")
+    print_step("5.1", "验证已安装模块的词汇表")
+    
+    if not dry_run:
+        errors = verify_module_taxonomies()
+        if errors:
+            print(colored("  ⚠ 词汇表验证失败：", "yellow"))
+            for err in errors:
+                print(colored(f"    - {err}", "yellow"))
+        else:
+            print(colored("  ✓ 所有模块词汇表验证通过", "green"))
+    else:
+        print(colored("  [模拟] 将验证模块词汇表", "yellow"))
+    
     # ===== 完成 =====
     print()
     print(colored(f"{'='*60}", "green"))

@@ -58,9 +58,14 @@ class ModuleService:
             module = ModuleService.register_module(m)
             if not module.is_installed:
                 try:
-                    ModuleService.install_module(m['id'])
-                except Exception:
-                    pass
+                    result = ModuleService.install_module(m['id'])
+                    if not result[0]:
+                        raise RuntimeError(f"模块 {m['id']} 安装失败: {result[1]}")
+                except Exception as e:
+                    import logging
+                    logger = logging.getLogger(__name__)
+                    logger.error(f"模块 {m['id']} 安装失败: {str(e)}")
+                    raise
             registered.append(module)
         
         NodeTypeService.init_default_node_types()
@@ -318,7 +323,17 @@ except Exception as e:
         elif module.module_type == 'tool':
             ModuleService.sync_tool_type(module)
         
-        ModuleService.create_module_taxonomies(module)
+        try:
+            created_count = ModuleService.create_module_taxonomies(module)
+            if created_count == 0:
+                import logging
+                logger = logging.getLogger(__name__)
+                logger.warning(f'模块 {module_id} 未创建任何词汇表（可能已存在）')
+        except Exception as e:
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.error(f'模块 {module_id} 词汇表创建失败: {str(e)}')
+            return (False, f'词汇表创建失败: {str(e)}')
         
         ModuleService._init_module_sample_data(module_id)
         
@@ -419,6 +434,37 @@ except Exception as e:
         
         if items_to_create:
             TaxonomyItem.objects.bulk_create(items_to_create, ignore_conflicts=True)
+        
+        # 验证创建结果
+        for tax_data in taxonomies:
+            slug = tax_data.get('slug')
+            name = tax_data.get('name')
+            items = tax_data.get('items', [])
+            
+            if not slug or not name:
+                continue
+            
+            # 验证词汇表是否存在
+            taxonomy = Taxonomy.objects.filter(slug=slug).first()
+            if not taxonomy:
+                raise RuntimeError(f'词汇表创建失败: {slug}')
+            
+            # 验证词汇项是否完整
+            existing_items = set(taxonomy.items.values_list('name', flat=True))
+            expected_items = set(items)
+            missing_items = expected_items - existing_items
+            
+            if missing_items:
+                import logging
+                logger = logging.getLogger(__name__)
+                logger.warning(f'词汇表 {slug} 缺少项目: {missing_items}，尝试补充')
+                # 尝试补充缺失的词汇项
+                for item_name in missing_items:
+                    TaxonomyItem.objects.create(
+                        taxonomy=taxonomy,
+                        name=item_name,
+                        weight=0
+                    )
         
         return created_count
     

@@ -712,4 +712,6 @@
 18. 修复导入关系栏失败：import_service.py 使用 taxonomy 映射，修复 fk_resolver.py 变量未定义 bug
 19. 补充 other_id_type 词汇表：module.py 添加词汇表定义，field_extractor.py 添加 FK_TAXONOMY_MAP 映射
 20. 从模块市场移除 whatsapp 模块
+21. 确保模块初始化时完成词汇表初始化：修改 scan_and_register_modules 移除静默异常、增强 create_module_taxonomies 验证、修改 install_module 检查创建结果、init_db.py 添加验证步骤
+22. 方案B测试通过：词汇表全部创建成功（10个表102项），导入功能验证通过（关系栏正确导入）
 
