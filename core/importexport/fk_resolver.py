@@ -72,10 +72,10 @@ class FKResolverPool:
             return item
 
         try:
-            if hasattr(fk_model, 'name'):
-                return fk_model.objects.filter(name=value).first()
-            elif hasattr(fk_model, 'customer_name'):
-                return fk_model.objects.filter(customer_name=value).first()
+            if hasattr(fk_model_or_name, 'name'):
+                return fk_model_or_name.objects.filter(name=value).first()
+            elif hasattr(fk_model_or_name, 'customer_name'):
+                return fk_model_or_name.objects.filter(customer_name=value).first()
         except Exception:
             pass
 

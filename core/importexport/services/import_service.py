@@ -298,7 +298,7 @@ class ImportService:
                 if fk_to:
                     taxonomy_slug = cls.FK_TAXONOMY_OVERRIDES.get(
                         (node_type_slug, field_name),
-                        field_name
+                        field.get('taxonomy', field_name)
                     )
                     resolved = FKResolverPool.resolve(fk_to, value, taxonomy_slug, auto_create=True)
                     if resolved is not None:
@@ -349,8 +349,8 @@ class ImportService:
             field_name = field['name']
             
             taxonomy_slug = cls.FK_TAXONOMY_OVERRIDES.get(
-                (node_type_slug, field_name), 
-                field_name
+                (node_type_slug, field_name),
+                field.get('taxonomy', field_name)
             )
             
             taxonomy = Taxonomy.objects.filter(slug=taxonomy_slug).first()

@@ -50,6 +50,7 @@ class FieldDefExtractor:
         'health_status': 'health_status',
         'gender': 'gender',
         'relation': 'resident_relation',
+        'other_id_type': 'other_id_type',
     }
     
     @classmethod
