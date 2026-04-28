@@ -13,13 +13,6 @@
       "description": "管理中国国内的客户信息",
       "download_url": "https://github.com/edouardlicn123/cimf-customer_cn/releases/download/1.1.5/cimf-customer_cn.zip",
       "version": "1.1.5"
-    },
-    {
-      "id": "whatsapp",
-      "name": "WhatsApp 发送",
-      "description": "WhatsApp 批量消息发送模块",
-      "download_url": "https://github.com/edouardlicn123/cimf-whatsapp/releases/download/1.0.0/cimf-whatsapp.zip",
-      "version": "1.0.0"
     }
   ]
 }

@@ -711,4 +711,5 @@
 17. 修复导入功能：新增布尔字段智能转换，支持是/否、True/False、1/0 等多种格式
 18. 修复导入关系栏失败：import_service.py 使用 taxonomy 映射，修复 fk_resolver.py 变量未定义 bug
 19. 补充 other_id_type 词汇表：module.py 添加词汇表定义，field_extractor.py 添加 FK_TAXONOMY_MAP 映射
+20. 从模块市场移除 whatsapp 模块
 
