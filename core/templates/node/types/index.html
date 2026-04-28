@@ -1,0 +1,72 @@
+{% extends "frames/frame_structure.html" %}
+
+{% set show_nav = true %}
+{% set show_header = false %}
+
+{% block title %}节点类型管理 - {{ system_name|default('仙芙CIMF') }}{% endblock %}
+
+{% block admin_title_content %}节点类型管理{% endblock %}
+
+{% block admin_buttons_content %}
+<a href="{{ url('node:module_scan') }}" class="btn btn-secondary">
+    <i class="bi bi-arrow-repeat"></i> 检查模块
+</a>
+<a href="{{ url('node:node_type_create') }}" class="btn btn-primary">
+    <i class="bi bi-plus-lg"></i> 新建节点类型
+</a>
+{% endblock %}
+
+{% block admin_content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th>名称</th>
+                            <th>标识符</th>
+                            <th>图标</th>
+                            <th>描述</th>
+                            <th>状态</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for nt in node_types %}
+                        <tr>
+                            <td>{{ nt.name }}</td>
+                            <td><code>{{ nt.slug }}</code></td>
+                            <td><i class="bi {{ nt.icon|default('bi-folder') }}"></i></td>
+                            <td>{{ nt.description|default('-') }}</td>
+                            <td>
+                                {% if nt.is_active %}
+                                    <span class="badge bg-success">启用</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">禁用</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <form method="post" action="{{ url('node:node_type_toggle', nt.id) }}" style="display:inline;">
+                                    <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+                                    {% if nt.is_active %}
+                                    <button type="submit" class="btn btn-sm btn-outline-warning">禁用</button>
+                                    {% else %}
+                                    <button type="submit" class="btn btn-sm btn-outline-success">启用</button>
+                                    {% endif %}
+                                </form>
+                                <a href="{{ url('node:node_type_edit', nt.id) }}" class="btn btn-sm btn-outline-secondary">编辑</a>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="6" class="text-center text-muted">暂无节点类型</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

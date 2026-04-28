@@ -1,0 +1,158 @@
+{% extends "frames/frame_module.html" %}
+
+{% set show_header = false %}
+
+{% block title %}模块管理 - {{ system_name|default('仙芙CIMF') }}{% endblock %}
+
+{% block admin_title_content %}模块管理{% endblock %}
+
+{% block admin_buttons_content %}
+<a href="{{ url('node:module_scan') }}" class="btn btn-secondary">
+    <i class="bi bi-arrow-repeat"></i> 扫描模块
+</a>
+<a href="{{ url('node:module_create') }}" class="btn btn-primary">
+    <i class="bi bi-plus-lg"></i> 新建模块
+</a>
+{% endblock %}
+
+{% block admin_content %}
+<div class="row">
+    <div class="col-12">
+        <!-- 提示 -->
+        <div class="border rounded p-3 mb-4 bg-light">
+            <i class="bi bi-exclamation-triangle text-warning me-1"></i>
+            安装或启用模块后，需要重启服务器才能正常使用。删除模块前必须先禁用。
+        </div>
+        
+        <!-- 已安装模块列表 -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">已安装模块</h5>
+            </div>
+            <div class="card-body">
+                {% if modules %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>模块名称</th>
+                                <th>ID</th>
+                                <th>类型</th>
+                                <th>版本</th>
+                                <th>作者</th>
+                                <th>状态</th>
+                                <th>描述</th>
+                                <th>安装时间</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for module in modules %}
+                            <tr>
+                                <td>{{ module.name }}</td>
+                                <td><code>{{ module.module_id }}</code></td>
+                                <td>
+                                    {% if module.module_type == 'node' %}
+                                    <span class="badge bg-primary">node</span>
+                                    {% elif module.module_type == 'system' %}
+                                    <span class="badge bg-secondary">system</span>
+                                    {% else %}
+                                    <span class="badge bg-warning">{{ module.module_type }}</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ module.version }}</td>
+                                <td>
+                                    {% if module.author %}{{ module.author }}{% else %}-{% endif %}
+                                </td>
+                                <td>
+                                    {% if not module.path_exists %}
+                                    <span class="badge bg-danger">不存在</span>
+                                    {% elif module.is_active %}
+                                    <span class="badge bg-success">已启用</span>
+                                    {% elif module.is_installed %}
+                                    <span class="badge bg-secondary">已安装</span>
+                                    {% else %}
+                                    <span class="badge bg-warning">未安装</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if module.description %}{{ module.description|truncatechars(30) }}{% else %}-{% endif %}
+                                </td>
+                                <td>
+                                    {% if module.installed_at %}{{ module.installed_at|date("Y-m-d H:i") }}{% else %}-{% endif %}
+                                </td>
+                                <td>
+                                    {% if not module.path_exists %}
+                                    <span class="text-muted">目录缺失</span>
+                                    {% elif module.is_installed and not module.is_active %}
+                                    <a href="{{ url('node:module_enable', module.module_id) }}" class="btn btn-sm btn-success">启用</a>
+                                    {% elif module.is_active %}
+                                    <a href="{{ url('node:module_disable', module.module_id) }}" class="btn btn-sm btn-warning">禁用</a>
+                                    {% else %}
+                                    <a href="{{ url('node:module_install', module.module_id) }}" class="btn btn-sm btn-primary">安装</a>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-muted mb-0">暂无已安装的模块</p>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- 未注册模块列表 -->
+        {% if unregistered_modules %}
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">未注册模块</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>模块名称</th>
+                                <th>ID</th>
+                                <th>类型</th>
+                                <th>版本</th>
+                                <th>作者</th>
+                                <th>描述</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for module in unregistered_modules %}
+                            <tr>
+                                <td>{{ module.name }}</td>
+                                <td><code>{{ module.id }}</code></td>
+                                <td>
+                                    {% if module.type == 'node' %}
+                                    <span class="badge bg-primary">node</span>
+                                    {% elif module.type == 'system' %}
+                                    <span class="badge bg-secondary">system</span>
+                                    {% else %}
+                                    <span class="badge bg-warning">{{ module.type|default('-') }}</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ module.version }}</td>
+                                <td>
+                                    {% if module.author %}{{ module.author }}{% else %}-{% endif %}
+                                </td>
+                                <td>{{ module.description|default('-')|truncatechars(50) }}</td>
+                                <td>
+                                    <a href="{{ url('node:module_install', module.id) }}" class="btn btn-sm btn-primary">安装</a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

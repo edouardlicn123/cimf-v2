@@ -1,0 +1,115 @@
+{% extends "frames/frame_myinfo.html" %}
+
+{% set show_nav = true %}
+{% set show_header = false %}
+
+{% set active_section = 'profile' %}
+
+{% block title %}个人信息 - {{ system_name|default('仙芙CIMF') }}{% endblock %}
+
+{% block admin_title_content %}
+  <h1 class="settings-title h2 mb-4" style="display: none;">个人信息</h1>
+{% endblock %}
+
+{% block extra_head %}
+<style>
+  .alert, .flash-message, .flashed-messages {
+    display: none !important;
+  }
+</style>
+{% endblock %}
+
+{% block admin_content %}
+{% if messages %}
+  <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 9999;">
+    {% for message in messages %}
+      <div class="toast show" role="alert">
+        <div class="toast-body">
+          {{ message }}
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+{% endif %}
+
+<div class="card shadow-sm border-0 rounded-3 w-50 mx-auto">
+  <div class="card-body">
+    <table class="table table-hover table-bordered align-middle mb-0">
+      <thead class="table-light" style="display: none;">
+        <tr>
+          <th style="width: 40%;">项目</th>
+          <th>内容</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr>
+            <td class="text-muted fw-medium">登录账号</td>
+            <td>{{ user.username }}</td>
+          </tr>
+          <tr>
+            <td class="text-muted fw-medium">显示昵称</td>
+            <td>{{ user.nickname|default('未设置') }}</td>
+          </tr>
+          <tr>
+            <td class="text-muted fw-medium">邮箱地址</td>
+            <td>{{ user.email|default('未设置') }}</td>
+          </tr>
+          <tr>
+            <td class="text-muted fw-medium">账号角色</td>
+            <td>
+              {% if user.role == 'manager' %}
+                <span class="badge bg-danger">{{ role_labels.manager|default("一类用户") }}</span>
+              {% elif user.role == 'leader' %}
+                <span class="badge bg-warning text-dark">{{ role_labels.leader|default("二类用户") }}</span>
+              {% else %}
+                <span class="badge bg-secondary">{{ role_labels.employee|default("三类用户") }}</span>
+              {% endif %}
+            </td>
+          </tr>
+          <tr>
+            <td class="text-muted fw-medium">界面主题</td>
+            <td>
+              {% if user.theme == 'default' %}默认
+              {% elif user.theme == 'gov' %}政府风格
+              {% elif user.theme == 'indigo' %}靛蓝风格
+              {% elif user.theme == 'macaron' %}马卡龙风格
+              {% elif user.theme == 'dopamine' %}多巴胺风格
+              {% elif user.theme == 'teal' %}青绿风格
+              {% elif user.theme == 'uniklo' %}极简风格
+              {% else %}{{ user.theme }}{% endif %}
+            </td>
+          </tr>
+          <tr>
+            <td class="text-muted fw-medium">系统通知</td>
+            <td>
+              {% if user.notifications_enabled %}
+                <span class="badge bg-success">已开启</span>
+              {% else %}
+                <span class="badge bg-secondary">已关闭</span>
+              {% endif %}
+            </td>
+          </tr>
+          <tr>
+            <td class="text-muted fw-medium">账号状态</td>
+            <td>
+              {% if user.is_active %}
+                <span class="badge bg-success">正常</span>
+              {% else %}
+                <span class="badge bg-danger">已禁用</span>
+              {% endif %}
+            </td>
+          </tr>
+          <tr>
+            <td class="text-muted fw-medium">账号创建时间</td>
+            <td>{{ user.created_at|date('Y-m-d H:i') }}</td>
+          </tr>
+          <tr>
+            <td class="text-muted fw-medium">最后登录时间</td>
+            <td>{% if user.last_login_at %}{{ user.last_login_at|date('Y-m-d H:i:s') }}{% else %}首次登录{% endif %}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}
