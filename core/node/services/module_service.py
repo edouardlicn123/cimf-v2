@@ -331,8 +331,13 @@ except Exception as e:
             ModuleService.sync_tool_type(module)
         
         try:
+            # 检查模块是否配置了词汇表
+            module_info = ModuleService._load_module_info(module.path)
+            has_taxonomies_config = module_info and module_info.get('taxonomies')
+            
             created_count = ModuleService.create_module_taxonomies(module)
-            if created_count == 0:
+            # 只在配置了词汇表但创建失败时才警告
+            if has_taxonomies_config and created_count == 0:
                 import logging
                 logger = logging.getLogger(__name__)
                 logger.warning(f'模块 {module_id} 未创建任何词汇表（可能已存在）')
