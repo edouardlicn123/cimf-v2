@@ -194,14 +194,12 @@ class ModuleService:
         return False
     
     @staticmethod
-    def _run_migration_commands(module_id: str, app_name: str, has_migrations: bool) -> list:
+    def _run_migration_subprocess(module_id: str, app_name: str) -> list:
         """
-        通过subprocess执行迁移
+        通过subprocess执行迁移（Django限制：无法运行时动态重初始化apps）
         
-        注意：必须使用subprocess而非call_command直接调用，因为：
-        1. 需要动态修改 INSTALLED_APPS（运行时修改不可行，会触发 populate() isn't reentrant）
-        2. 每个模块的迁移需要在独立的Django环境中执行
-        3. 虽然慢（约3秒/模块），但这是目前最可靠的方法
+        注意：Django的apps系统不支持运行时动态添加应用并重新初始化
+        虽然subprocess较慢（~3秒/模块），但这是目前最可靠的方法
         
         优化建议：合并迁移文件（./manage.py squashmigrations）可减少文件数量
         """
@@ -214,6 +212,18 @@ class ModuleService:
         base_dir = str(settings.BASE_DIR)
         venv_python = os.path.join(base_dir, 'venv', 'bin', 'python')
         
+        # 检查是否有迁移文件
+        module_path = os.path.join(base_dir, 'modules', module_id)
+        migrations_path = os.path.join(module_path, 'migrations')
+        models_path = os.path.join(module_path, 'models.py')
+        
+        has_models = os.path.exists(models_path)
+        has_migrations = False
+        
+        if has_models and os.path.exists(migrations_path):
+            migration_files = [f for f in os.listdir(migrations_path) if f.startswith('0') and f.endswith('.py')]
+            has_migrations = len(migration_files) > 1 or (len(migration_files) == 1 and '0001_initial.py' in migration_files)
+        
         if has_migrations:
             script_content = f'''
 import os
@@ -221,10 +231,6 @@ import sys
 sys.path.insert(0, r'{base_dir}')
 
 os.environ['DJANGO_SETTINGS_MODULE'] = 'cimf_django.settings'
-
-import cimf_django.settings as settings_module
-original_INSTALLED_APPS = list(settings_module.INSTALLED_APPS)
-settings_module.INSTALLED_APPS = original_INSTALLED_APPS + ['{app_name}']
 
 import django
 django.setup()
@@ -243,10 +249,6 @@ import sys
 sys.path.insert(0, r'{base_dir}')
 
 os.environ['DJANGO_SETTINGS_MODULE'] = 'cimf_django.settings'
-
-import cimf_django.settings as settings_module
-original_INSTALLED_APPS = list(settings_module.INSTALLED_APPS)
-settings_module.INSTALLED_APPS = original_INSTALLED_APPS + ['{app_name}']
 
 import django
 django.setup()
@@ -310,14 +312,9 @@ except Exception as e:
         # 如果没有模型文件，跳过迁移步骤，直接标记为安装成功
         if not has_models:
             pass
-        elif has_migrations:
-            migration_errors = ModuleService._run_migration_commands(module_id, app_name, has_migrations)
-            if migration_errors:
-                error_msg = '; '.join(migration_errors)
-                return False, f'模块 {module_id} 安装失败: {error_msg}'
         else:
-            # 有模型文件但没有迁移文件，尝试创建迁移
-            migration_errors = ModuleService._run_migration_commands(module_id, app_name, False)
+            # 执行迁移（subprocess方式，Django限制：无法运行时动态重初始化apps）
+            migration_errors = ModuleService._run_migration_subprocess(module_id, app_name)
             if migration_errors:
                 error_msg = '; '.join(migration_errors)
                 return False, f'模块 {module_id} 安装失败: {error_msg}'

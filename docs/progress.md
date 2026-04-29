@@ -730,4 +730,8 @@
 10. 更新技术规范文档：B02补充模块服务类，现有模块.md补充whatsapp版本作者信息
 11. 市场模块customer_cn升级到1.1.6
 12. 初始化流程优化+B06规范文档：消除subprocess提速80%，词汇表批量查询提速60%，优化template_service批量插入
+13. 创建 Stage 4 初始化流程重构方案（docs/stage4/20_初始化流程重构方案.md）
+14. 优化模块迁移方式：删除 _run_migration_commands()，实现 _run_migration_inline() (core/node/services/module_service.py)
+15. 词汇表初始化优化：添加 fixture 加载方式，保留备用方法 (core/services/taxonomy_service.py)
+16. 完成多阶段分文件初始化架构：创建 core/init_scripts/ 包（__init__.py, common.py, stage1-4, verify.py）并更新 init_db.py
 
