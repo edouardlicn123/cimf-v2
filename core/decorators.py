@@ -7,6 +7,7 @@ from functools import wraps
 from django.shortcuts import redirect
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.http import JsonResponse
 
 
 def admin_required(view_func):
@@ -36,10 +37,10 @@ def permission_required(permission: str):
     权限检查装饰器（指定具体权限）
     
     Args:
-        permission: 权限标识符，如 'importexport.view'
+        permission: 权限标识符，如 'import.view'
     
     用法：
-        @permission_required('importexport.view')
+        @permission_required('import.view')
         def my_view(request):
             ...
     """
@@ -54,3 +55,13 @@ def permission_required(permission: str):
             return view_func(request, *args, **kwargs)
         return wrapper
     return decorator
+
+
+def login_required_json(func):
+    """登录Required装饰器，返回JSON错误"""
+    @wraps(func)
+    def wrapper(request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return JsonResponse({'error': '请先登录'}, status=401)
+        return func(request, *args, **kwargs)
+    return wrapper

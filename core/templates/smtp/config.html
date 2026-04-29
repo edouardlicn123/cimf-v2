@@ -73,7 +73,7 @@
     
     <div class="col-lg-8 order-lg-1">
         <form method="post" id="smtpForm">
-            <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+            {% include "includes/csrf.html" %}
             
             <div class="card mb-4">
                 <div class="card-header">
@@ -254,7 +254,7 @@
                 </a>
                 <form method="post" action="{{ url('core:smtp_cleanup_logs') }}" class="d-inline" 
                       onsubmit="return confirm('确定要清理过期日志吗？')">
-                    <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+                    {% include "includes/csrf.html" %}
                     <button type="submit" class="btn btn-warning">
                         <i class="bi bi-trash me-1"></i> 清理日志
                     </button>

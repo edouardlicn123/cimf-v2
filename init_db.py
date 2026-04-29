@@ -236,14 +236,21 @@ def ask_reset_mode(db_path: str) -> bool:
 
 
 def _has_pending_migrations() -> bool:
-    """检查是否有待执行的迁移"""
+    """检查是否有待执行的迁移（带缓存优化）"""
+    if hasattr(_has_pending_migrations, '_cached_result'):
+        return _has_pending_migrations._cached_result
+    
     from django.core.management import call_command
     from io import StringIO
     
     out = StringIO()
     call_command('showmigrations', '--plan', stdout=out)
     lines = out.getvalue().strip().split('\n')
-    return any(line.startswith('[ ]') for line in lines)
+    result = any(line.startswith('[ ]') for line in lines)
+    
+    # 缓存结果（本次执行期间有效）
+    _has_pending_migrations._cached_result = result
+    return result
 
 
 def init_database(with_data: bool = False, force: bool = False, dry_run: bool = False,

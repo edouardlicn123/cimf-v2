@@ -43,7 +43,7 @@
                 <h4 class="fw-bold mb-4 text-center text-primary">登录</h4>
 
                 <form method="POST" novalidate>
-                    <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+                    {% include "includes/csrf.html" %}
 
                     <!-- 错误消息显示 -->
                     {% if error_message %}

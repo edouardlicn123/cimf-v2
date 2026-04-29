@@ -195,6 +195,16 @@ class ModuleService:
     
     @staticmethod
     def _run_migration_commands(module_id: str, app_name: str, has_migrations: bool) -> list:
+        """
+        通过subprocess执行迁移
+        
+        注意：必须使用subprocess而非call_command直接调用，因为：
+        1. 需要动态修改 INSTALLED_APPS（运行时修改不可行，会触发 populate() isn't reentrant）
+        2. 每个模块的迁移需要在独立的Django环境中执行
+        3. 虽然慢（约3秒/模块），但这是目前最可靠的方法
+        
+        优化建议：合并迁移文件（./manage.py squashmigrations）可减少文件数量
+        """
         import subprocess
         import tempfile
         from django.conf import settings

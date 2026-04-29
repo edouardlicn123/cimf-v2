@@ -11,7 +11,7 @@
 
 {% block admin_content %}
 <form method="post" id="createModuleForm">
-    <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+    {% include "includes/csrf.html" %}
     
     <div class="card mb-4">
         <div class="card-header">

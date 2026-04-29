@@ -716,3 +716,18 @@
 22. 方案B测试通过：词汇表全部创建成功（10个表102项），导入功能验证通过（关系栏正确导入）
 23. 修复居民信息导入预览问题：将relation字段verbose_name从'与其他人员关系'改为'与户主关系'，确保导入模板列名与字段标签一致
 
+# 2026-04-29 修改记录
+
+1. 修复whatsapp模块admin_required装饰器：未登录API请求现在返回JSON错误(401)而非重定向
+2. 创建全局认证与CSRF统一方案文档（stage4/16_全局认证与CSRF统一方案.md）
+3. 创建现有模块文档（docs/现有模块.md），更新AGENTS.md引用
+4. 重命名stage4文件：方案B→17_，修复导入→18_
+5. 实施全局认证与CSRF统一方案（16号文件）：添加全局登录中间件、创建csrf.html、base.html添加CSRF meta、批量迁移20个模板、创建checks.py、更新AGENTS.md和现有模块.md
+6. 修正crsf.html和base.html使用正确的csrf_token()函数；修正checks.py语法错误；更新开发规范.md和bug排查规范.md的认证规范
+7. 修正api_stats装饰器（3处）→ @login_required_json；增强checks.py添加CIMF_W002检查；更新16号文件和现有模块.md文档
+8. 修复csrf_token()调用错误：改用csrf_token_value变量；修正clock模块api_time装饰器顺序；验证全部模块遵守新认证规则
+9. 在居民信息模块services.py添加init_sample_data()空函数，明确阻止初始化时生成测试数据（张三、李四、王五）
+10. 更新技术规范文档：B02补充模块服务类，现有模块.md补充whatsapp版本作者信息
+11. 市场模块customer_cn升级到1.1.6
+12. 初始化流程优化+B06规范文档：消除subprocess提速80%，词汇表批量查询提速60%，优化template_service批量插入
+

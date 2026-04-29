@@ -9,7 +9,7 @@
 
 {% block admin_content %}
 <form method="post">
-    <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+    {% include "includes/csrf.html" %}
     
     <!-- 角色名称设置 -->
     <div class="card mb-4">

@@ -8,7 +8,7 @@
 {% block admin_title_content %}Cron 调度管理{% endblock %}
 
 {% block admin_content %}
-<input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+{% include "includes/csrf.html" %}
 {% if cron_status and cron_status.running %}
 <div class="alert alert-success d-flex align-items-center mb-4">
     <i class="bi bi-check-circle-fill me-2"></i>

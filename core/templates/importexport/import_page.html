@@ -56,7 +56,7 @@
             </div>
             
             <form action="{{ url('modules:do_import', node_type.slug) }}" method="post">
-                <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+                {% include "includes/csrf.html" %}
                 <button type="submit" class="btn btn-success">确认导入</button>
                 <a href="{{ url('modules:import_page', node_type.slug) }}" class="btn btn-secondary">重新上传</a>
             </form>

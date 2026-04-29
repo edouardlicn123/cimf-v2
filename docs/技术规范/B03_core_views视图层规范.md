@@ -28,6 +28,12 @@
 | `core/node/views.py` | ~50 | 节点系统、模块管理 |
 | `core/smtp/views.py` | ~5 | 邮件配置、发送记录 |
 | `core/marketplace/views.py` | ~2 | 模块市场 |
+| `modules/customer/views.py` | ~6 | 海外客户管理 |
+| `modules/customer_cn/views.py` | ~6 | 国内客户管理 |
+| `modules/resident_info/views.py` | ~6 | 居民信息管理 |
+| `modules/whatsapp/views.py` | ~16 | WhatsApp消息管理 |
+| `modules/clock/views.py` | ~2 | 时钟/日历展示 |
+| `modules/calc/views.py` | ~2 | 计算器工具 |
 
 ---
 
@@ -87,7 +93,7 @@
 | `homepage_settings` | `/profile/settings/homepage/` | GET/POST | 首页导航卡片设置 |
 | `navigation_settings` | `/user/nav-cards/` | GET | 导航卡片设置 |
 
-### 2.6 API 视图
+### 2.6 API 视图（core）
 
 | 视图函数 | URL | 方法 | 说明 |
 |----------|-----|------|------|
@@ -98,6 +104,33 @@
 | `api_regions_cities` | `/api/regions/cities/` | GET | 获取城市列表 |
 | `api_regions_districts` | `/api/regions/districts/` | GET | 获取区县列表 |
 | `api_regions_search` | `/api/regions/search/` | GET | 搜索行政区划 |
+| `api_regions_path` | `/api/regions/path/` | GET | 获取行政区划路径 |
+| `api_regions_stats` | `/api/regions/stats/` | GET | 行政区划统计 |
+| `api_dashboard_cards` | `/api/user/dashboard/cards/` | GET | 获取仪表盘卡片 |
+| `api_dashboard_cards_save` | `/api/user/dashboard/cards/save/` | POST | 保存仪表盘卡片 |
+| `api_nav_cards` | `/api/user/nav-cards/` | GET | 获取导航卡片 |
+| `api_nav_cards_save` | `/api/user/nav-cards/save/` | POST | 保存导航卡片 |
+| `cron_status` | `/api/cron/status/` | GET | 定时任务状态 |
+| `cron_run_task` | `/api/cron/run/<task_name>/` | POST | 手动执行任务 |
+| `cron_toggle_task` | `/api/cron/toggle/<task_name>/` | POST | 切换任务启用状态 |
+
+### 2.7 API 视图（modules）
+
+| 视图函数 | 模块 | URL | 方法 | 说明 |
+|----------|------|-----|------|------|
+| `api_time` | clock | `/modules/clock/api/time/` | GET | 获取当前时间（JSON） |
+| `api_stats` | customer | `/modules/customer/api/stats/` | GET | 客户统计信息 |
+| `api_stats` | customer_cn | `/modules/customer_cn/api/stats/` | GET | 国内客户统计 |
+| `api_stats` | resident_info | `/modules/resident_info/api/stats/` | GET | 居民统计信息 |
+| `api_send` | whatsapp | `/modules/whatsapp/api/send/` | POST | 批量发送消息 |
+| `api_status` | whatsapp | `/modules/whatsapp/api/status/` | GET | WhatsApp连接状态 |
+| `api_settings_test` | whatsapp | `/modules/whatsapp/api/settings/test/` | POST | 测试配置 |
+| `api_templates` | whatsapp | `/modules/whatsapp/api/templates/` | GET | 模板列表 |
+| `api_templates_create` | whatsapp | `/modules/whatsapp/api/templates/` | POST | 创建模板 |
+| `api_templates_update` | whatsapp | `/modules/whatsapp/api/templates/<id>/` | PUT | 更新模板 |
+| `api_templates_delete` | whatsapp | `/modules/whatsapp/api/templates/<id>/` | DELETE | 删除模板 |
+| `api_logs` | whatsapp | `/modules/whatsapp/api/logs/` | GET | 发送记录 |
+| `api_settings` | whatsapp | `/modules/whatsapp/api/settings/` | GET, PUT | 获取/更新设置 |
 | `api_regions_path` | `/api/regions/path/` | GET | 获取行政区划路径 |
 | `api_regions_stats` | `/api/regions/stats/` | GET | 行政区划统计 |
 | `api_dashboard_cards` | `/api/user/dashboard/cards/` | GET | 获取仪表盘卡片 |
@@ -144,15 +177,30 @@
 
 ### 3.1 权限装饰器
 
-所有需要登录的视图必须使用 `@login_required` 装饰器：
+所有需要登录的视图必须使用认证装饰器：
 
+**页面视图**（返回HTML）：
 ```python
 @login_required
 def dashboard(request):
     # 视图逻辑
 ```
 
-需要管理员权限的视图，在函数内部进行权限检查：
+**API视图**（返回JSON）：
+```python
+@login_required_json  # 未登录返回 {"error": "请先登录"} 401
+def api_endpoint(request):
+    # API逻辑
+```
+
+**管理员API**（需要管理员权限）：
+```python
+@admin_required  # 未登录返回 {"error": "请先登录"} 401
+def api_admin_action(request):  # 非管理员返回 {"error": "需要管理员权限"} 403
+    # 管理员API逻辑
+```
+
+需要管理员权限的页面视图，在函数内部进行权限检查：
 
 ```python
 @login_required

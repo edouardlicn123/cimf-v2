@@ -98,7 +98,7 @@
 {% endif %}
 
 <form method="post">
-    <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+    {% include "includes/csrf.html" %}
     <button type="submit" class="btn btn-success btn-lg">
         <i class="bi bi-download"></i> 开始导出
     </button>

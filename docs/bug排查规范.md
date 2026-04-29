@@ -438,6 +438,9 @@ grep -rn "\.country\|\.city\|\.region\|\.type\|\.level" templates/
 □ 是否有新增模板？是否包含 csrf_token？
 □ 是否修改了 Jinja2 模板？是否使用正确的语法？
 □ 是否有新增设置项？是否同步到所有相关文件？
+□ 新功能是否测试了未登录访问？（应重定向或返回401）
+□ 运行 `./venv/bin/python manage.py check` 是否有 CIMF_W001 警告？
+□ POST 表单是否使用 `{% include "includes/csrf.html" %}`？
 ```
 
 ---

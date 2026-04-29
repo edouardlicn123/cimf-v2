@@ -282,18 +282,23 @@ class TemplateService:
             },
         ]
         
-        created_count = 0
+        # 批量查询已存在的模板名称（优化：避免循环查询）
+        existing_names = set(EmailTemplate.objects.values_list('name', flat=True))
+        
+        templates_to_create = []
         for tmpl in default_templates:
-            existing = EmailTemplate.objects.filter(name=tmpl['name']).first()
-            if not existing:
-                EmailTemplate.objects.create(
+            if tmpl['name'] not in existing_names:
+                templates_to_create.append(EmailTemplate(
                     name=tmpl['name'],
                     subject=tmpl['subject'],
                     description=tmpl['description'],
                     html_body=tmpl['html_body'],
                     text_body=tmpl.get('text_body', ''),
                     is_active=True,
-                )
-                created_count += 1
+                ))
+                existing_names.add(tmpl['name'])  # 更新内存缓存
         
-        return created_count
+        if templates_to_create:
+            EmailTemplate.objects.bulk_create(templates_to_create, batch_size=10)
+        
+        return len(templates_to_create)

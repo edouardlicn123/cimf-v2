@@ -15,7 +15,7 @@
 
 {% block admin_content %}
 <form method="post" id="settingsForm" enctype="multipart/form-data">
-    <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+    {% include "includes/csrf.html" %}
     
     <!-- 基本设置 -->
     <div class="card mb-4">

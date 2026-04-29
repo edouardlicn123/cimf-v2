@@ -37,6 +37,13 @@
 | `log_service.py` | LogService | 日志记录、审计追踪 |
 | `version_service.py` | VersionService | 版本信息管理 |
 | `sample_data_service.py` | SampleDataService | 示例数据生成 |
+|  |  |  |
+| **模块服务（modules/）** |  |  |
+| `modules/customer/services.py` | CustomerService | 海外客户管理服务 |
+| `modules/customer_cn/services.py` | CustomerCnService | 国内客户管理服务 |
+| `modules/resident_info/services.py` | ResidentInfoService | 居民信息服务 |
+| `modules/whatsapp/services.py` | WhatsAppService | WhatsApp 消息发送服务 |
+| `modules/clock/services.py` | ClockService | 时钟服务 |
 
 ---
 
@@ -390,5 +397,6 @@ def user_list(request):
 
 ---
 
-*文档版本：1.1*
-*最后更新：2026-04-28*
+*文档版本：1.2*
+*最后更新：2026-04-29*
+*更新内容：补充模块服务类（CustomerService、CustomerCnService、ResidentInfoService、WhatsAppService、ClockService）*

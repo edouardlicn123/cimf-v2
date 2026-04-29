@@ -33,7 +33,7 @@
 {% endif %}
 
 <form method="POST" novalidate>
-  <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+  {% include "includes/csrf.html" %}
 
   <!-- 个人信息卡片 -->
   <div class="card shadow-sm border-0 rounded-3 mb-3">

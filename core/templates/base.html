@@ -10,7 +10,10 @@
     
     {% include "includes/style.html" %}
     
-    {% block head_extra %}{% endblock %}
+    {% block head_extra %}
+    {# CSRF token for AJAX #}
+    <meta name="csrf-token" content="{{ csrf_token_value }}">
+    {% endblock %}
 </head>
 
 <body{% if show_nav|default(true) %} class="has-fixed-navbar{% if page_class|default('') %} {{ page_class }}{% endif %}"{% else %}{% if page_class|default('') %} class="{{ page_class }}"{% endif %}{% endif %}>

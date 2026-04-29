@@ -48,7 +48,7 @@
                             </td>
                             <td>
                                 <form method="post" action="{{ url('node:node_type_toggle', nt.id) }}" style="display:inline;">
-                                    <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+                                    {% include "includes/csrf.html" %}
                                     {% if nt.is_active %}
                                     <button type="submit" class="btn btn-sm btn-outline-warning">禁用</button>
                                     {% else %}
