@@ -53,11 +53,11 @@
                                 <td><code>{{ module.module_id }}</code></td>
                                 <td>
                                     {% if module.module_type == 'node' %}
-                                    <span class="badge bg-primary">node</span>
+                                        <span class="badge bg-primary">node</span>
                                     {% elif module.module_type == 'system' %}
-                                    <span class="badge bg-secondary">system</span>
+                                        <span class="badge bg-secondary">system</span>
                                     {% else %}
-                                    <span class="badge bg-warning">{{ module.module_type }}</span>
+                                        <span class="badge bg-warning">{{ module.module_type }}</span>
                                     {% endif %}
                                 </td>
                                 <td>{{ module.version }}</td>
@@ -66,13 +66,13 @@
                                 </td>
                                 <td>
                                     {% if not module.path_exists %}
-                                    <span class="badge bg-danger">不存在</span>
+                                        <span class="badge bg-danger">不存在</span>
                                     {% elif module.is_active %}
-                                    <span class="badge bg-success">已启用</span>
+                                        <span class="badge bg-success">已启用</span>
                                     {% elif module.is_installed %}
-                                    <span class="badge bg-secondary">已安装</span>
+                                        <span class="badge bg-secondary">已安装</span>
                                     {% else %}
-                                    <span class="badge bg-warning">未安装</span>
+                                        <span class="badge bg-warning">未安装</span>
                                     {% endif %}
                                 </td>
                                 <td>
@@ -83,13 +83,28 @@
                                 </td>
                                 <td>
                                     {% if not module.path_exists %}
-                                    <span class="text-muted">目录缺失</span>
+                                        <span class="text-muted">目录缺失</span>
                                     {% elif module.is_installed and not module.is_active %}
-                                    <a href="{{ url('node:module_enable', module.module_id) }}" class="btn btn-sm btn-success">启用</a>
+                                        <a href="{{ url('node:module_enable', module.module_id) }}" class="btn btn-sm btn-success">启用</a>
                                     {% elif module.is_active %}
-                                    <a href="{{ url('node:module_disable', module.module_id) }}" class="btn btn-sm btn-warning">禁用</a>
+                                        <a href="{{ url('node:module_disable', module.module_id) }}" class="btn btn-sm btn-warning">禁用</a>
                                     {% else %}
-                                    <a href="{{ url('node:module_install', module.module_id) }}" class="btn btn-sm btn-primary">安装</a>
+                                        <a href="{{ url('node:module_install', module.module_id) }}" class="btn btn-sm btn-primary">安装</a>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            <!-- 依赖信息行 -->
+                            <tr class="table-secondary">
+                                <td colspan="8" class="py-1" style="font-size: 0.875rem;">
+                                    {% if module.dependencies is none %}
+                                        <span class="text-danger">模块配置解析失败</span>
+                                    {% elif module.dependencies %}
+                                        <span class="text-muted">依赖：</span>
+                                        {% for dep_id in module.dependencies %}
+                                            <span class="badge bg-light text-dark me-1">{{ dep_id }}</span>
+                                        {% endfor %}
+                                    {% else %}
+                                        <span class="text-muted">依赖：无</span>
                                     {% endif %}
                                 </td>
                             </tr>

@@ -558,6 +558,17 @@ def node_modules(request):
     registered_ids = {m.module_id for m in registered}
     unregistered = [m for m in all_modules if m['id'] not in registered_ids]
     
+    # 为每个已安装模块添加依赖信息
+    for module in registered:
+        if module.path:
+            module_info = ModuleService._load_module_info(module.path)
+            if module_info:
+                module.dependencies = module_info.get('require', [])
+            else:
+                module.dependencies = None  # 解析失败
+        else:
+            module.dependencies = []
+    
     node_types = NodeTypeService.get_all_including_inactive()
     
     return render(request, 'node/index.html', {
