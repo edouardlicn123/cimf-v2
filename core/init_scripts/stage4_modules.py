@@ -72,11 +72,22 @@ def run_stage4(dry_run: bool = False) -> Dict[str, Any]:
     
     from core.node.services import ModuleService
     
-    results = {'installed': 0, 'skipped': 0, 'success': False}
-    
     if dry_run:
-        results['message'] = '[模拟] 将串行注册模块'
-        return results
+        return {'message': '[模拟] 将扫描并注册模块', 'success': True}
+    
+    # 使用通用函数，执行扫描+注册+安装
+    result = ModuleService.scan_register_install(
+        do_install=True,
+        dry_run=False
+    )
+    
+    # 转换为阶段4结果格式
+    return {
+        'installed': result.get('installed', 0),
+        'skipped': result.get('skipped', 0),
+        'success': len(result.get('failed', [])) == 0,
+        'failed': result.get('failed', []),
+    }
     
     all_modules = ModuleService.scan_modules()
     

@@ -49,27 +49,59 @@ class ModuleService:
         return modules
     
     @staticmethod
+    def scan_register_install(do_install: bool = True, dry_run: bool = False) -> Dict[str, Any]:
+        """
+        统一扫描、注册、安装流程
+        Args:
+            do_install: 是否执行安装（阶段4用True，仅扫描用False）
+            dry_run: 是否模拟执行
+        Returns:
+            dict: {'registered': 数量, 'installed': 数量, 'skipped': 数量, 'failed': []}
+        """
+        all_modules = ModuleService.scan_modules()
+        
+        result = {
+            'registered': 0,
+            'installed': 0,
+            'skipped': 0,
+            'failed': [],
+        }
+        
+        if dry_run:
+            result['message'] = '[模拟] 将处理模块'
+            return result
+        
+        # 筛选需要处理的模块：未注册 或 未安装
+        pending = [
+            m for m in all_modules
+            if not m.get('is_registered') or not m.get('is_installed', False)
+        ]
+        result['skipped'] = len(all_modules) - len(pending)
+        
+        for m in pending:
+            try:
+                module = ModuleService.register_module(m)
+                result['registered'] += 1
+                
+                if do_install and not module.is_installed:
+                    ok, msg = ModuleService.install_module(m['id'])
+                    if ok:
+                        result['installed'] += 1
+                    else:
+                        result['failed'].append(f"{m.get('name', m['id'])}: {msg}")
+            except Exception as e:
+                result['failed'].append(f"{m.get('name', m['id'])}: {str(e)}")
+        
+        return result
+    
+    @staticmethod
     def scan_and_register_modules() -> List[Module]:
-        from core.node.services.node_type_service import NodeTypeService
-        scanned = ModuleService.scan_modules()
-        registered = []
+        """扫描并注册模块（供视图调用，保持原返回值类型）"""
+        scan_result = ModuleService.scan_register_install(do_install=True, dry_run=False)
         
-        for m in scanned:
-            module = ModuleService.register_module(m)
-            if not module.is_installed:
-                try:
-                    result = ModuleService.install_module(m['id'])
-                    if not result[0]:
-                        raise RuntimeError(f"模块 {m['id']} 安装失败: {result[1]}")
-                except Exception as e:
-                    import logging
-                    logger = logging.getLogger(__name__)
-                    logger.error(f"模块 {m['id']} 安装失败: {str(e)}")
-                    raise
-            registered.append(module)
-        
-        NodeTypeService.init_default_node_types()
-        return registered
+        # 返回已安装的模块列表（保持原返回值类型）
+        registered = Module.objects.filter(is_installed=True)
+        return list(registered)
     
     @staticmethod
     def _load_module_info(module_dir: str) -> Optional[Dict[str, Any]]:

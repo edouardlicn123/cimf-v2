@@ -575,28 +575,16 @@ def module_scan(request):
         messages.error(request, '需要系统管理员权限访问该页面')
         return redirect('core:dashboard')
     
-    # 扫描并安装新模块
-    modules = ModuleService.scan_modules()
-    registered_ids = {m.module_id for m in Module.objects.all()}
-    new_modules = []
+    # 使用通用函数扫描、注册、安装
+    result = ModuleService.scan_register_install(do_install=True, dry_run=False)
     
-    for m in modules:
-        if m['id'] not in registered_ids:
-            module = ModuleService.register_module(m)
-            if module.module_type == 'node':
-                ModuleService.sync_node_type(module)
-            new_modules.append(m['name'])
+    # 显示结果消息
+    msg = f"扫描完成: 注册 {result.get('registered', 0)} 个，安装 {result.get('installed', 0)} 个"
+    messages.success(request, msg)
     
-    # 清理已卸载的模块
-    cleaned = ModuleService.cleanup_uninstalled_modules()
-    
-    # 显示消息
-    if new_modules:
-        messages.success(request, f'已安装 {len(new_modules)} 个新模块：{", ".join(new_modules)}')
-    if cleaned:
-        messages.info(request, f'已清理 {len(cleaned)} 个未安装的模块注册记录')
-    if not new_modules and not cleaned:
-        messages.info(request, '未发现新模块')
+    if result.get('failed'):
+        failed_msg = "失败列表: " + "; ".join(result['failed'])
+        messages.error(request, failed_msg)
     
     return redirect('core:modules_manage')
 
