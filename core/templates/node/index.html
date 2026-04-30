@@ -21,7 +21,7 @@
         <!-- 提示 -->
         <div class="border rounded p-3 mb-4 bg-light">
             <i class="bi bi-exclamation-triangle text-warning me-1"></i>
-            安装或启用模块后，需要重启服务器才能正常使用。删除模块前必须先禁用。
+            安装或启用模块后,需要重启服务器才能正常使用.删除模块前必须先禁用.
         </div>
         
         <!-- 已安装模块列表 -->
@@ -99,12 +99,12 @@
                                     {% if module.dependencies is none %}
                                         <span class="text-danger">模块配置解析失败</span>
                                     {% elif module.dependencies %}
-                                        <span class="text-muted">依赖：</span>
+                                        <span class="text-muted">依赖:</span>
                                         {% for dep_id in module.dependencies %}
                                             <span class="badge bg-light text-dark me-1">{{ dep_id }}</span>
                                         {% endfor %}
                                     {% else %}
-                                        <span class="text-muted">依赖：无</span>
+                                        <span class="text-muted">依赖:无</span>
                                     {% endif %}
                                 </td>
                             </tr>
