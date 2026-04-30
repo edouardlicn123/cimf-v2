@@ -80,9 +80,10 @@ def run_stage4(dry_run: bool = False) -> Dict[str, Any]:
     
     all_modules = ModuleService.scan_modules()
     
+    # 筛选需要注册的模块：未注册 或 未安装
     pending_modules = [
         m for m in all_modules
-        if not (m.get('is_registered') and m.get('is_installed'))
+        if not m.get('is_registered') or not m.get('is_installed', False)
     ]
     
     results['skipped'] = len(all_modules) - len(pending_modules)
@@ -98,6 +99,8 @@ def run_stage4(dry_run: bool = False) -> Dict[str, Any]:
             results['installed'] += 1
         except Exception as e:
             results['error'] = str(e)
+            results['success'] = False
+            return results
     
     results['success'] = True
     return results

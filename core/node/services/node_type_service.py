@@ -18,12 +18,36 @@ class NodeTypeService:
         return NodeType.objects.filter(id=node_type_id).first()
     
     @staticmethod
+    def get_by_id_or_404(node_type_id: int) -> NodeType:
+        """获取节点类型，不存在则抛出异常"""
+        node_type = NodeType.objects.filter(id=node_type_id).first()
+        if not node_type:
+            raise ValueError(f'节点类型不存在: {node_type_id}')
+        return node_type
+    
+    @staticmethod
     def get_by_slug(slug: str) -> Optional[NodeType]:
         return NodeType.objects.filter(slug=slug, is_active=True).first()
     
     @staticmethod
+    def get_by_slug_or_404(slug: str) -> NodeType:
+        """获取节点类型，不存在则抛出异常"""
+        node_type = NodeType.objects.filter(slug=slug, is_active=True).first()
+        if not node_type:
+            raise ValueError(f'节点类型不存在: {slug}')
+        return node_type
+    
+    @staticmethod
     def get_by_slug_including_inactive(slug: str) -> Optional[NodeType]:
         return NodeType.objects.filter(slug=slug).first()
+    
+    @staticmethod
+    def get_by_slug_including_inactive_or_404(slug: str) -> NodeType:
+        """获取节点类型（含未激活），不存在则抛出异常"""
+        node_type = NodeType.objects.filter(slug=slug).first()
+        if not node_type:
+            raise ValueError(f'节点类型不存在: {slug}')
+        return node_type
     
     @staticmethod
     def create(data: Dict[str, Any]) -> NodeType:

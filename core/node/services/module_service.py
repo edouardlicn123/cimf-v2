@@ -325,6 +325,16 @@ except Exception as e:
         elif not ModuleService._check_tables_exist(module_id):
             return False, f'迁移后表仍未创建，模块 {module_id} 可能配置不正确'
         
+        # 验证 models 字段中列出的所有模型表
+        if module_info and module_info.get('models'):
+            from django.db import connection
+            existing_tables = set(connection.introspection.table_names())
+            for model_name in module_info['models']:
+                # 模型名转换为表名（Django 默认：app_label_modelname）
+                table_name = f"{module_id}_{model_name.lower()}"
+                if table_name not in existing_tables:
+                    return False, f'模型 {model_name} 的表未创建（期望表名: {table_name}）'
+        
         if module.module_type == 'node':
             ModuleService.sync_node_type(module)
         elif module.module_type == 'tool':
@@ -374,7 +384,12 @@ except Exception as e:
         module = ModuleService.register_module(module_info)
         if module:
             if not module.is_installed:
-                ModuleService.install_module(module_info['id'])
+                success, msg = ModuleService.install_module(module_info['id'])
+                if not success:
+                    import logging
+                    logger = logging.getLogger(__name__)
+                    logger.error(f"模块 {module_info['id']} 安装失败: {msg}")
+                    raise RuntimeError(f"模块 {module_info['id']} 安装失败: {msg}")
             if not module.is_active:
                 ModuleService.enable_module(module_info['id'])
         return module
@@ -521,8 +536,9 @@ except Exception as e:
     
     @staticmethod
     def verify_dependencies(module_id: str) -> tuple:
-        ok, err, _ = ModuleService.check_dependencies(module_id)
-        return ok, err
+        """验证模块依赖，返回(成功?, 错误信息, 依赖链)"""
+        ok, err, chain = ModuleService.check_dependencies(module_id)
+        return ok, err, chain
     
     @staticmethod
     def get_dependency_chain(module_id: str) -> list:

@@ -94,6 +94,9 @@ def system_permissions(request):
         setting = SystemSetting.objects.filter(key=f'role_name_{role}').first()
         if setting and setting.value:
             role_labels[role] = setting.value
+        elif setting and not setting.value:
+            pass  # 保持默认值
+        # 如果setting为None，保持默认值
     
     node_perms = PermissionService.get_node_permissions()
     system_perms = PermissionService.get_system_permissions()

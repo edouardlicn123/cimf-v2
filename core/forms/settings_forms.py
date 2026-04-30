@@ -150,16 +150,20 @@ class ChangePasswordForm(forms.Form):
     
     def clean(self):
         cleaned_data = super().clean()
+        current_password = cleaned_data.get('current_password')
         new_password = cleaned_data.get('new_password')
         confirm_password = cleaned_data.get('confirm_password')
         
-        if not new_password:
-            raise ValidationError('新密码不能为空')
+        # 如果填写了新密码，必须填写当前密码
+        if new_password and not current_password:
+            raise ValidationError('修改密码时必须填写当前密码')
         
-        if new_password != confirm_password:
-            raise ValidationError('两次输入的新密码不一致')
-        
-        if len(new_password) < 10:
-            raise ValidationError('新密码长度至少 10 个字符（建议 12+ 字符）')
+        if new_password:
+            if not confirm_password:
+                raise ValidationError('请确认新密码')
+            if new_password != confirm_password:
+                raise ValidationError('两次输入的新密码不一致')
+            if len(new_password) < 10:
+                raise ValidationError('新密码长度至少 10 个字符（建议 12+ 字符）')
         
         return cleaned_data

@@ -55,8 +55,9 @@ from datetime import datetime
 # 导入初始化脚本包
 from core.init_scripts import (
     run_stage1, run_stage2, run_stage3, run_stage4,
-    print_section, colored
+    print_module_results,
 )
+from core.init_scripts.common import colored, print_section, print_step
 
 
 def init_database(with_data: bool = False, force: bool = False, dry_run: bool = False,
@@ -137,33 +138,42 @@ def init_database(with_data: bool = False, force: bool = False, dry_run: bool = 
     
     # ===== 【阶段1】数据库结构 =====
     if stage is None or stage == 1:
+        print(colored(f"\n[1/4] 阶段1：数据库结构", "cyan"))
         run_stage1(skip_migrate=skip_migrate, incremental=incremental,
                      db_exists=db_exists, dry_run=dry_run)
     else:
-        print(colored("【跳过阶段1】数据库结构（--stage 参数指定）", "yellow"))
+        print(colored(f"\n[1/4] 跳过阶段1（--stage {stage} 参数指定）", "yellow"))
+        print(colored("=" * 60, "yellow"))
     
     if not with_data:
         print(colored("\n未指定 --with-data，跳过初始数据插入", "yellow"))
         print(colored("=" * 60, "cyan"))
-        return
-    
-    # ===== 【阶段2】系统配置 =====
-    if stage is None or stage == 2:
-        run_stage2(dry_run=dry_run)
     else:
-        print(colored("【跳过阶段2】系统配置（--stage 参数指定）", "yellow"))
-    
-    # ===== 【阶段3】用户管理 =====
-    if stage is None or stage == 3:
-        run_stage3(force=force, dry_run=dry_run)
-    else:
-        print(colored("【跳过阶段3】用户管理（--stage 参数指定）", "yellow"))
+        # ===== 【阶段2】系统配置 =====
+        if stage is None or stage == 2:
+            print(colored(f"\n[2/4] 阶段2：系统配置", "cyan"))
+            run_stage2(dry_run=dry_run)
+        else:
+            print(colored(f"\n[2/4] 跳过阶段2（--stage {stage} 参数指定）", "yellow"))
+            print(colored("=" * 60, "yellow"))
+        
+        # ===== 【阶段3】用户管理 =====
+        if stage is None or stage == 3:
+            print(colored(f"\n[3/4] 阶段3：用户管理", "cyan"))
+            run_stage3(force=force, dry_run=dry_run)
+        else:
+            print(colored(f"\n[3/4] 跳过阶段3（--stage {stage} 参数指定）", "yellow"))
+            print(colored("=" * 60, "yellow"))
     
     # ===== 【阶段4】业务模块 =====
+    # 模块安装不依赖 with_data，可以独立执行
     if stage is None or stage == 4:
-        run_stage4(dry_run=dry_run)
+        print(colored(f"\n[4/4] 阶段4：业务模块", "cyan"))
+        results4 = run_stage4(dry_run=dry_run)
+        print_module_results(results4)
     else:
-        print(colored("【跳过阶段4】业务模块（--stage 参数指定）", "yellow"))
+        print(colored(f"\n[4/4] 跳过阶段4（--stage {stage} 参数指定）", "yellow"))
+        print(colored("=" * 60, "yellow"))
     
     # ===== 完成 =====
     print()

@@ -43,10 +43,11 @@
 from .stage1_migrations import run_stage1
 from .stage2_config import run_stage2
 from .stage3_users import run_stage3
-from .stage4_modules import run_stage4
+from .stage4_modules import run_stage4, print_module_results
 from .common import print_section, print_step, colored, verify_module_taxonomies
 
 __all__ = [
     'run_stage1', 'run_stage2', 'run_stage3', 'run_stage4',
+    'print_module_results',
     'print_section', 'print_step', 'colored', 'verify_module_taxonomies'
 ]

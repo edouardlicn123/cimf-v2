@@ -735,3 +735,11 @@
 15. 词汇表初始化优化：添加 fixture 加载方式，保留备用方法 (core/services/taxonomy_service.py)
 16. 完成多阶段分文件初始化架构：创建 core/init_scripts/ 包（__init__.py, common.py, stage1-4, verify.py）并更新 init_db.py
 
+# 2026-04-30 修改记录
+
+1. 修复colored()参数错误，增强阶段显示，添加数据库表不存在时的友好提示
+2. 修复模块安装失败：动态注册INSTALLED_APPS，检查install_module返回值，修复register_and_install逻辑
+3. 修复全部bug：表单验证不完整（settings_forms.py, admin_forms.py）、API装饰器检查、.first()调用审查
+4. 修复全部bug：添加.first()检查、修复表单验证、API装饰器验证、csrf_token检查
+5. 执行更多修复：优化settings.py的.first()检查逻辑，完善代码注释
+

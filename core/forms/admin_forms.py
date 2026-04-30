@@ -130,10 +130,10 @@ class UserCreateForm(forms.ModelForm):
         password = cleaned_data.get('password')
         confirm_password = cleaned_data.get('confirm_password')
         
-        if not password:
-            raise ValidationError('密码不能为空')
-        
-        if password and confirm_password:
+        # 如果填写了密码，必须填写确认密码
+        if password:
+            if not confirm_password:
+                raise ValidationError('请确认密码')
             if password != confirm_password:
                 raise ValidationError('两次输入的密码不一致')
             if len(password) < 10:

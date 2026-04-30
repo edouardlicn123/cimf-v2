@@ -108,7 +108,14 @@ def run_stage3(force: bool = False, dry_run: bool = False) -> bool:
             print(colored("错误：管理员密码长度不足 10 位！请通过环境变量 ADMIN_PASSWORD 设置更强密码", "red"))
             return False
     
-    existing_admin = User.objects.filter(username=admin_username).first()
+    try:
+        existing_admin = User.objects.filter(username=admin_username).first()
+    except Exception as e:
+        if 'no such table' in str(e) or 'does not exist' in str(e):
+            print(colored("✗ 数据库表不存在，请先运行阶段1完成数据库迁移：", "red"))
+            print(colored("  ./venv/bin/python init_db.py --stage 1", "yellow"))
+            return False
+        raise
     
     if existing_admin and not force:
         print(colored(f"    - 管理员 '{admin_username}' 已存在，跳过创建", "yellow"))

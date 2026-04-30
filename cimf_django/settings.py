@@ -83,7 +83,17 @@ if os.path.isdir(_nodes_dir):
             if os.path.isdir(template_dir):
                 _module_template_dirs.append(Path(template_dir))
 
-INSTALLED_APPS = _base_apps
+# 动态扫描并添加 modules/ 下的子模块到 INSTALLED_APPS
+_module_apps = []
+_nodes_dir = os.path.join(BASE_DIR, 'modules')
+if os.path.isdir(_nodes_dir):
+    for item in os.listdir(_nodes_dir):
+        module_path = os.path.join(_nodes_dir, item)
+        apps_path = os.path.join(module_path, 'apps.py')
+        if os.path.isdir(module_path) and os.path.exists(apps_path):
+            _module_apps.append(f'modules.{item}')
+
+INSTALLED_APPS = _base_apps + _module_apps
 
 MIDDLEWARE = [
     'cimf_django.middleware.IPWhitelistMiddleware',
