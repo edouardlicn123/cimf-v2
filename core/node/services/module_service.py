@@ -49,14 +49,15 @@ class ModuleService:
         return modules
     
     @staticmethod
-    def scan_register_install(do_install: bool = True, dry_run: bool = False) -> Dict[str, Any]:
+    def scan_register_install(do_install: bool = True, dry_run: bool = False, respect_install_on_init: bool = True) -> Dict[str, Any]:
         """
         统一扫描、注册、安装流程
         Args:
             do_install: 是否执行安装（阶段4用True，仅扫描用False）
             dry_run: 是否模拟执行
+            respect_install_on_init: 是否尊重install_on_init设置（初始化阶段为True，手动扫描为False）
         Returns:
-            dict: {'registered': 数量, 'installed': 数量, 'skipped': 数量, 'failed': []}
+            dict: {'registered': 数量, 'installed': 数量, 'skipped': 数量, 'failed': [], 'skipped_modules': []}
         """
         all_modules = ModuleService.scan_modules()
         
@@ -65,6 +66,7 @@ class ModuleService:
             'installed': 0,
             'skipped': 0,
             'failed': [],
+            'skipped_modules': [],
         }
         
         if dry_run:
@@ -76,7 +78,24 @@ class ModuleService:
             m for m in all_modules
             if not m.get('is_registered') or not m.get('is_installed', False)
         ]
-        result['skipped'] = len(all_modules) - len(pending)
+        
+        # 计算原始的skipped（已注册且已安装）
+        original_skipped = len(all_modules) - len(pending)
+        
+        # 如果尊重install_on_init设置，过滤掉明确设置为False的模块
+        skipped_due_to_install_on_init = 0
+        if respect_install_on_init:
+            filtered_pending = []
+            for m in pending:
+                install_on_init = m.get('install_on_init', True)
+                if install_on_init is False or str(install_on_init).lower() == 'false':
+                    skipped_due_to_install_on_init += 1
+                    result['skipped_modules'].append(m.get('name', m['id']))
+                else:
+                    filtered_pending.append(m)
+            pending = filtered_pending
+        
+        result['skipped'] = original_skipped + skipped_due_to_install_on_init
         
         for m in pending:
             try:
@@ -727,7 +746,7 @@ except Exception as e:
         return tool_type
 
     @staticmethod
-    def create_module(module_id: str, name: str, module_type: str = 'node', description: str = '', icon: str = 'bi-folder') -> Dict[str, Any]:
+    def create_module(module_id: str, name: str, module_type: str = 'node', description: str = '', icon: str = 'bi-folder', install_on_init: bool = True) -> Dict[str, Any]:
         import shutil
         
         module_path = os.path.join(ModuleService.MODULES_DIR, module_id)
@@ -758,6 +777,7 @@ MODULE_INFO = {{
     'author': '',
     'description': '{description}',
     'icon': '{icon}',
+    'install_on_init': {install_on_init},
 }}
 '''
             with open(os.path.join(module_path, 'module.py'), 'w') as f:

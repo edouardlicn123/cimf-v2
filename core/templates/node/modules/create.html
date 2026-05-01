@@ -60,6 +60,13 @@
                 </label>
                 <small class="text-muted d-block">取消勾选则首页卡片无链接（如时钟、计算器等工具类模块）</small>
             </div>
+            <div class="mb-3 form-check">
+                <input type="checkbox" name="install_on_init" class="form-check-input" id="installOnInit" checked>
+                <label class="form-check-label" for="installOnInit">
+                    初始化时自动安装此模块
+                </label>
+                <small class="text-muted d-block">取消勾选则系统初始化时不会自动安装此模块（手动扫描仍可安装）</small>
+            </div>
             <div class="mb-3">
                 <label class="form-label">依赖模块</label>
                 <input type="text" name="require" class="form-control" placeholder="如: customer,whatsapp">

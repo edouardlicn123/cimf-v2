@@ -76,9 +76,11 @@ def run_stage4(dry_run: bool = False) -> Dict[str, Any]:
         return {'message': '[模拟] 将扫描并注册模块', 'success': True}
     
     # 使用通用函数，执行扫描+注册+安装
+    # 初始化阶段尊重install_on_init设置，不自动安装该参数为False的模块
     result = ModuleService.scan_register_install(
         do_install=True,
-        dry_run=False
+        dry_run=False,
+        respect_install_on_init=True
     )
     
     # 转换为阶段4结果格式
