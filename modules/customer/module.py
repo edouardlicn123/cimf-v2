@@ -24,6 +24,7 @@ MODULE_INFO = {
     'models': ['CustomerFields'],
     'require': [],
     'icon': 'bi-people',
+    'install_on_init': True,
     'frontpage_card_clickable': True,
     'permissions': [
         {'key': 'view_others', 'name': '查看别人的内容'},

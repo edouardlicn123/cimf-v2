@@ -12,6 +12,7 @@ MODULE_INFO = {
     'description': '提供时钟、日历的展现功能。',
     'icon': 'bi-clock',
     'require': [],
+    'install_on_init': True,
     'frontpage_card_clickable': False,
     'dashboard_cards': [
         {

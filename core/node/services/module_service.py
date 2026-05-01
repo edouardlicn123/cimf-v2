@@ -746,7 +746,7 @@ except Exception as e:
         return tool_type
 
     @staticmethod
-    def create_module(module_id: str, name: str, module_type: str = 'node', description: str = '', icon: str = 'bi-folder', install_on_init: bool = True) -> Dict[str, Any]:
+    def create_module(module_id: str, name: str, module_type: str = 'node', description: str = '', icon: str = 'bi-folder', install_on_init: bool = True, author: str = '') -> Dict[str, Any]:
         import shutil
         
         module_path = os.path.join(ModuleService.MODULES_DIR, module_id)
@@ -774,7 +774,7 @@ MODULE_INFO = {{
     'name': '{name}',
     'type': '{module_type}',
     'version': '1.0.0',
-    'author': '',
+    'author': '{author}',
     'description': '{description}',
     'icon': '{icon}',
     'install_on_init': {install_on_init},

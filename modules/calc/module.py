@@ -8,5 +8,6 @@ MODULE_INFO = {
     'author': '',
     'description': '简易计算器工具',
     'icon': 'bi-calculator',
+    'install_on_init': True,
     'frontpage_card_clickable': False,
 }

@@ -743,8 +743,8 @@
 4. 修复全部bug：添加.first()检查、修复表单验证、API装饰器验证、csrf_token检查
 5. 执行更多修复：优化settings.py的.first()检查逻辑，完善代码注释
 
-
-
 # 2026-05-01 修改记录
 
 1. 实现 install_on_init 参数功能（7个任务全部完成）
+2. 修复create_module未传递author参数的bug，全面检查并修复类似语法错误
+

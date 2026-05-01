@@ -745,6 +745,7 @@ def module_create_action(request):
     module_type = request.POST.get('module_type', 'node').strip()
     description = request.POST.get('description', '').strip()
     icon = request.POST.get('icon', 'bi-folder').strip()
+    author = request.POST.get('author', '').strip()
     install_on_init = request.POST.get('install_on_init') == 'on'
     
     if not module_id:
@@ -756,7 +757,7 @@ def module_create_action(request):
     if not module_type:
         return JsonResponse({'success': False, 'error': '请输入模块类型'}, status=400)
     
-    result = ModuleService.create_module(module_id, name, module_type, description, icon, install_on_init)
+    result = ModuleService.create_module(module_id, name, module_type, description, icon, install_on_init, author)
     
     if result.get('success'):
         return JsonResponse({'success': True, 'module_id': result['module_id']})
