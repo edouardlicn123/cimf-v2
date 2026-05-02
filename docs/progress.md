@@ -773,4 +773,7 @@
 16. 低优先级优化：清理DEBUG语句、代码规范化
 17. 安全配置环境变量迁移完成：settings.py支持从config.env读取安全配置，创建A07规范文档
 18. 文件清理：删除ZIP(54MB)、无效woff2、Python缓存；修复base.css字体路径指向web目录
+19. 执行方案B清理：删除Inter.ttc(13MBx2)和NotoSansCJKsc-Regular.otf(13MBx2)，释放~52MB
+20. 方案C1清理：删除extras/ttf(15MB)、noto OTF(16MB)，修复base.css删除ttf引用，总释放~145MB
+21. 方案C2清理：删除extras/(21MB)、根目录TTF(1.6MB)，Inter目录从28MB→5MB
 
