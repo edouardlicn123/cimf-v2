@@ -8,6 +8,7 @@ from django.contrib import messages
 from core.decorators import admin_required
 from core.models import User
 from core.services import UserService
+from core.forms.admin_forms import UserCreateForm, UserEditForm
 
 
 @admin_required
@@ -37,29 +38,26 @@ def system_users(request):
 def user_create(request):
     """创建用户"""
     if request.method == 'POST':
-        username = request.POST.get('username', '').strip()
-        nickname = request.POST.get('nickname', '').strip()
-        email = request.POST.get('email', '').strip() or None
-        password = request.POST.get('password', '')
-        role = request.POST.get('role', 'employee')
-        is_admin = request.POST.get('is_admin') == 'on'
-        
-        try:
-            UserService.create_user(
-                username=username,
-                nickname=nickname or username,
-                email=email,
-                password=password,
-                role=role,
-                is_admin=is_admin
-            )
-            messages.success(request, '用户创建成功')
-            return redirect('core:system_users')
-        except ValueError as e:
-            messages.error(request, str(e))
+        form = UserCreateForm(request.POST)
+        if form.is_valid():
+            try:
+                UserService.create_user(
+                    username=form.cleaned_data['username'],
+                    nickname=form.cleaned_data['nickname'] or form.cleaned_data['username'],
+                    email=form.cleaned_data['email'] or None,
+                    password=form.cleaned_data['password'],
+                    role=form.cleaned_data['role'],
+                    is_admin=form.cleaned_data['is_admin'],
+                )
+                messages.success(request, '用户创建成功')
+                return redirect('core:system_users')
+            except ValueError as e:
+                messages.error(request, str(e))
+    else:
+        form = UserCreateForm()
     
     return render(request, 'admin/system_user_edit.html', {
-        'user': None,
+        'form': form,
         'is_create': True,
     })
 
@@ -74,31 +72,28 @@ def user_edit(request, user_id: int):
         return redirect('core:system_users')
     
     if request.method == 'POST':
-        username = request.POST.get('username', '').strip()
-        nickname = request.POST.get('nickname', '').strip()
-        email = request.POST.get('email', '').strip() or None
-        password = request.POST.get('password', '')
-        role = request.POST.get('role', 'employee')
-        is_admin = request.POST.get('is_admin') == 'on'
-        is_active = request.POST.get('is_active') == 'on'
-        
-        try:
-            UserService.update_user(
-                user_id=user_id,
-                username=username,
-                nickname=nickname,
-                email=email,
-                password=password if password else None,
-                role=role,
-                is_admin=is_admin,
-                is_active=is_active
-            )
-            messages.success(request, '用户信息更新成功')
-            return redirect('core:system_users')
-        except (ValueError, PermissionError) as e:
-            messages.error(request, str(e))
+        form = UserEditForm(request.POST, instance=user, user_id=user_id)
+        if form.is_valid():
+            try:
+                UserService.update_user(
+                    user_id=user_id,
+                    username=form.cleaned_data['username'],
+                    nickname=form.cleaned_data['nickname'],
+                    email=form.cleaned_data['email'] or None,
+                    password=form.cleaned_data['password'] if form.cleaned_data['password'] else None,
+                    role=form.cleaned_data['role'],
+                    is_admin=form.cleaned_data['is_admin'],
+                    is_active=form.cleaned_data['is_active'],
+                )
+                messages.success(request, '用户信息更新成功')
+                return redirect('core:system_users')
+            except (ValueError, PermissionError) as e:
+                messages.error(request, str(e))
+    else:
+        form = UserEditForm(instance=user, user_id=user_id)
     
     return render(request, 'admin/system_user_edit.html', {
+        'form': form,
         'user': user,
         'is_create': False,
     })
@@ -116,6 +111,9 @@ def user_delete(request, user_id: int):
         return redirect('core:system_users')
     
     user = get_object_or_404(User, id=user_id)
-    user.delete()
-    messages.success(request, '用户已删除')
+    try:
+        user.delete()
+        messages.success(request, '用户已删除')
+    except Exception as e:
+        messages.error(request, f'删除用户失败: {str(e)}')
     return redirect('core:system_users')

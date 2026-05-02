@@ -60,13 +60,7 @@
                             <td>{{ u.nickname|default('-') }}</td>
                             <td>{{ u.email|default('-') }}</td>
                             <td>
-                                {% if u.role == 'manager' %}
-                                    <span class="badge bg-danger">一类用户</span>
-                                {% elif u.role == 'leader' %}
-                                    <span class="badge bg-warning">二类用户</span>
-                                {% else %}
-                                    <span class="badge bg-secondary">三类用户</span>
-                                {% endif %}
+                                {% include "includes/role_badge.html" with role=u.role %}
                             </td>
                             <td>
                                 {% if u.is_active %}

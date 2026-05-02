@@ -28,6 +28,15 @@ from django.utils import timezone
 from datetime import timedelta
 
 
+class BaseModel(models.Model):
+    """抽象基础模型，提供公共时间戳字段"""
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='创建时间')
+    updated_at = models.DateTimeField(auto_now=True, verbose_name='更新时间')
+    
+    class Meta:
+        abstract = True
+
+
 class UserManager(BaseUserManager):
     """
     自定义用户管理器
@@ -244,7 +253,7 @@ class SystemSetting(models.Model):
         return f'{self.key}: {self.value}'
 
 
-class Taxonomy(models.Model):
+class Taxonomy(BaseModel):
     """
     词汇表模型
     
@@ -271,16 +280,6 @@ class Taxonomy(models.Model):
         verbose_name='描述'
     )
     
-    created_at = models.DateTimeField(
-        auto_now_add=True,
-        verbose_name='创建时间'
-    )
-    
-    updated_at = models.DateTimeField(
-        auto_now=True,
-        verbose_name='更新时间'
-    )
-    
     class Meta:
         db_table = 'taxonomies'
         verbose_name = '词汇表'
@@ -291,7 +290,7 @@ class Taxonomy(models.Model):
         return self.name
 
 
-class TaxonomyItem(models.Model):
+class TaxonomyItem(BaseModel):
     """
     词汇项模型
     
@@ -320,16 +319,6 @@ class TaxonomyItem(models.Model):
     weight = models.IntegerField(
         default=0,
         verbose_name='排序权重'
-    )
-    
-    created_at = models.DateTimeField(
-        auto_now_add=True,
-        verbose_name='创建时间'
-    )
-    
-    updated_at = models.DateTimeField(
-        auto_now=True,
-        verbose_name='更新时间'
     )
     
     class Meta:

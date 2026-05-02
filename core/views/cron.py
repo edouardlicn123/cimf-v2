@@ -7,10 +7,10 @@ import json
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
-from django.core.paginator import Paginator
 
 from core.decorators import admin_required
 from core.services import get_cron_service
+from core.utils.pagination import paginate_queryset
 
 
 @admin_required
@@ -70,12 +70,6 @@ def cron_toggle_task(request, task_name: str):
 def permission_check(request):
     """权限检测页面 - 检测哪些页面需要 admin 权限"""
     filter_status = request.GET.get('filter', 'all')
-    try:
-        page_num = int(request.GET.get('page', 1))
-        if page_num < 1:
-            page_num = 1
-    except (ValueError, TypeError):
-        page_num = 1
     
     all_pages = get_all_pages_with_permission_status()
     
@@ -86,20 +80,13 @@ def permission_check(request):
     else:
         pages = all_pages
     
-    paginator = Paginator(pages, 20)
-    page_obj = paginator.get_page(page_num)
+    page_ctx = paginate_queryset(request, pages, per_page=20)
     
     restricted_count = len([p for p in all_pages if p['has_admin_check']])
     unrestricted_count = len([p for p in all_pages if not p['has_admin_check']])
     
     return render(request, 'admin/permission_check.html', {
-        'page_obj': page_obj,
-        'current_page': page_obj.number,
-        'total_pages': paginator.num_pages,
-        'has_prev': page_obj.has_previous(),
-        'has_next': page_obj.has_next(),
-        'prev_page': page_obj.previous_page_number() if page_obj.has_previous() else None,
-        'next_page': page_obj.next_page_number() if page_obj.has_next() else None,
+        **page_ctx,
         'filter_status': filter_status,
         'total_count': len(all_pages),
         'restricted_count': restricted_count,

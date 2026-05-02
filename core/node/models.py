@@ -24,10 +24,10 @@ import os
 
 from django.db import models
 from django.conf import settings
-from django.conf import settings
+from core.models import BaseModel
 
 
-class NodeType(models.Model):
+class NodeType(BaseModel):
     """
     节点类型模型
     
@@ -41,8 +41,6 @@ class NodeType(models.Model):
     author = models.CharField(max_length=100, blank=True, null=True, verbose_name='作者')
     fields_config = models.JSONField(default=list, verbose_name='字段配置')
     is_active = models.BooleanField(default=True, verbose_name='是否启用')
-    created_at = models.DateTimeField(auto_now_add=True, verbose_name='创建时间')
-    updated_at = models.DateTimeField(auto_now=True, verbose_name='更新时间')
     
     class Meta:
         db_table = 'node_types'
@@ -57,7 +55,7 @@ class NodeType(models.Model):
         return self.nodes.count()
 
 
-class Node(models.Model):
+class Node(BaseModel):
     """
     节点主表
     
@@ -89,9 +87,6 @@ class Node(models.Model):
         verbose_name='更新人'
     )
     
-    created_at = models.DateTimeField(auto_now_add=True, verbose_name='创建时间')
-    updated_at = models.DateTimeField(auto_now=True, verbose_name='更新时间')
-    
     class Meta:
         db_table = 'nodes'
         verbose_name = '节点'
@@ -102,7 +97,7 @@ class Node(models.Model):
         return f'Node {self.id} ({self.node_type.slug})'
 
 
-class Module(models.Model):
+class Module(BaseModel):
     """模块注册表"""
     
     module_id = models.CharField(max_length=50, unique=True, verbose_name='模块ID')
@@ -121,8 +116,6 @@ class Module(models.Model):
     
     installed_at = models.DateTimeField(null=True, blank=True, verbose_name='安装时间')
     activated_at = models.DateTimeField(null=True, blank=True, verbose_name='启用时间')
-    created_at = models.DateTimeField(auto_now_add=True, verbose_name='创建时间')
-    updated_at = models.DateTimeField(auto_now=True, verbose_name='更新时间')
     
     class Meta:
         db_table = 'modules'
@@ -142,7 +135,7 @@ class Module(models.Model):
         return f"{self.name} ({self.module_id})"
 
 
-class ToolType(models.Model):
+class ToolType(BaseModel):
     """工具类型模型"""
     
     name = models.CharField(max_length=100, verbose_name='工具名称')
@@ -151,8 +144,6 @@ class ToolType(models.Model):
     icon = models.CharField(max_length=50, default='bi-wrench', verbose_name='图标')
     author = models.CharField(max_length=100, blank=True, null=True, verbose_name='作者')
     is_active = models.BooleanField(default=True, verbose_name='是否启用')
-    created_at = models.DateTimeField(auto_now_add=True, verbose_name='创建时间')
-    updated_at = models.DateTimeField(auto_now=True, verbose_name='更新时间')
     
     class Meta:
         db_table = 'tool_types'

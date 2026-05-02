@@ -37,13 +37,15 @@ from typing import Optional, List
 from django.db.models import Q
 from core.models import User
 from core.services.permission_service import PermissionService, UserRole
+from core.services.base_service import BaseService
 
 
-class UserService:
+class UserService(BaseService):
     """
     用户服务层：封装所有与用户相关的数据库操作和业务规则
     路由层不应直接操作 User 模型
     """
+    model_class = User
     
     @staticmethod
     def get_user_by_id(user_id: int) -> Optional[User]:

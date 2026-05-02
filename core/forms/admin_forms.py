@@ -22,6 +22,7 @@ from django import forms
 from django.core.exceptions import ValidationError
 from core.models import User
 from core.services.permission_service import UserRole
+from core.forms.mixins import BootstrapFormMixin
 
 
 class UserSearchForm(forms.Form):
@@ -48,14 +49,13 @@ class UserSearchForm(forms.Form):
     )
 
 
-class UserCreateForm(forms.ModelForm):
+class UserCreateForm(BootstrapFormMixin, forms.ModelForm):
     """用户创建表单"""
     
     password = forms.CharField(
         label='密码',
         min_length=10,
         widget=forms.PasswordInput(attrs={
-            'class': 'form-control form-control-lg',
             'placeholder': '用于登录的唯一账号（10+ 字符）',
             'autocomplete': 'new-password',
         })
@@ -65,7 +65,6 @@ class UserCreateForm(forms.ModelForm):
         label='确认密码',
         min_length=10,
         widget=forms.PasswordInput(attrs={
-            'class': 'form-control form-control-lg',
             'placeholder': '请再次输入密码以确认',
             'autocomplete': 'new-password',
         })
@@ -73,32 +72,21 @@ class UserCreateForm(forms.ModelForm):
     
     class Meta:
         model = User
-        fields = ['username', 'nickname', 'email', 'role', 'is_admin', 'is_active']
+        fields = ['username', 'nickname', 'email', 'role', 'is_admin']
         widgets = {
             'username': forms.TextInput(attrs={
-                'class': 'form-control form-control-lg',
                 'placeholder': '用于登录的唯一账号（3-64 字符）',
                 'autocomplete': 'username',
             }),
             'nickname': forms.TextInput(attrs={
-                'class': 'form-control form-control-lg',
                 'placeholder': '仪表盘、项目成员列表等处显示的友好名称',
                 'autocomplete': 'name',
             }),
             'email': forms.EmailInput(attrs={
-                'class': 'form-control form-control-lg',
                 'placeholder': '用于密码重置、系统通知（可留空）',
                 'autocomplete': 'email',
             }),
-            'role': forms.Select(attrs={
-                'class': 'form-select form-select-lg',
-            }),
             'is_admin': forms.CheckboxInput(attrs={
-                'class': 'form-check-input',
-                'role': 'switch',
-            }),
-            'is_active': forms.CheckboxInput(attrs={
-                'class': 'form-check-input',
                 'role': 'switch',
             }),
         }
@@ -107,7 +95,6 @@ class UserCreateForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         self.fields['role'].choices = UserRole.CHOICES
         self.fields['role'].initial = UserRole.EMPLOYEE
-        self.fields['is_active'].initial = True
     
     def clean_username(self):
         username = self.cleaned_data.get('username')
@@ -142,7 +129,7 @@ class UserCreateForm(forms.ModelForm):
         return cleaned_data
 
 
-class UserEditForm(forms.ModelForm):
+class UserEditForm(BootstrapFormMixin, forms.ModelForm):
     """用户编辑表单"""
     
     password = forms.CharField(
@@ -150,7 +137,6 @@ class UserEditForm(forms.ModelForm):
         required=False,
         min_length=10,
         widget=forms.PasswordInput(attrs={
-            'class': 'form-control form-control-lg',
             'placeholder': '编辑时留空则不修改密码',
             'autocomplete': 'new-password',
         })
@@ -161,30 +147,22 @@ class UserEditForm(forms.ModelForm):
         fields = ['username', 'nickname', 'email', 'role', 'is_admin', 'is_active']
         widgets = {
             'username': forms.TextInput(attrs={
-                'class': 'form-control form-control-lg',
                 'placeholder': '用于登录的唯一账号（3-64 字符）',
                 'autocomplete': 'username',
                 'readonly': True,
             }),
             'nickname': forms.TextInput(attrs={
-                'class': 'form-control form-control-lg',
                 'placeholder': '仪表盘、项目成员列表等处显示的友好名称',
                 'autocomplete': 'name',
             }),
             'email': forms.EmailInput(attrs={
-                'class': 'form-control form-control-lg',
                 'placeholder': '用于密码重置、系统通知（可留空）',
                 'autocomplete': 'email',
             }),
-            'role': forms.Select(attrs={
-                'class': 'form-select form-select-lg',
-            }),
             'is_admin': forms.CheckboxInput(attrs={
-                'class': 'form-check-input',
                 'role': 'switch',
             }),
             'is_active': forms.CheckboxInput(attrs={
-                'class': 'form-check-input',
                 'role': 'switch',
             }),
         }

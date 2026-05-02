@@ -101,33 +101,7 @@
                 <i class="bi bi-lightbulb me-1"></i>
                 检测视图源码中的 <code>can_access_admin</code> 调用 · 每页 20 条
             </div>
-            <nav>
-                <ul class="pagination mb-0">
-                    {% if has_prev %}
-                    <li class="page-item">
-                        <a class="page-link" href="?filter={{ filter_status }}&page={{ prev_page }}">上一页</a>
-                    </li>
-                    {% else %}
-                    <li class="page-item disabled">
-                        <span class="page-link">上一页</span>
-                    </li>
-                    {% endif %}
-                    
-                    <li class="page-item active">
-                        <span class="page-link">{{ current_page }} / {{ total_pages }}</span>
-                    </li>
-                    
-                    {% if has_next %}
-                    <li class="page-item">
-                        <a class="page-link" href="?filter={{ filter_status }}&page={{ next_page }}">下一页</a>
-                    </li>
-                    {% else %}
-                    <li class="page-item disabled">
-                        <span class="page-link">下一页</span>
-                    </li>
-                    {% endif %}
-                </ul>
-            </nav>
+            {% include "includes/pagination.html" with extra_params="&filter=" ~ filter_status %}
         </div>
     </div>
 </div>

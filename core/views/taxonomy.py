@@ -5,34 +5,26 @@
 
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
-from django.core.paginator import Paginator
 from core.decorators import admin_required
 from core.models import Taxonomy, TaxonomyItem
 from core.services import TaxonomyService
+from core.utils.pagination import paginate_queryset
 
 
 @admin_required
 def taxonomies(request):
     """词汇表列表"""
-    page_num = request.GET.get('page', 1)
     search = request.GET.get('search', '').strip()
     
-    all_taxonomies = Taxonomy.objects.all()
+    queryset = Taxonomy.objects.all()
     if search:
-        all_taxonomies = all_taxonomies.filter(name__icontains=search)
+        queryset = queryset.filter(name__icontains=search)
     
-    paginator = Paginator(all_taxonomies, 10)
-    page_obj = paginator.get_page(page_num)
+    page_ctx = paginate_queryset(request, queryset, per_page=10)
     
     return render(request, 'structure/taxonomies/index.html', {
-        'taxonomies': page_obj.object_list,
-        'page_obj': page_obj,
-        'current_page': page_obj.number,
-        'total_pages': paginator.num_pages,
-        'has_prev': page_obj.has_previous(),
-        'has_next': page_obj.has_next(),
-        'prev_page': page_obj.previous_page_number() if page_obj.has_previous() else None,
-        'next_page': page_obj.next_page_number() if page_obj.has_next() else None,
+        'taxonomies': page_ctx['page_obj'].object_list,
+        **page_ctx,
         'active_section': 'taxonomies',
         'search': search,
     })
@@ -68,22 +60,14 @@ def taxonomy_create(request):
 def taxonomy_view(request, taxonomy_id: int):
     """查看词汇表"""
     taxonomy = get_object_or_404(Taxonomy, id=taxonomy_id)
-    page_num = request.GET.get('page', 1)
     
-    all_items = taxonomy.items.all().order_by('weight', 'name')
-    paginator = Paginator(all_items, 10)
-    page_obj = paginator.get_page(page_num)
+    queryset = taxonomy.items.all().order_by('weight', 'name')
+    page_ctx = paginate_queryset(request, queryset, per_page=10)
     
     return render(request, 'structure/taxonomies/view.html', {
         'taxonomy': taxonomy,
-        'items': page_obj.object_list,
-        'page_obj': page_obj,
-        'current_page': page_obj.number,
-        'total_pages': paginator.num_pages,
-        'has_prev': page_obj.has_previous(),
-        'has_next': page_obj.has_next(),
-        'prev_page': page_obj.previous_page_number() if page_obj.has_previous() else None,
-        'next_page': page_obj.next_page_number() if page_obj.has_next() else None,
+        'items': page_ctx['page_obj'].object_list,
+        **page_ctx,
         'active_section': 'taxonomies',
     })
 

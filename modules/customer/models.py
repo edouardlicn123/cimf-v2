@@ -5,9 +5,10 @@
 
 from django.db import models
 from core.node.models import Node
+from core.models import BaseModel
 
 
-class CustomerFields(models.Model):
+class CustomerFields(BaseModel):
     """海外客户字段表"""
     
     node = models.OneToOneField(
@@ -69,9 +70,6 @@ class CustomerFields(models.Model):
     credit_limit = models.DecimalField(max_digits=15, decimal_places=2, blank=True, null=True, verbose_name='信用额度')
     website = models.URLField(max_length=200, blank=True, null=True, verbose_name='网站')
     notes = models.TextField(blank=True, null=True, verbose_name='备注')
-    
-    created_at = models.DateTimeField(auto_now_add=True, verbose_name='创建时间')
-    updated_at = models.DateTimeField(auto_now=True, verbose_name='更新时间')
     
     class Meta:
         db_table = 'customer_fields'
