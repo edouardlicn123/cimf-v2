@@ -1,7 +1,8 @@
 # core/views 视图层规范
 
-> 文档版本：1.0  
-> 创建日期：2026-04-07
+> 文档版本：1.1  
+> 创建日期：2026-04-07  
+> 最后更新：2026-05-02
 
 ---
 
@@ -24,16 +25,26 @@
 
 | 文件 | 视图数量 | 主要功能 |
 |------|----------|----------|
-| `core/views.py` | ~70 | 认证、管理后台、词汇表、API |
-| `core/node/views.py` | ~50 | 节点系统、模块管理 |
+| `core/views/auth.py` | ~3 | 登录、登出 |
+| `core/views/dashboard.py` | ~2 | 仪表盘 |
+| `core/views/users.py` | ~6 | 用户管理（创建、编辑、删除） |
+| `core/views/settings.py` | ~5 | 个人设置、偏好 |
+| `core/views/taxonomy.py` | ~8 | 词汇表管理 |
+| `core/views/cron.py` | ~4 | 定时任务管理 |
+| `core/views/importexport.py` | ~12 | 导入导出 |
+| `core/views/tools.py` | ~5 | 协作工具页面 |
+| `core/views/node.py` | ~3 | 节点相关视图 |
+| `core/views/logs.py` | ~2 | 日志视图 |
+| `core/views/errors.py` | ~4 | 错误处理视图 |
+| `core/views/health.py` | ~1 | 健康检查 |
+| `core/views/api/` | ~20 | API 视图 |
+| `core/node/views.py` | ~30 | 节点系统、模块管理 |
 | `core/smtp/views.py` | ~5 | 邮件配置、发送记录 |
 | `core/marketplace/views.py` | ~2 | 模块市场 |
 | `modules/customer/views.py` | ~6 | 海外客户管理 |
-| `modules/customer_cn/views.py` | ~6 | 国内客户管理 |
-| `modules/resident_info/views.py` | ~6 | 居民信息管理 |
-| `modules/whatsapp/views.py` | ~16 | WhatsApp消息管理 |
-| `modules/clock/views.py` | ~2 | 时钟/日历展示 |
 | `modules/calc/views.py` | ~2 | 计算器工具 |
+| `modules/clock/views.py` | ~2 | 时钟/日历展示 |
+| `modules/smtptest/views.py` | ~2 | SMTP 测试 |
 
 ---
 
@@ -120,17 +131,6 @@
 |----------|------|-----|------|------|
 | `api_time` | clock | `/modules/clock/api/time/` | GET | 获取当前时间（JSON） |
 | `api_stats` | customer | `/modules/customer/api/stats/` | GET | 客户统计信息 |
-| `api_stats` | customer_cn | `/modules/customer_cn/api/stats/` | GET | 国内客户统计 |
-| `api_stats` | resident_info | `/modules/resident_info/api/stats/` | GET | 居民统计信息 |
-| `api_send` | whatsapp | `/modules/whatsapp/api/send/` | POST | 批量发送消息 |
-| `api_status` | whatsapp | `/modules/whatsapp/api/status/` | GET | WhatsApp连接状态 |
-| `api_settings_test` | whatsapp | `/modules/whatsapp/api/settings/test/` | POST | 测试配置 |
-| `api_templates` | whatsapp | `/modules/whatsapp/api/templates/` | GET | 模板列表 |
-| `api_templates_create` | whatsapp | `/modules/whatsapp/api/templates/` | POST | 创建模板 |
-| `api_templates_update` | whatsapp | `/modules/whatsapp/api/templates/<id>/` | PUT | 更新模板 |
-| `api_templates_delete` | whatsapp | `/modules/whatsapp/api/templates/<id>/` | DELETE | 删除模板 |
-| `api_logs` | whatsapp | `/modules/whatsapp/api/logs/` | GET | 发送记录 |
-| `api_settings` | whatsapp | `/modules/whatsapp/api/settings/` | GET, PUT | 获取/更新设置 |
 | `api_regions_path` | `/api/regions/path/` | GET | 获取行政区划路径 |
 | `api_regions_stats` | `/api/regions/stats/` | GET | 行政区划统计 |
 | `api_dashboard_cards` | `/api/user/dashboard/cards/` | GET | 获取仪表盘卡片 |
@@ -224,23 +224,31 @@ def user_create(request):
     
     # 2. GET: 显示表单
     if request.method == 'GET':
-        return render(request, 'admin/system_user_edit.html', {...})
+        form = UserCreateForm()
+        return render(request, 'admin/system_user_edit.html', {
+            'form': form,
+            'is_create': True,
+        })
     
-    # 3. POST: 处理提交
-    if request.method == 'POST':
-        # 获取参数
-        username = request.POST.get('username', '').strip()
-        
-        # 调用服务层
+    # 3. POST: 处理表单提交
+    form = UserCreateForm(request.POST)
+    if form.is_valid():
+        # 使用 form.cleaned_data 获取验证后的数据
         try:
-            UserService.create_user(...)
+            UserService.create_user(**form.cleaned_data)
             messages.success(request, '创建成功')
             return redirect('core:system_users')
         except ValueError as e:
             messages.error(request, str(e))
-        
-        return render(request, 'admin/system_user_edit.html', {...})
+    
+    # 表单验证失败，重新渲染
+    return render(request, 'admin/system_user_edit.html', {
+        'form': form,
+        'is_create': True,
+    })
 ```
+
+> **注意**：项目已全面采用 Django Form 模式处理 POST 数据，不再使用 `request.POST.get()` 手动取值。表单使用 `BootstrapFormMixin` 自动应用 Bootstrap 样式。
 
 ### 3.3 错误视图
 

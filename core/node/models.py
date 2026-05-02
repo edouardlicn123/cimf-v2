@@ -25,6 +25,7 @@ import os
 from django.db import models
 from django.conf import settings
 from core.models import BaseModel
+from core.constants import ModuleType
 
 
 class NodeType(BaseModel):
@@ -111,7 +112,7 @@ class Module(BaseModel):
     is_installed = models.BooleanField(default=False, verbose_name='是否已安装')
     is_active = models.BooleanField(default=False, verbose_name='是否启用')
     is_system = models.BooleanField(default=False, verbose_name='是否系统默认模块')
-    module_type = models.CharField(max_length=20, default='node', verbose_name='模块类型')
+    module_type = models.CharField(max_length=20, default=ModuleType.NODE, choices=ModuleType.CHOICES, verbose_name='模块类型')
     install_on_init = models.BooleanField(default=True, verbose_name='初始化时安装')
     
     installed_at = models.DateTimeField(null=True, blank=True, verbose_name='安装时间')

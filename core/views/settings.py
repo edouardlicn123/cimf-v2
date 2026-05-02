@@ -15,7 +15,7 @@ from django.conf import settings as django_settings
 
 from core.models import SystemSetting
 from core.services import SettingsService, UserService, PermissionService
-from core.services.permission_service import UserRole
+from core.constants import UserRole, UserTheme, Language
 from core.forms import ProfileForm, PreferencesForm, ChangePasswordForm
 from core.decorators import admin_required
 
@@ -170,14 +170,10 @@ def profile(request):
 @login_required
 def profile_view(request):
     """个人中心 - 查看个人信息"""
-    role_labels = {
-        'manager': '一类用户',
-        'leader': '二类用户',
-        'employee': '三类用户',
-    }
-    
     return render(request, 'usermenu/profile.html', {
-        'role_labels': role_labels,
+        'role_labels': dict(UserRole.LABELS),
+        'theme_labels': dict(UserTheme.LABELS),
+        'badge_classes': dict(UserRole.BADGE_CLASSES),
     })
 
 
@@ -239,6 +235,8 @@ def profile_settings(request):
         'profile_form': profile_form,
         'pref_form': pref_form,
         'pwd_form': pwd_form,
+        'theme_choices': UserTheme.DISPLAY_LABELS.items(),
+        'language_choices': Language.CHOICES,
     })
 
 

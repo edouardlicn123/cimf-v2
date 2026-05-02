@@ -2,13 +2,14 @@
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 from core.node.models import Module, ToolType
+from core.constants import ModuleType
 
 
 @login_required
 def tool_view(request):
     """计算器工具页面"""
     tool_type_ids = Module.objects.filter(
-        module_type='tool',
+        module_type=ModuleType.TOOL,
         is_active=True
     ).values_list('module_id', flat=True)
     tools = ToolType.objects.filter(slug__in=tool_type_ids, is_active=True)

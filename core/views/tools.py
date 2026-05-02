@@ -20,6 +20,7 @@ import os
 from functools import wraps
 from django.shortcuts import render, redirect
 from core.node.models import Module, ToolType
+from core.constants import ModuleType
 
 
 def login_required(func):
@@ -52,7 +53,7 @@ def _load_module_info(module_id: str) -> dict:
 def tools_index(request):
     """协作工具首页 - 完全动态显示 tool 类型的工具模块"""
     tool_modules = Module.objects.filter(
-        module_type='tool',
+        module_type=ModuleType.TOOL,
         is_active=True
     )
     tools = []
@@ -74,7 +75,7 @@ def tools_index(request):
 def tools_page(request, tool_slug: str, tool_id: int = None):
     """协作工具页面 - 动态加载对应工具的视图"""
     tool_modules = Module.objects.filter(
-        module_type='tool',
+        module_type=ModuleType.TOOL,
         is_active=True
     )
     tools = []

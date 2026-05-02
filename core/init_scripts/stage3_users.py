@@ -84,7 +84,7 @@ def run_stage3(force: bool = False, dry_run: bool = False) -> bool:
     
     from django.conf import settings
     from core.models import User
-    from core.services import UserRole
+    from core.constants import UserRole
     import os
     
     admin_username = os.environ.get('ADMIN_USERNAME', 'admin')

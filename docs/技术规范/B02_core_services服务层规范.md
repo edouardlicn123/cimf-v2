@@ -1,7 +1,8 @@
 # core/services 服务层规范
 
-> 文档版本：1.0  
-> 创建日期：2026-04-07
+> 文档版本：1.3  
+> 创建日期：2026-04-07  
+> 最后更新：2026-05-02
 
 ---
 
@@ -37,12 +38,10 @@
 | `log_service.py` | LogService | 日志记录、审计追踪 |
 | `version_service.py` | VersionService | 版本信息管理 |
 | `sample_data_service.py` | SampleDataService | 示例数据生成 |
+| `base_service.py` | BaseService | 服务基类 |
 |  |  |  |
 | **模块服务（modules/）** |  |  |
 | `modules/customer/services.py` | CustomerService | 海外客户管理服务 |
-| `modules/customer_cn/services.py` | CustomerCnService | 国内客户管理服务 |
-| `modules/resident_info/services.py` | ResidentInfoService | 居民信息服务 |
-| `modules/whatsapp/services.py` | WhatsAppService | WhatsApp 消息发送服务 |
 | `modules/clock/services.py` | ClockService | 时钟服务 |
 
 ---
@@ -80,6 +79,8 @@
 ### 3.2 核心常量
 
 ```python
+from core.constants import UserRole
+
 # 权限定义
 PERMISSIONS = [
     ('system.settings.view', '系统设置 - 查看'),

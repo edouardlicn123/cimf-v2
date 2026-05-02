@@ -21,7 +21,7 @@
 from django import forms
 from django.core.exceptions import ValidationError
 from core.models import User
-from core.services.permission_service import UserRole
+from core.constants import UserRole
 from core.forms.mixins import BootstrapFormMixin
 
 

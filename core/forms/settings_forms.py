@@ -20,6 +20,7 @@
 from django import forms
 from django.core.exceptions import ValidationError
 from core.models import User
+from core.constants import UserTheme, Language
 
 
 class ProfileForm(forms.Form):
@@ -68,15 +69,7 @@ class PreferencesForm(forms.Form):
     
     theme = forms.ChoiceField(
         label='界面主题',
-        choices=[
-            ('default', '默认'),
-            ('gov', '政府风格 - 酒红配色、沉稳'),
-            ('indigo', '靛蓝风格 - 专业沉稳，科技感'),
-            ('macaron', '马卡龙风格 - 削弱视觉冲击'),
-            ('dopamine', '多巴胺风格 - 高饱和、活力快乐'),
-            ('teal', '青绿风格 - 清新现代、适合环保医疗主题'),
-            ('uniklo', 'uniklo - 干净线条、经典红白'),
-        ],
+        choices=UserTheme.DISPLAY_LABELS.items(),
         widget=forms.Select(attrs={
             'class': 'form-select form-select-lg',
         })
@@ -95,10 +88,7 @@ class PreferencesForm(forms.Form):
     
     preferred_language = forms.ChoiceField(
         label='界面语言',
-        choices=[
-            ('zh', '中文（简体）'),
-            ('en', 'English'),
-        ],
+        choices=Language.CHOICES,
         widget=forms.Select(attrs={
             'class': 'form-select form-select-lg',
         })

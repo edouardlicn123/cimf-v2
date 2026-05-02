@@ -1,7 +1,8 @@
 # core/forms 表单与验证规范
 
-> 文档版本：1.0  
-> 创建日期：2026-04-07
+> 文档版本：1.1  
+> 创建日期：2026-04-07  
+> 最后更新：2026-05-02
 
 ---
 
@@ -19,6 +20,7 @@
 | **字段级验证** | 使用 `clean_<fieldname>()` 方法进行字段级验证 |
 | **表单级验证** | 使用 `clean()` 方法进行跨字段验证 |
 | **Widget 统一** | 使用 Bootstrap 5 样式类（form-control, form-select 等） |
+| **BootstrapFormMixin** | 使用 `core.forms.mixins.BootstrapFormMixin` 自动为表单字段添加 Bootstrap 样式，无需手动设置 widget attrs |
 
 ### 1.3 表单分布
 
@@ -56,6 +58,8 @@
 
 #### UserCreateForm - 用户创建表单
 
+> 继承 `BootstrapFormMixin`，自动应用 Bootstrap 样式。
+
 | 字段 | 类型 | 验证规则 | Widget |
 |------|------|----------|--------|
 | username | CharField | 来自 Meta.fields | TextInput |
@@ -75,6 +79,8 @@
 - `clean()`: 检查两次密码一致，密码长度 >= 10
 
 #### UserEditForm - 用户编辑表单
+
+> 继承 `BootstrapFormMixin`，自动应用 Bootstrap 样式。
 
 | 字段 | 类型 | 验证规则 | Widget |
 |------|------|----------|--------|
@@ -128,22 +134,23 @@
 | notifications_enabled | BooleanField | required=False, initial=True | CheckboxInput |
 | preferred_language | ChoiceField | choices | Select |
 
-**选项**：
+**选项**（引用 `core.constants`）：
 ```python
-theme = [
-    ('default', '默认'),
-    ('gov', '政府风格 - 酒红配色、沉稳'),
-    ('indigo', '靛蓝风格 - 专业沉稳，科技感'),
-    ('macaron', '马卡龙风格 - 削弱视觉冲击'),
-    ('dopamine', '多巴胺风格 - 高饱和、活力快乐'),
-    ('teal', '青绿风格 - 清新现代、适合环保医疗主题'),
-    ('uniklo', 'uniklo - 干净线条、经典红白'),
-]
+from core.constants import UserTheme, Language
 
-preferred_language = [
-    ('zh', '中文（简体）'),
-    ('en', 'English'),
-]
+# UserTheme.DISPLAY_LABELS:
+# {
+#     'default': '默认',
+#     'gov': '政府风格 - 酒红配色、沉稳',
+#     'indigo': '靛蓝风格 - 专业沉稳，科技感',
+#     'dopamine': '多巴胺风格 - 高饱和、活力快乐',
+#     'macaron': '马卡龙风格 - 削弱视觉冲击',
+#     'teal': '青绿风格 - 清新现代',
+#     'uniklo': 'uniklo - 干净线条、经典红白',
+# }
+
+# Language.CHOICES:
+# [('zh', '中文（简体）'), ('en', 'English')]
 ```
 
 #### ChangePasswordForm - 修改密码表单

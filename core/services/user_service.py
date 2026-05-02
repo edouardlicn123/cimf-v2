@@ -36,7 +36,8 @@
 from typing import Optional, List
 from django.db.models import Q
 from core.models import User
-from core.services.permission_service import PermissionService, UserRole
+from core.services.permission_service import PermissionService
+from core.constants import UserRole
 from core.services.base_service import BaseService
 
 

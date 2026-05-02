@@ -33,25 +33,7 @@
 import json
 from typing import Dict, List, Optional
 from core.models import User
-
-
-class UserRole:
-    """角色常量"""
-    MANAGER = 'manager'
-    LEADER = 'leader'
-    EMPLOYEE = 'employee'
-    
-    CHOICES = [
-        (MANAGER, '一类用户'),
-        (LEADER, '二类用户'),
-        (EMPLOYEE, '三类用户'),
-    ]
-    
-    LABELS = {
-        MANAGER: '一类用户',
-        LEADER: '二类用户',
-        EMPLOYEE: '三类用户',
-    }
+from core.constants import UserRole
 
 
 PERMISSIONS = [

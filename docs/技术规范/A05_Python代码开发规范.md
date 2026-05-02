@@ -2,6 +2,8 @@
 
 本文档定义 cimf-v2（仙芙CIMF）项目的 Python 代码编写规范，涵盖 Django 后端开发的各个方面。
 
+> 最后更新：2026-05-02 - 新增常量集中化、BaseModel、BootstrapFormMixin 规范
+
 ---
 
 ## 一、概述
@@ -178,9 +180,9 @@ modules/                         # 业务模块
     - 1.0: 从 Flask 迁移
 
 依赖：
-    - nodes.models.Node: 节点模型
-    - nodes.models.CustomerFields: 客户字段模型
-    - nodes.services.node_service: 节点服务
+    - core.models.User: 用户模型
+    - modules.customer.models.CustomerFields: 客户字段模型
+    - core.node.services.NodeService: 节点服务
 """
 ```
 
@@ -211,11 +213,12 @@ from django.db import models
 
 # 第四组：项目内部模块 - core
 from core.models import User, Taxonomy
+from core.constants import UserRole, UserTheme, ModuleType, Language
 from core.services import PermissionService
 
-# 第五组：项目内部模块 - nodes
-from nodes.models import NodeType, Node, CustomerFields
-from nodes.services import NodeService
+# 第五组：项目内部模块 - modules
+from modules.customer.models import CustomerFields
+from modules.customer.services import CustomerService
 
 # 第六组：相对导入（当前应用内）
 from . import utils
@@ -227,16 +230,18 @@ from ..services import MyService
 ```python
 # core 应用内部导入
 from core.models import User, SystemSetting
+from core.constants import UserRole, ModuleType
 from core.services import PermissionService, AuthService
 from core.forms import LoginForm
 
-# nodes 应用内部导入
-from nodes.models import NodeType, Node, CustomerFields
-from nodes.services import CustomerService, NodeService
-from nodes.forms import NodeForm
+# modules 应用内部导入
+from modules.customer.models import CustomerFields
+from modules.customer.services import CustomerService
+from modules.customer.forms import CustomerForm
 
 # 跨应用导入
-from core.services import TaxonomyService  # nodes 应用导入 core 服务
+from core.services import TaxonomyService  # modules 应用导入 core 服务
+from core.constants import ModuleType  # 所有模块均可使用
 ```
 
 ### 3.3 别名使用规范
@@ -282,7 +287,8 @@ class MyModel(models.Model):
 |------|------|------|
 | Python 文件 | 小写字母 + 下划线 | `customer_service.py`, `node_service.py` |
 | Django 应用 | 小写字母（推荐） | `core/`, `modules/` |
-| 包目录 | 小写字母 + 下划线 | `services/`, `tasks/` |
+| 业务模块目录 | 小写字母 + 下划线 | `modules/customer/`, `modules/clock/` |
+| 包目录 | 小写字母 + 下划线 | `services/`, `forms/` |
 
 ### 4.2 类命名
 
@@ -337,7 +343,7 @@ class MyClass:
 class User(models.Model):
     # 正确：使用描述性名称
     created_nodes = models.ForeignKey(
-        'nodes.Node',
+        'core.node.Node',
         on_delete=models.CASCADE,
         related_name='created_by_users'  # ✓
     )
@@ -753,7 +759,7 @@ def node_view(request, node_type_slug: str, node_id: int):
         has_perm, error_msg = check_customer_permission(request.user, node, 'view')
         if not has_perm:
             messages.error(request, error_msg)
-            return redirect('nodes:node_list', node_type_slug=node_type_slug)
+            return redirect('node:module_page', node_type_slug=node_type_slug)
     
     # 后续处理...
 ```
@@ -804,7 +810,7 @@ def node_create(request, node_type_slug: str):
             # 业务验证通过，创建数据
             CustomerService.create(request.user, form.cleaned_data)
             messages.success(request, '创建成功')
-            return redirect('nodes:node_list', node_type_slug)
+            return redirect('node:module_page', node_type_slug)
     else:
         form = CustomerForm()
     return render(request, 'edit.html', {'form': form})
@@ -822,17 +828,17 @@ def delete_customer(request, customer_id: int):
     customer = CustomerService.get_by_id(customer_id)
     if not customer:
         messages.error(request, '客户不存在')
-        return redirect('nodes:customer_list')
+        return redirect('modules:customer:list')
     
     CustomerService.delete(customer_id)
     messages.success(request, '客户已删除')
-    return redirect('nodes:customer_list')
+    return redirect('modules:customer:list')
 
 # 错误示例：缺少消息反馈
 @login_required
 def delete_customer(request, customer_id: int):
     CustomerService.delete(customer_id)
-    return redirect('nodes:customer_list')  # ✗ 用户不知道操作结果
+    return redirect('modules:customer:list')  # ✗ 用户不知道操作结果
 ```
 
 ---
@@ -1288,24 +1294,37 @@ phone = models.CharField(max_length=20, blank=True, null=True)  # ✗ 不推荐
 
 #### View 处理示例
 
-```python
-# 正确示例：视图中处理表单数据
-data = {
-    # CharField：空值 → 空字符串
-    'name': request.POST.get('name', '').strip(),
-    'phone': request.POST.get('phone', '').strip(),
-    'address': request.POST.get('address', '').strip(),
-    
-    # ForeignKey：空值 → None
-    'country_id': request.POST.get('country') or None,
-    'category_id': request.POST.get('category') or None,
-    
-    # DateField：空值 → None
-    'birth_date': request.POST.get('birth_date') or None,
-}
+**推荐方式：使用 Django Form**
 
-# 错误示例：CharField 使用 or None
-'name': request.POST.get('name', '').strip() or None,  # ✗ 会导致 NOT NULL 错误
+```python
+# 正确示例：使用 Form 处理表单数据
+@login_required
+def customer_create(request):
+    if request.method == 'POST':
+        form = CustomerForm(request.POST)
+        if form.is_valid():
+            # form.cleaned_data 已自动处理空值
+            # CharField 空值 → ''，ForeignKey 空值 → None
+            CustomerService.create(request.user, form.cleaned_data)
+            messages.success(request, '创建成功')
+            return redirect('modules:customer:list')
+    else:
+        form = CustomerForm()
+    return render(request, 'customer/edit.html', {'form': form})
+```
+
+**手动处理时的空值规则**（仅在不使用 Form 时参考）：
+
+```python
+# CharField：空值 → 空字符串
+'name': request.POST.get('name', '').strip(),
+'phone': request.POST.get('phone', '').strip(),
+
+# ForeignKey：空值 → None
+'country_id': request.POST.get('country') or None,
+
+# DateField：空值 → None
+'birth_date': request.POST.get('birth_date') or None,
 ```
 
 #### 原因说明
@@ -1536,9 +1555,10 @@ class MyModel(models.Model):
 """
 
 from typing import List, Optional, Dict, Any
-from django.contrib.auth import get_user_model
-from nodes.models import Node, MyFields
-from nodes.services import NodeService
+from core.constants import ModuleType
+from core.node.models import Node
+from modules.customer.models import CustomerFields
+from core.node.services import NodeService
 
 User = get_user_model()
 
@@ -1653,9 +1673,10 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.http import Http404
 
-from nodes.models import NodeType, MyFields
-from nodes.services import NodeTypeService, MyService
+from core.node.models import NodeType
+from core.node.services import NodeTypeService
 from core.services import PermissionService
+from core.constants import ModuleType
 
 
 @login_required
@@ -1690,7 +1711,7 @@ def my_create(request, node_type_slug: str):
         try:
             MyService.create(request.user, data)
             messages.success(request, '创建成功')
-            return redirect('nodes:my_list', node_type_slug=node_type_slug)
+            return redirect('modules:my_list', node_type_slug=node_type_slug)
         except Exception as e:
             messages.error(request, str(e))
     
@@ -1717,7 +1738,7 @@ def my_edit(request, node_type_slug: str, item_id: int):
         try:
             MyService.update(item_id, request.user, data)
             messages.success(request, '更新成功')
-            return redirect('nodes:my_view', node_type_slug=node_type_slug, item_id=item_id)
+            return redirect('modules:my_view', node_type_slug=node_type_slug, item_id=item_id)
         except Exception as e:
             messages.error(request, str(e))
     
@@ -1735,7 +1756,7 @@ def my_delete(request, node_type_slug: str, item_id: int):
         MyService.delete(item_id)
         messages.success(request, '已删除')
     
-    return redirect('nodes:my_list', node_type_slug=node_type_slug)
+    return redirect('modules:my_list', node_type_slug=node_type_slug)
 ```
 
 ### A.4 Form 模板

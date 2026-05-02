@@ -69,20 +69,17 @@
         <div class="col-md-4">
           <label for="id_theme" class="form-label fw-medium">界面主题</label>
           <select name="theme" id="id_theme" class="form-select form-select-lg">
-            <option value="default" {% if user.theme == 'default' %}selected{% endif %}>默认</option>
-            <option value="gov" {% if user.theme == 'gov' %}selected{% endif %}>政府风格 - 酒红配色、沉稳</option>
-            <option value="indigo" {% if user.theme == 'indigo' %}selected{% endif %}>靛蓝风格 - 专业沉稳，科技感</option>
-            <option value="macaron" {% if user.theme == 'macaron' %}selected{% endif %}>马卡龙风格 - 削弱视觉冲击</option>
-            <option value="dopamine" {% if user.theme == 'dopamine' %}selected{% endif %}>多巴胺风格 - 高饱和、活力快乐</option>
-            <option value="teal" {% if user.theme == 'teal' %}selected{% endif %}>青绿风格 - 清新现代、适合环保医疗主题</option>
-            <option value="uniklo" {% if user.theme == 'uniklo' %}selected{% endif %}>uniklo - 干净线条、经典红白</option>
+            {% for value, label in theme_choices %}
+            <option value="{{ value }}" {% if user.theme == value %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
           </select>
         </div>
         <div class="col-md-4">
           <label for="id_preferred_language" class="form-label fw-medium">界面语言</label>
           <select name="preferred_language" id="id_preferred_language" class="form-select form-select-lg">
-            <option value="zh" {% if user.preferred_language == 'zh' %}selected{% endif %}>中文（简体）</option>
-            <option value="en" {% if user.preferred_language == 'en' %}selected{% endif %}>English</option>
+            {% for value, label in language_choices %}
+            <option value="{{ value }}" {% if user.preferred_language == value %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
           </select>
         </div>
         <div class="col-md-4">

@@ -25,7 +25,8 @@
 """
 
 from .settings_service import SettingsService
-from .permission_service import PermissionService, UserRole, PERMISSIONS
+from .permission_service import PermissionService, PERMISSIONS
+from core.constants import UserRole
 from .user_service import UserService
 from .auth_service import AuthService
 from .cron_service import CronService, get_cron_service, init_cron_service

@@ -1,7 +1,8 @@
 # core/models 模型设计规范
 
-> 文档版本：1.0  
-> 创建日期：2026-04-07
+> 文档版本：1.1  
+> 创建日期：2026-04-07  
+> 最后更新：2026-05-02
 
 ---
 
@@ -11,7 +12,53 @@
 
 `core/models.py` 及相关子模块模型是整个系统的核心数据层，定义了用户、权限、系统配置、内容分类等基础实体。
 
-### 1.2 模型分布
+### 1.2 BaseModel 抽象基类
+
+项目提供 `BaseModel` 抽象基类（`core/models.py:32-38`），所有模型应继承此类以获得公共字段：
+
+```python
+class BaseModel(models.Model):
+    """抽象基础模型，提供公共时间戳字段"""
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='创建时间')
+    updated_at = models.DateTimeField(auto_now=True, verbose_name='更新时间')
+    
+    class Meta:
+        abstract = True
+```
+
+**使用方式**：
+```python
+class MyModel(BaseModel):
+    name = models.CharField(max_length=100)
+```
+
+### 1.3 全局常量引用
+
+模型中使用的枚举值统一从 `core/constants.py` 引用：
+
+| 常量类 | 来源 | 用途 |
+|--------|------|------|
+| `UserRole` | `core.constants.UserRole` | 用户角色（MANAGER/LEADER/EMPLOYEE） |
+| `UserTheme` | `core.constants.UserTheme` | 用户主题（DEFAULT/GOV/INDIGO 等） |
+| `ModuleType` | `core.constants.ModuleType` | 模块类型（NODE/SYSTEM/TOOL） |
+| `Language` | `core.constants.Language` | 界面语言（ZH/EN） |
+
+**模型中使用示例**：
+```python
+from core.constants import UserRole, UserTheme
+
+class User(AbstractUser):
+    class Role(models.TextChoices):
+        MANAGER = UserRole.MANAGER, UserRole.LABELS[UserRole.MANAGER]
+        LEADER = UserRole.LEADER, UserRole.LABELS[UserRole.LEADER]
+        EMPLOYEE = UserRole.EMPLOYEE, UserRole.LABELS[UserRole.EMPLOYEE]
+    
+    class Theme(models.TextChoices):
+        DEFAULT = UserTheme.DEFAULT, UserTheme.LABELS[UserTheme.DEFAULT]
+        # ...
+```
+
+### 1.4 模型分布
 
 | 文件 | 模型 | 用途 |
 |------|------|------|
@@ -49,8 +96,8 @@
 
 | 类 | 说明 |
 |------|------|
-| `Role` | 角色枚举：MANAGER一类用户、LEADER二类用户、EMPLOYEE三类用户 |
-| `Theme` | 主题枚举：default/gov/indigo/dopamine/macaron/teal/uniklo |
+| `Role` | 角色枚举，值引用 `core.constants.UserRole` |
+| `Theme` | 主题枚举，值引用 `core.constants.UserTheme` |
 | `UserManager` | 自定义用户管理器 |
 
 ### 2.4 方法
@@ -193,7 +240,7 @@
 | `is_installed` | BooleanField | 是否已安装 |
 | `is_active` | BooleanField | 是否启用 |
 | `is_system` | BooleanField | 是否系统默认模块 |
-| `module_type` | CharField | 模块类型：node/system |
+| `module_type` | CharField | 模块类型：node/system/tool（使用 ModuleType 常量） |
 | `installed_at` | DateTimeField | 安装时间 |
 | `activated_at` | DateTimeField | 启用时间 |
 | `created_at` | DateTimeField | 创建时间 |

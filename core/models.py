@@ -26,6 +26,7 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.utils import timezone
 from datetime import timedelta
+from core.constants import UserRole, UserTheme
 
 
 class BaseModel(models.Model):
@@ -66,18 +67,18 @@ class User(AbstractUser):
     """
     
     class Role(models.TextChoices):
-        MANAGER = 'manager', '一类用户'
-        LEADER = 'leader', '二类用户'
-        EMPLOYEE = 'employee', '三类用户'
+        MANAGER = UserRole.MANAGER, UserRole.LABELS[UserRole.MANAGER]
+        LEADER = UserRole.LEADER, UserRole.LABELS[UserRole.LEADER]
+        EMPLOYEE = UserRole.EMPLOYEE, UserRole.LABELS[UserRole.EMPLOYEE]
     
     class Theme(models.TextChoices):
-        DEFAULT = 'default', '默认'
-        GOV = 'gov', '政府风格'
-        INDIGO = 'indigo', '靛蓝风格'
-        DOPAMINE = 'dopamine', '多巴胺'
-        MACARON = 'macaron', '马卡龙'
-        TEAL = 'teal', '深绿'
-        UNIKLO = 'uniklo', 'uniKLO'
+        DEFAULT = UserTheme.DEFAULT, UserTheme.LABELS[UserTheme.DEFAULT]
+        GOV = UserTheme.GOV, UserTheme.LABELS[UserTheme.GOV]
+        INDIGO = UserTheme.INDIGO, UserTheme.LABELS[UserTheme.INDIGO]
+        DOPAMINE = UserTheme.DOPAMINE, UserTheme.LABELS[UserTheme.DOPAMINE]
+        MACARON = UserTheme.MACARON, UserTheme.LABELS[UserTheme.MACARON]
+        TEAL = UserTheme.TEAL, UserTheme.LABELS[UserTheme.TEAL]
+        UNIKLO = UserTheme.UNIKLO, UserTheme.LABELS[UserTheme.UNIKLO]
     
     nickname = models.CharField(
         max_length=64,

@@ -788,4 +788,8 @@
 31. 优化5: 视图表单统一 - 改造 user_create/user_edit 视图使用 Django 表单，更新模板使用表单字段渲染
 32. 优化6: 角色徽章组件 + 优化7: 分页组件 - 创建 role_badge.html 和 pagination.html 组件，替换 system_users.html、profile.html、permission_check.html 中的重复代码
 33. 代码审计与修复: 清理 node/views.py 600行重复函数定义, 修复 node_type_edit 死代码, 添加 logger import, 修复 user_delete 异常处理
+34. 优化8: 常量集中化 - 重构 constants.py 添加 UserRole/UserTheme/ModuleType/Language, 统一所有引用文件(12个), 更新模板3个
+35. 代码优化补充: 修复 tools.py 和 calc/views.py 中的 ModuleType 硬编码字符串
+36. 同步更新 docs/技术规范/ 全部 13 份文档：添加 core/constants.py 规范、BaseModel 抽象基类、BootstrapFormMixin、Django Form 模式、nodes→modules 路径更新、ModuleType 常量引用
+37. 修正技术规范文档：删除非存在模块引用(customer_cn/resident_info/whatsapp)，修正core/views/目录结构，替换nodes:为node:命名空间，更新服务列表
 
