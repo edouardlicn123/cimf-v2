@@ -1,108 +1,141 @@
 {% extends "frames/frame_admin.html" %}
 
-{% block admin_title %}日志管理{% endblock %}
+{% set show_nav = true %}
+{% set show_header = false %}
+{% set active_section = 'logs' %}
+
+{% block title %}日志管理 - {{ system_name|default('仙芙CIMF') }}{% endblock %}
+
+{% block admin_title_content %}日志管理{% endblock %}
+
+{% block admin_buttons_content %}{% endblock %}
 
 {% block admin_content %}
-<div class="mb-3">
-  <ul class="nav nav-tabs">
-    {% for log_file in log_files %}
-    <li class="nav-item">
-      <a class="nav-link {% if log_type == log_file.key or (not log_type and log_file.key == 'cimf') %}active{% endif %}" 
-         href="{{ url('core:logs_view', log_type=log_file.key) }}">
-        {{ log_file.name }}
-        {% if log_file.exists %}
-        <span class="badge bg-secondary ms-1">{{ (log_file.size // 1024) }}KB</span>
-        {% else %}
-        <span class="badge bg-warning ms-1">不存在</span>
-        {% endif %}
-      </a>
-    </li>
-    {% endfor %}
-  </ul>
-</div>
 
-<div class="mb-3 d-flex align-items-center gap-2">
-  <label class="text-nowrap mb-0">级别筛选：</label>
-  <select class="form-select form-select-sm" style="width: auto;" onchange="filterByLevel(this.value)">
-    <option value="all" {% if current_level == 'all' %}selected{% endif %}>全部</option>
-    <option value="DEBUG" {% if current_level == 'DEBUG' %}selected{% endif %}>DEBUG</option>
-    <option value="INFO" {% if current_level == 'INFO' %}selected{% endif %}>INFO</option>
-    <option value="WARNING" {% if current_level == 'WARNING' %}selected{% endif %}>WARNING</option>
-    <option value="ERROR" {% if current_level == 'ERROR' %}selected{% endif %}>ERROR</option>
-  </select>
-  
-  {% if stats %}
-  <div class="ms-auto">
-    {% set current_stats = stats[log_type] if log_type and stats[log_type] else (stats.cimf if stats.cimf else {}) %}
-    {% if current_stats and current_stats.get('levels') %}
-      {% for level, count in current_stats.levels.items() %}
-      <span class="badge me-1 {% if level == 'ERROR' %}bg-danger{% elif level == 'WARNING' %}bg-warning{% elif level == 'INFO' %}bg-info{% else %}bg-secondary{% endif %}">
-        {{ level }}: {{ count }}
-      </span>
-      {% endfor %}
-    {% endif %}
-  </div>
-  {% endif %}
+<!-- 日志类型选择 -->
+<div class="card mb-4">
+    <div class="card-header">
+        <h5 class="mb-0"><i class="bi bi-file-earmark-text me-2"></i>选择日志文件</h5>
+    </div>
+    <div class="card-body">
+        <ul class="nav nav-pills flex-wrap gap-2">
+            {% for log_file in log_files %}
+            <li class="nav-item">
+                <a class="nav-link {% if log_type == log_file.key or (not log_type and log_file.key == 'cimf') %}active{% endif %} d-flex align-items-center" 
+                   href="{{ url('core:logs_view', log_type=log_file.key) }}">
+                    <i class="bi bi-file-earmark me-1"></i>
+                    {{ log_file.name }}
+                    {% if log_file.exists %}
+                    <span class="badge bg-light text-dark ms-2">{{ (log_file.size // 1024) }}KB</span>
+                    {% else %}
+                    <span class="badge bg-warning ms-2">不存在</span>
+                    {% endif %}
+                </a>
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
 </div>
 
 {% if log_data %}
-<div class="table-responsive">
-  <table class="table table-sm table-striped table-hover" style="font-size: 0.85rem;">
-    <thead>
-      <tr>
-        <th style="width: 60px;">行号</th>
-        <th>内容</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for line in log_data.lines %}
-      <tr>
-        <td class="text-muted">{{ line.line_num }}</td>
-        <td style="word-break: break-all; white-space: pre-wrap;">{{ line.content }}</td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
+<!-- 日志内容 -->
+<div class="card">
+    <div class="card-header">
+        <div class="d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">
+                <i class="bi bi-terminal me-2"></i>
+                {{ (stats[log_type] if log_type and stats[log_type] else (stats.cimf if stats.cimf else {})).name if stats else '日志内容' }}
+            </h5>
+            <div class="d-flex align-items-center gap-2">
+                {% if stats %}
+                {% set current_stats = stats[log_type] if log_type and stats[log_type] else (stats.cimf if stats.cimf else {}) %}
+                {% if current_stats and current_stats.get('levels') %}
+                {% for level, count in current_stats.levels.items() %}
+                <span class="badge {% if level == 'ERROR' %}bg-danger{% elif level == 'WARNING' %}bg-warning{% elif level == 'INFO' %}bg-info{% else %}bg-secondary{% endif %}">
+                    {{ level }}: {{ count }}
+                </span>
+                {% endfor %}
+                {% endif %}
+                {% endif %}
+                <select class="form-select form-select-sm" style="width: auto;" onchange="filterByLevel(this.value)">
+                    <option value="all" {% if current_level == 'all' %}selected{% endif %}>全部级别</option>
+                    <option value="DEBUG" {% if current_level == 'DEBUG' %}selected{% endif %}>DEBUG</option>
+                    <option value="INFO" {% if current_level == 'INFO' %}selected{% endif %}>INFO</option>
+                    <option value="WARNING" {% if current_level == 'WARNING' %}selected{% endif %}>WARNING</option>
+                    <option value="ERROR" {% if current_level == 'ERROR' %}selected{% endif %}>ERROR</option>
+                </select>
+            </div>
+        </div>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0" style="font-size: 0.9rem;">
+                <thead class="table-light">
+                    <tr>
+                        <th style="width: 80px;">行号</th>
+                        <th>日志内容</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for line in log_data.lines %}
+                    <tr>
+                        <td class="text-muted fw-medium">{{ line.line_num }}</td>
+                        <td style="word-break: break-all; white-space: pre-wrap; font-family: var(--bs-font-monospace, monospace);">{{ line.content }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% if log_data.total_pages > 1 %}
+    <div class="card-footer">
+        <nav>
+            <ul class="pagination justify-content-center mb-0">
+                {% if log_data.page > 1 %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ log_data.page - 1 }}&level={{ current_level }}">上一页</a>
+                </li>
+                {% else %}
+                <li class="page-item disabled">
+                    <span class="page-link">上一页</span>
+                </li>
+                {% endif %}
+                
+                <li class="page-item active">
+                    <span class="page-link">第 {{ log_data.page }} / {{ log_data.total_pages }} 页 (共 {{ log_data.total }} 条)</span>
+                </li>
+                
+                {% if log_data.page < log_data.total_pages %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ log_data.page + 1 }}&level={{ current_level }}">下一页</a>
+                </li>
+                {% else %}
+                <li class="page-item disabled">
+                    <span class="page-link">下一页</span>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+    </div>
+    {% endif %}
 </div>
-
-{% if log_data.total_pages > 1 %}
-<nav>
-  <ul class="pagination justify-content-center">
-    {% if log_data.page > 1 %}
-    <li class="page-item">
-      <a class="page-link" href="?page={{ log_data.page - 1 }}&level={{ current_level }}">上一页</a>
-    </li>
-    {% endif %}
-    
-    <li class="page-item disabled">
-      <span class="page-link">第 {{ log_data.page }} / {{ log_data.total_pages }} 页 (共 {{ log_data.total }} 条)</span>
-    </li>
-    
-    {% if log_data.page < log_data.total_pages %}
-    <li class="page-item">
-      <a class="page-link" href="?page={{ log_data.page + 1 }}&level={{ current_level }}">下一页</a>
-    </li>
-    {% endif %}
-  </ul>
-</nav>
-{% endif %}
-
 {% else %}
 <div class="alert alert-info">
-  {% if log_type %}
-  暂无日志内容
-  {% else %}
-  选择上方日志文件查看内容
-  {% endif %}
+    <i class="bi bi-info-circle me-2"></i>
+    {% if log_type %}
+    暂无日志内容
+    {% else %}
+    选择上方日志文件查看内容
+    {% endif %}
 </div>
 {% endif %}
 
 <script>
 function filterByLevel(level) {
-  const url = new URL(window.location.href);
-  url.searchParams.set('level', level);
-  url.searchParams.set('page', '1');
-  window.location.href = url.toString();
+    const url = new URL(window.location.href);
+    url.searchParams.set('level', level);
+    url.searchParams.set('page', '1');
+    window.location.href = url.toString();
 }
 </script>
 {% endblock %}

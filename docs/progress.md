@@ -780,4 +780,8 @@
 23. 统一entry-card样式到base.css，添加图标悬停摇摆动画，清理7个主题文件中的重复样式
 24. 修复卡片图标摇摆动画，使用JavaScript动态注入CSS确保Bootstrap Icons伪元素动画生效
 25. 减小卡片图标摇摆动画幅度从±15deg到±8deg
+26. 修复 module_service.py 中 logger 未定义的 NameError
+27. 修复 settings.py 中 logger 未定义的 NameError
+28. 重构 profile.html 页面，采用卡片式布局匹配当前设计风格
+29. 修改 homepage_settings.html 页面，统一标题显示与圆角样式
 

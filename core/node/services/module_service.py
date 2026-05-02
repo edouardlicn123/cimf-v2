@@ -1,9 +1,12 @@
 import os
+import logging
 from typing import List, Optional, Dict, Any
 from django.utils import timezone
 from core.node.models import NodeType, Node, Module, ToolType
 from core.models import Taxonomy, TaxonomyItem
 from importlib import import_module
+
+logger = logging.getLogger(__name__)
 
 
 class ModuleService:
@@ -440,12 +443,8 @@ except Exception as e:
             created_count = ModuleService.create_module_taxonomies(module)
             # 只在配置了词汇表但创建失败时才警告
             if has_taxonomies_config and created_count == 0:
-                import logging
-                logger = logging.getLogger(__name__)
                 logger.warning(f'模块 {module_id} 未创建任何词汇表（可能已存在）')
         except Exception as e:
-            import logging
-            logger = logging.getLogger(__name__)
             logger.error(f'模块 {module_id} 词汇表创建失败: {str(e)}')
             return (False, f'词汇表创建失败: {str(e)}')
         
@@ -478,8 +477,6 @@ except Exception as e:
             if not module.is_installed:
                 success, msg = ModuleService.install_module(module_info['id'])
                 if not success:
-                    import logging
-                    logger = logging.getLogger(__name__)
                     logger.error(f"模块 {module_info['id']} 安装失败: {msg}")
                     raise RuntimeError(f"模块 {module_info['id']} 安装失败: {msg}")
             if not module.is_active:
@@ -574,8 +571,6 @@ except Exception as e:
             missing_items = expected_items - existing_items
             
             if missing_items:
-                import logging
-                logger = logging.getLogger(__name__)
                 logger.warning(f'词汇表 {slug} 缺少项目: {missing_items}，尝试补充')
                 # 尝试补充缺失的词汇项
                 for item_name in missing_items:

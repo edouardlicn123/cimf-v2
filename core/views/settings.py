@@ -4,6 +4,7 @@
 """
 
 import json
+import logging
 import os
 
 from django.shortcuts import render, redirect
@@ -17,6 +18,8 @@ from core.services import SettingsService, UserService, PermissionService
 from core.services.permission_service import UserRole
 from core.forms import ProfileForm, PreferencesForm, ChangePasswordForm
 from core.decorators import admin_required
+
+logger = logging.getLogger(__name__)
 
 
 @admin_required
