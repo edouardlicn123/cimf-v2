@@ -91,18 +91,20 @@ class ModuleService:
                 if m.get('is_registered'):
                     # 已注册：从数据库读取，并用 module.py 的值更新
                     module_obj = Module.objects.filter(module_id=m['id']).first()
-                    if module_obj:
-                        # 用 module.py 中的值更新数据库
-                        new_value = m.get('install_on_init', True)
-                        if module_obj.install_on_init != new_value:
-                            module_obj.install_on_init = new_value
-                            module_obj.save(update_fields=['install_on_init'])
-                        install_on_init = module_obj.install_on_init
-                    else:
-                        install_on_init = m.get('install_on_init', True)
+                    if not module_obj:
+                        logger.warning(f"模块已注册但数据库无记录: {m['id']}")
+                        continue
+                    # 用 module.py 中的值更新数据库
+                    new_value = m.get('install_on_init', True)
+                    if module_obj.install_on_init != new_value:
+                        module_obj.install_on_init = new_value
+                        module_obj.save(update_fields=['install_on_init'])
+                    install_on_init = module_obj.install_on_init
                 else:
-                    # 未注册：使用 module.py 中的值（register_module 会保存）
                     install_on_init = m.get('install_on_init', True)
+            else:
+                # 未注册：使用 module.py 中的值（register_module 会保存）
+                install_on_init = m.get('install_on_init', True)
                 
                 # 处理可能的字符串值
                 if isinstance(install_on_init, str):
@@ -213,8 +215,10 @@ class ModuleService:
     def register_module(module_info: Dict[str, Any]) -> Module:
         module_id = module_info['id']
         existing = Module.objects.filter(module_id=module_id).first()
-        
+
         if existing:
+            logger.info(f"更新现有模块: {module_id}")
+            # 更新现有模块
             existing.module_type = module_info.get('type', 'node')
             existing.name = module_info.get('name', existing.name)
             existing.version = module_info.get('version', existing.version)
@@ -637,6 +641,9 @@ except Exception as e:
             
             module_info = ModuleService._load_module_info(cid)
             dep_module = Module.objects.filter(module_id=cid).first()
+            if not dep_module:
+                logger.warning(f"依赖模块未注册: {cid}")
+                return False, f'需要「{module_info.get("name", cid)}」已安装并启用（当前状态：未注册）', []
             
             info = {
                 'module_id': cid,
@@ -659,6 +666,11 @@ except Exception as e:
     def enable_module(module_id: str) -> Optional[Module]:
         try:
             module = Module.objects.get(module_id=module_id)
+        except Module.DoesNotExist:
+            logger.warning(f"模块未找到: module_id={module_id}")
+            return None
+        
+        try:
             if module.is_installed:
                 module.is_active = True
                 module.activated_at = timezone.now()
@@ -666,14 +678,18 @@ except Exception as e:
                 
                 if module.module_type == 'node':
                     node_type = NodeType.objects.filter(slug=module.module_id).first()
-                    if node_type:
-                        node_type.is_active = True
-                        node_type.save(update_fields=['is_active'])
+                    if not node_type:
+                        logger.warning(f"节点类型未找到: {module.module_id}")
+                        return None
+                    node_type.is_active = True
+                    node_type.save(update_fields=['is_active'])
                 elif module.module_type == 'tool':
                     tool_type = ToolType.objects.filter(slug=module.module_id).first()
-                    if tool_type:
-                        tool_type.is_active = True
-                        tool_type.save(update_fields=['is_active'])
+                    if not tool_type:
+                        logger.warning(f"工具类型未找到: {module.module_id}")
+                        return None
+                    tool_type.is_active = True
+                    tool_type.save(update_fields=['is_active'])
                 
                 return module
         except Module.DoesNotExist:
@@ -684,19 +700,28 @@ except Exception as e:
     def disable_module(module_id: str) -> Optional[Module]:
         try:
             module = Module.objects.get(module_id=module_id)
+        except Module.DoesNotExist:
+            logger.warning(f"模块未找到: module_id={module_id}")
+            return None
+        
+        try:
             module.is_active = False
             module.save(update_fields=['is_active'])
             
             if module.module_type == 'node':
                 node_type = NodeType.objects.filter(slug=module.module_id).first()
-                if node_type:
-                    node_type.is_active = False
-                    node_type.save(update_fields=['is_active'])
+                if not node_type:
+                    logger.warning(f"节点类型未找到: {module.module_id}")
+                    return None
+                node_type.is_active = False
+                node_type.save(update_fields=['is_active'])
             elif module.module_type == 'tool':
                 tool_type = ToolType.objects.filter(slug=module.module_id).first()
-                if tool_type:
-                    tool_type.is_active = False
-                    tool_type.save(update_fields=['is_active'])
+                if not tool_type:
+                    logger.warning(f"工具类型未找到: {module.module_id}")
+                    return None
+                tool_type.is_active = False
+                tool_type.save(update_fields=['is_active'])
             
             return module
         except Module.DoesNotExist:
@@ -732,7 +757,9 @@ except Exception as e:
     
     @staticmethod
     def get_by_id(module_id: str) -> Optional[Module]:
+        """获取模块，不存在返回None"""
         return Module.objects.filter(module_id=module_id).first()
+        # 调用者必须检查返回值是否为None
     
     @staticmethod
     def sync_node_type(module: Module) -> NodeType:

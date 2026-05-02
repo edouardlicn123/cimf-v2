@@ -114,12 +114,10 @@ def system_permissions(request):
     role_labels = dict(UserRole.LABELS)
     for role in ['manager', 'leader', 'employee']:
         setting = SystemSetting.objects.filter(key=f'role_name_{role}').first()
-        # 调用者需检查 None
         if setting and setting.value:
             role_labels[role] = setting.value
-        elif setting and not setting.value:
-            pass  # 保持默认值
-        # 如果setting为None，保持默认值
+        elif not setting:
+            logger.debug(f"配置未找到: role_name_{role}，使用默认值")
     
     node_perms = PermissionService.get_node_permissions()
     system_perms = PermissionService.get_system_permissions()
@@ -248,13 +246,14 @@ def homepage_settings(request):
     from importlib import import_module
     
     setting = SystemSetting.objects.filter(key='user_dashboard_card_positions').first()
-    # 调用者已检查 None
     positions = {}
     if setting and setting.value:
         try:
             positions = json.loads(setting.value)
         except Exception:
             positions = {}
+    elif not setting:
+        logger.debug("配置未找到: user_dashboard_card_positions，使用默认值")
     
     default_positions = {str(i): {'module': None} for i in range(1, 7)}
     for k, v in positions.items():

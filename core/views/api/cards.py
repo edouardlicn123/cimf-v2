@@ -26,6 +26,8 @@ def api_dashboard_cards(request):
             positions = json.loads(setting.value)
         except Exception:
             positions = {}
+    elif not setting:
+        logger.warning("配置未找到: user_dashboard_card_positions")
 
     default_positions = {str(i): {'module': None, 'size': 'medium', 'config': {}} for i in range(1, 7)}
     for k, v in positions.items():

@@ -776,4 +776,8 @@
 19. 执行方案B清理：删除Inter.ttc(13MBx2)和NotoSansCJKsc-Regular.otf(13MBx2)，释放~52MB
 20. 方案C1清理：删除extras/ttf(15MB)、noto OTF(16MB)，修复base.css删除ttf引用，总释放~145MB
 21. 方案C2清理：删除extras/(21MB)、根目录TTF(1.6MB)，Inter目录从28MB→5MB
+22. Git提交：文件清理完成，删除冗余字体(~168MB)，更新.gitignore
+23. 统一entry-card样式到base.css，添加图标悬停摇摆动画，清理7个主题文件中的重复样式
+24. 修复卡片图标摇摆动画，使用JavaScript动态注入CSS确保Bootstrap Icons伪元素动画生效
+25. 减小卡片图标摇摆动画幅度从±15deg到±8deg
 

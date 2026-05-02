@@ -55,6 +55,29 @@
 
 
     // =============================================
+    // 3.5 卡片图标摇摆动画
+    // =============================================
+    function initCardIconSwing() {
+        const style = document.createElement('style');
+        style.textContent = `
+            .entry-card-figure .bi {
+                display: inline-block;
+                transition: transform 0.3s ease;
+            }
+            .entry-card:hover .entry-card-figure .bi {
+                animation: cardIconSwing 0.6s ease-in-out;
+            }
+            @keyframes cardIconSwing {
+                0%, 100% { transform: rotate(0deg); }
+                25% { transform: rotate(8deg); }
+                75% { transform: rotate(-8deg); }
+            }
+        `;
+        document.head.appendChild(style);
+    }
+
+
+    // =============================================
     // 4. 全局 AJAX 错误统一处理（后续使用 axios 或 fetch 时可扩展）
     // =============================================
     // 示例：如果以后使用 fetch，可在此统一处理 401、403 等错误
@@ -80,6 +103,9 @@
 
         // 初始化 Toast 消息
         initToasts();
+
+        // 初始化卡片图标摇摆动画
+        initCardIconSwing();
 
         // 初始化全局 AJAX 错误处理（可选）
         setupGlobalAjaxError();
