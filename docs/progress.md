@@ -772,4 +772,5 @@
 15. 中优先级Bug修复：Cron任务错误处理、SMTP配置验证、邮件发送日志
 16. 低优先级优化：清理DEBUG语句、代码规范化
 17. 安全配置环境变量迁移完成：settings.py支持从config.env读取安全配置，创建A07规范文档
+18. 文件清理：删除ZIP(54MB)、无效woff2、Python缓存；修复base.css字体路径指向web目录
 
