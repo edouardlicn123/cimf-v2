@@ -30,6 +30,17 @@ def smtp_config(request):
             if not config_data.get('password'):
                 config_data['password'] = config.get('password', '')
             
+            # 保存前测试连接
+            test_result, test_msg = SmtpService.test_connection(config_data)
+            if not test_result:
+                messages.error(request, f'SMTP 连接测试失败: {test_msg}')
+                return render(request, 'smtp/config.html', {
+                    'form': form,
+                    'presets': presets,
+                    'config': config,
+                    'active_section': 'smtp',
+                })
+            
             SmtpService.save_config(config_data)
             messages.success(request, 'SMTP 配置已保存')
             return redirect('core:smtp_config')
@@ -77,7 +88,9 @@ def smtp_test(request):
     if success:
         messages.success(request, message)
     else:
-        messages.error(request, message)
+        # 清理可能包含密码的错误信息
+        safe_message = message.replace(config.get('password', ''), '***')
+        messages.error(request, safe_message)
     
     return redirect('core:smtp_config')
 

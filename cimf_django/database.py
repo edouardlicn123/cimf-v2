@@ -67,9 +67,22 @@ def _get_sqlite_config() -> dict:
     db_path = BASE_DIR / 'instance' / 'django.db'
     # 确保 instance 目录存在
     db_path.parent.mkdir(parents=True, exist_ok=True)
+    
+    # 确保数据库文件使用WAL模式（只需要执行一次）
+    import sqlite3
+    try:
+        conn = sqlite3.connect(str(db_path))
+        conn.execute("PRAGMA journal_mode=WAL")
+        conn.close()
+    except Exception:
+        pass  # 如果失败，继续
+    
     return {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': db_path,
+        'OPTIONS': {
+            'timeout': 30,  # 设置 busy_timeout 为 30 秒（Django 会转为毫秒）
+        },
     }
 
 

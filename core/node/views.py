@@ -174,7 +174,7 @@ def node_edit(request, node_type_slug: str, node_id: int):
         messages.error(request, '需要管理员权限')
         return redirect('core:dashboard')
     
-    node = get_object_or_404(Node, id=node_id, node_type__slug=node_type_slug)
+    node = get_object_or_404(Node.objects.select_related('node_type'), id=node_id, node_type__slug=node_type_slug)
     return render(request, 'node/node_edit.html', {
         'node_type': node.node_type,
         'node': node,
@@ -189,8 +189,12 @@ def node_delete(request, node_type_slug: str, node_id: int):
         return redirect('core:dashboard')
     
     node = get_object_or_404(Node, id=node_id, node_type__slug=node_type_slug)
-    node.delete()
-    messages.success(request, '节点已删除')
+    try:
+        node.delete()
+        messages.success(request, '节点已删除')
+    except Exception as e:
+        messages.error(request, f'删除节点失败: {str(e)}')
+        logger.error(f"删除节点失败: node_id={node_id}, error={e}", exc_info=True)
     return redirect('node:node_list', node_type_slug)
 
 
@@ -547,34 +551,199 @@ def taxonomy_items_api(request):
 
 @login_required
 def node_modules(request):
-    """Node 模块管理页 - 合并模块管理和节点类型"""
+    """Node 模块管理页 - 卡片式 + 筛选/搜索/分页"""
     if not PermissionService.can_access_admin(request.user):
         messages.error(request, '需要系统管理员权限访问该页面')
         return redirect('core:dashboard')
     
+    # 获取筛选参数
+    search = request.GET.get('search', '').strip()
+    type_filter = request.GET.get('type', '')  # node/system/tool
+    status_filter = request.GET.get('status', '')  # active/installed/uninstalled
+    page_num = request.GET.get('page', 1)
+    
+    # 扫描所有可用模块
     all_modules = ModuleService.scan_modules()
     registered = ModuleService.get_all()
-    
     registered_ids = {m.module_id for m in registered}
-    unregistered = [m for m in all_modules if m['id'] not in registered_ids]
     
-    # 为每个已安装模块添加依赖信息
+    # 分类模块
+    installed_active = []   # 已安装且启用
+    installed_inactive = []  # 已安装但未启用
+    failed_registered = []  # 已注册但未安装/未启用（如smtptest）
+    available = []           # 未安装但可安装
+    
+    for m in registered:
+        if m.is_active:
+            installed_active.append(m)
+        elif m.is_installed:
+            installed_inactive.append(m)
+        else:
+            # 已注册但未安装也未启用
+            failed_registered.append(m)
+    
+    for m in all_modules:
+        if m['id'] not in registered_ids:
+            available.append(m)
+    
+    # 为已注册模块添加依赖信息
     for module in registered:
         if module.path:
             module_info = ModuleService._load_module_info(module.path)
-            if module_info:
-                module.dependencies = module_info.get('require', [])
-            else:
-                module.dependencies = None  # 解析失败
+            module.dependencies = module_info.get('require', []) if module_info else None
         else:
             module.dependencies = []
     
-    node_types = NodeTypeService.get_all_including_inactive()
+    # 辅助函数：将 Module 对象或字典统一转换为字典格式
+    def module_to_dict(m, status, is_registered, error_msg=None):
+        if hasattr(m, 'module_id'):  # Module 对象
+            return {
+                'id': m.module_id,
+                'name': m.name,
+                'module_type': m.module_type,
+                'version': m.version,
+                'author': m.author,
+                'description': m.description,
+                'icon': getattr(m, 'icon', 'bi-wrench'),
+                '_status': status,
+                'is_registered': is_registered,
+                'dependencies': getattr(m, 'dependencies', []),
+                'path': getattr(m, 'path', None),
+                'error': error_msg,
+            }
+        else:  # 字典
+            return {
+                'id': m.get('id', ''),
+                'name': m.get('name', ''),
+                'module_type': m.get('type', m.get('module_type', '')),
+                'version': m.get('version', ''),
+                'author': m.get('author', ''),
+                'description': m.get('description', ''),
+                'icon': m.get('icon', 'bi-wrench'),
+                '_status': status,
+                'is_registered': is_registered,
+                'dependencies': m.get('dependencies', []),
+                'path': m.get('path'),
+                'error': error_msg,
+            }
+    
+    # 合并所有模块用于筛选，统一为字典格式
+    all_for_filter = []
+    
+    for m in installed_active:
+        all_for_filter.append(module_to_dict(m, 'active', True))
+    
+    for m in installed_inactive:
+        all_for_filter.append(module_to_dict(m, 'installed', True))
+    
+    # 已注册但未安装/未启用的模块（如smtptest）
+    for m in failed_registered:
+        all_for_filter.append(module_to_dict(m, 'error', True, f'模块 {m.module_id} 已注册但未安装'))
+    
+    # 检测扫描失败的模块（存在于modules/目录但解析失败）
+    import os
+    scanned_ids = {m.get('id') for m in all_modules}
+    if os.path.exists('modules'):
+        for item in os.listdir('modules'):
+            item_path = os.path.join('modules', item)
+            if os.path.isdir(item_path):
+                module_file = os.path.join(item_path, 'module.py')
+                if os.path.exists(module_file) and item not in scanned_ids:
+                    # 尝试解析以获取错误信息
+                    try:
+                        info = ModuleService._load_module_info(item)
+                        if not info:
+                            all_for_filter.append({
+                                'id': item,
+                                'name': item,
+                                'module_type': 'unknown',
+                                'version': '',
+                                'author': '',
+                                'description': f'模块 {item} 信息解析失败',
+                                'icon': 'bi-exclamation-triangle',
+                                '_status': 'error',
+                                'is_registered': False,
+                                'dependencies': [],
+                                'path': item,
+                                'error': f'模块 {item} 信息解析失败',
+                            })
+                    except Exception as e:
+                        all_for_filter.append({
+                            'id': item,
+                            'name': item,
+                            'module_type': 'unknown',
+                            'version': '',
+                            'author': '',
+                            'description': f'模块 {item} 解析错误: {str(e)}',
+                            'icon': 'bi-exclamation-triangle',
+                            '_status': 'error',
+                            'is_registered': False,
+                            'dependencies': [],
+                            'path': item,
+                            'error': f'模块 {item} 解析错误: {str(e)}',
+                        })
+    
+    for m in available:
+        all_for_filter.append(module_to_dict(m, 'uninstalled', False))
+    
+    # 应用筛选（统一用字典访问方式）
+    filtered = all_for_filter
+    
+    if search:
+        search_lower = search.lower()
+        filtered = [
+            m for m in filtered
+            if search_lower in m.get('name', '').lower() or 
+               search_lower in m.get('id', '').lower()
+        ]
+    
+    if type_filter:
+        filtered = [
+            m for m in filtered
+            if m.get('module_type', m.get('type', '')) == type_filter
+        ]
+    
+    if status_filter:
+        filtered = [
+            m for m in filtered
+            if m.get('_status', '') == status_filter
+        ]
+    
+    # 分页
+    from django.core.paginator import Paginator
+    paginator = Paginator(filtered, 12)  # 每页12个（3列×4行）
+    page_obj = paginator.get_page(page_num)
+    
+    # 计算页码范围（当前页前后各2页）
+    current = page_obj.number
+    start = max(1, current - 2)
+    end = min(paginator.num_pages, current + 2)
+    page_range = list(range(start, end + 1))
+    
+    # 构建基础查询字符串（用于分页链接）
+    query_params = request.GET.copy()
+    if 'page' in query_params:
+        del query_params['page']
+    base_query = query_params.urlencode()
+    if base_query:
+        base_query = '?' + base_query + '&'
+    else:
+        base_query = '?'
     
     return render(request, 'node/index.html', {
-        'modules': registered,
-        'unregistered_modules': unregistered,
-        'node_types': node_types,
+        'page_obj': page_obj,
+        'modules': page_obj.object_list,
+        'page_range': page_range,
+        'current_page': page_obj.number,
+        'total_pages': paginator.num_pages,
+        'has_prev': page_obj.has_previous(),
+        'has_next': page_obj.has_next(),
+        'prev_page': page_obj.previous_page_number() if page_obj.has_previous() else None,
+        'next_page': page_obj.next_page_number() if page_obj.has_next() else None,
+        'search': search,
+        'type_filter': type_filter,
+        'status_filter': status_filter,
+        'base_query': base_query,
         'active_section': 'node_modules',
     })
 
@@ -613,7 +782,7 @@ def module_install(request, module_id: str):
         messages.error(request, f'模块 {module_id} 不存在')
         return redirect('node:node_types_list')
     
-    ok, err = ModuleService.verify_dependencies(module_id)
+    ok, err, _ = ModuleService.verify_dependencies(module_id)
     if not ok:
         messages.error(request, f'无法安装模块：{err}')
         return redirect('core:modules_manage')
@@ -632,7 +801,7 @@ def module_enable(request, module_id: str):
         messages.error(request, '需要系统管理员权限访问该页面')
         return redirect('core:dashboard')
 
-    ok, err = ModuleService.verify_dependencies(module_id)
+    ok, err, _ = ModuleService.verify_dependencies(module_id)
     if not ok:
         messages.error(request, f'无法启用模块：{err}')
         return redirect('core:modules_manage')

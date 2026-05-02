@@ -747,4 +747,29 @@
 
 1. 实现 install_on_init 参数功能（7个任务全部完成）
 2. 修复create_module未传递author参数的bug，全面检查并修复类似语法错误
+3. 完成字体优化方案A1：Inter + Noto Sans SC (Regular+Bold)，更新所有主题CSS和邮件模板
+4. 下载 Noto Sans SC 字体（Regular+Bold）到 static/fonts/noto-sans-sc/
+5. 修复module_install和module_enable中verify_dependencies返回值解包错误（期望2值，实际返回3值）
+6. 完成install_on_init架构：添加字段、修复register_module保存、修复install_module变量作用域、修复表名验证逻辑
+7. 修复base.css字体声明，移除无效的WOFF2引用，回退到OTF格式（WOFF2下载失败）
+
+# 2026-05-02 修改记录
+
+1. 完成Noto Sans SC WOFF2字体下载和CSS配置，优先使用WOFF2格式（11K/12K），Firefox兼容
+2. 完成Noto Sans SC完整WOFF2字体转换（5.9M/6.2M），支持生僻汉字，移除OTF冗余引用
+3. 重构模块管理页面：卡片式设计、筛选搜索、分页功能（方案21）
+4. 修复模块管理页面：卡片式设计、筛选搜索、分页功能（方案21），修复Jinja2语法错误
+5. 修复模块管理页面Module对象属性访问错误（使用getattr统一处理字典/对象）
+6. 模块管理页面显示未能注册的模块（添加错误标签和failed_registered分类，smtptest现在会显示）
+7. 模块卡片使用自己的图标；未安装/错误状态的标题改为50%透明；register_module保存icon字段
+8. 修复图标问题：Module模型添加icon字段已迁移，smtptest图标更新为bi-envelope-fill，模板已支持模块自定义图标
+9. 模块管理页错误信息添加具体模块名称（如：模块 smtptest 已注册但未安装）
+10. 模块市场页添加类型筛选和分页功能（参考模块管理页设计）
+11. 市场页：提示信息合并到筛选卡片，清除筛选移至按钮旁
+12. 修复市场页模板语法错误（Jinja2标签 %} 问题），提示信息合并到筛选卡片
+13. 优化导航栏左移方案（移除负margin，改用Bootstrap类和rem单位，提升浏览器兼容性）
+14. 全面Bug修复：first()添加None检查注释，修复id_card__icontains（外键不能用icontains），modules服务层调用已有检查
+15. 中优先级Bug修复：Cron任务错误处理、SMTP配置验证、邮件发送日志
+16. 低优先级优化：清理DEBUG语句、代码规范化
+17. 安全配置环境变量迁移完成：settings.py支持从config.env读取安全配置，创建A07规范文档
 

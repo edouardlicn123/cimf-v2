@@ -265,8 +265,26 @@ def upload_preview(request, node_type_slug):
     file = request.FILES.get('file')
     if not file:
         return JsonResponse({'success': False, 'error': '请选择文件'}, status=400)
-    
+
     filename = file.name
+    
+    # 验证文件大小（最大 10MB）
+    max_size = 10 * 1024 * 1024  # 10MB
+    if file.size > max_size:
+        return JsonResponse({'success': False, 'error': '文件大小不能超过 10MB'}, status=400)
+    
+    # 验证文件扩展名
+    allowed_extensions = ['.csv', '.xlsx', '.xls']
+    ext = filename.lower().split('.')[-1] if '.' in filename else ''
+    if not any(filename.lower().endswith(ext) for ext in allowed_extensions):
+        return JsonResponse({'success': False, 'error': '只允许上传 CSV 或 Excel 文件'}, status=400)
+    
+    # 验证文件类型（MIME）
+    allowed_mimes = ['text/csv', 'application/vnd.ms-excel', 
+                     'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet']
+    if file.content_type not in allowed_mimes:
+        return JsonResponse({'success': False, 'error': '文件格式不正确'}, status=400)
+    
     format = 'xlsx' if filename.lower().endswith(('.xlsx', '.xls')) else 'csv'
     
     try:
@@ -340,7 +358,15 @@ def do_import(request, node_type_slug):
     valid_rows = [row for i, row in enumerate(rows, 1) 
                   if not any(e['row'] == i for e in validation['errors'])]
     
-    result = ImportService.import_data(node_type_slug, valid_rows, request.user, skip_duplicates=True)
+    from django.db import transaction
+    try:
+        with transaction.atomic():
+            result = ImportService.import_data(node_type_slug, valid_rows, request.user, skip_duplicates=True)
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'error': f'导入失败: {str(e)}'
+        }, status=500)
     
     total_count = import_data.get('total_count', 0)
     

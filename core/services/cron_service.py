@@ -97,21 +97,24 @@ class CronService:
                     try:
                         if not task.is_enabled():
                             continue
-
+                        
                         should_run = False
                         
                         if task._last_run is None:
                             if task._run_count == 0:
                                 should_run = True
-                        else:
-                            next_run = task._last_run.timestamp() + task.get_interval()
-                            if now >= next_run:
-                                should_run = True
+                            else:
+                                next_run = task._last_run.timestamp() + task.get_interval()
+                                if now >= next_run:
+                                    should_run = True
                         
                         if should_run:
                             logger.info(f"执行任务: {task.name}, run_count={task._run_count}, last_run={task._last_run}")
-                            task.run()
-                            logger.info(f"任务完成: {task.name}, 状态: {task._last_status}, run_count={task._run_count}")
+                            try:
+                                task.run()
+                                logger.info(f"任务完成: {task.name}, 状态: {task._last_status}, run_count={task._run_count}")
+                            except Exception as run_error:
+                                logger.error(f"任务 {task.name} 执行失败: {run_error}", exc_info=True)
                             any_task_ran = True
                     except Exception as task_error:
                         logger.error(f"任务 {task.name} 执行异常: {task_error}", exc_info=True)
@@ -171,7 +174,11 @@ class CronService:
         if not task.is_enabled():
             return {'success': False, 'error': f'任务未启用: {task_name}'}
 
-        task.run()
+        try:
+            task.run()
+        except Exception as e:
+            logger.error(f"手动触发任务 {task_name} 失败: {e}", exc_info=True)
+            return {'success': False, 'error': f'任务执行失败: {str(e)}'}
 
         return {
             'success': True,

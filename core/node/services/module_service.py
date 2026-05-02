@@ -87,8 +87,28 @@ class ModuleService:
         if respect_install_on_init:
             filtered_pending = []
             for m in pending:
-                install_on_init = m.get('install_on_init', True)
-                if install_on_init is False or str(install_on_init).lower() == 'false':
+                # 获取 install_on_init 值
+                if m.get('is_registered'):
+                    # 已注册：从数据库读取，并用 module.py 的值更新
+                    module_obj = Module.objects.filter(module_id=m['id']).first()
+                    if module_obj:
+                        # 用 module.py 中的值更新数据库
+                        new_value = m.get('install_on_init', True)
+                        if module_obj.install_on_init != new_value:
+                            module_obj.install_on_init = new_value
+                            module_obj.save(update_fields=['install_on_init'])
+                        install_on_init = module_obj.install_on_init
+                    else:
+                        install_on_init = m.get('install_on_init', True)
+                else:
+                    # 未注册：使用 module.py 中的值（register_module 会保存）
+                    install_on_init = m.get('install_on_init', True)
+                
+                # 处理可能的字符串值
+                if isinstance(install_on_init, str):
+                    install_on_init = install_on_init.lower() not in ('false', '0', 'no', '')
+                
+                if not install_on_init:
                     skipped_due_to_install_on_init += 1
                     result['skipped_modules'].append(m.get('name', m['id']))
                 else:
@@ -199,6 +219,8 @@ class ModuleService:
             existing.name = module_info.get('name', existing.name)
             existing.version = module_info.get('version', existing.version)
             existing.description = module_info.get('description', existing.description)
+            existing.icon = module_info.get('icon', existing.icon)
+            existing.install_on_init = module_info.get('install_on_init', True)
             existing.save()
             return existing
         
@@ -208,8 +230,10 @@ class ModuleService:
             version=module_info.get('version', '1.0.0'),
             author=module_info.get('author'),
             description=module_info.get('description'),
+            icon=module_info.get('icon', 'bi-wrench'),
             path=module_info.get('path', module_id),
             module_type=module_info.get('type', 'node'),
+            install_on_init=module_info.get('install_on_init', True),
             is_installed=False,
             is_active=False,
             is_system=False,
@@ -346,6 +370,9 @@ except Exception as e:
         if module.is_installed:
             return True, '模块已安装'
         
+        # 提前加载模块信息，供后续使用
+        module_info = ModuleService._load_module_info(module.path)
+        
         app_name = f'modules.{module_id}'
         
         migrations_path = os.path.join(module_path, 'migrations')
@@ -378,13 +405,24 @@ except Exception as e:
         
         # 验证 models 字段中列出的所有模型表
         if module_info and module_info.get('models'):
+            from django.apps import apps
             from django.db import connection
             existing_tables = set(connection.introspection.table_names())
+            
             for model_name in module_info['models']:
-                # 模型名转换为表名（Django 默认：app_label_modelname）
-                table_name = f"{module_id}_{model_name.lower()}"
-                if table_name not in existing_tables:
-                    return False, f'模型 {model_name} 的表未创建（期望表名: {table_name}）'
+                try:
+                    # 使用Django的模型元数据获取真实表名
+                    app_label = module_id
+                    model = apps.get_model(app_label, model_name)
+                    real_table_name = model._meta.db_table
+                    
+                    if real_table_name not in existing_tables:
+                        return False, f'模型 {model_name} 的表未创建（期望表名: {real_table_name}）'
+                except LookupError:
+                    # 如果找不到模型，回退到默认规则
+                    expected_table = f"{module_id}_{model_name.lower()}"
+                    if expected_table not in existing_tables:
+                        return False, f'模型 {model_name} 的表未创建（期望表名: {expected_table}）'
         
         if module.module_type == 'node':
             ModuleService.sync_node_type(module)
@@ -393,7 +431,6 @@ except Exception as e:
         
         try:
             # 检查模块是否配置了词汇表
-            module_info = ModuleService._load_module_info(module.path)
             has_taxonomies_config = module_info and module_info.get('taxonomies')
             
             created_count = ModuleService.create_module_taxonomies(module)

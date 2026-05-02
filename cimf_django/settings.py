@@ -41,12 +41,19 @@ for _dir in _storage_dirs:
     (BASE_DIR / _dir).mkdir(parents=True, exist_ok=True)
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-9dtjvn^e5l-o7k12i*0_2ez**pbtje4ik=v*)a42t+r=n2rt#l'
+# 从环境变量读取，如果不存在则使用默认值（仅用于开发）
+SECRET_KEY = os.environ.get(
+    'DJANGO_SECRET_KEY',
+    'django-insecure-9dtjvn^e5l-o7k12i*0_2ez**pbtje4ik=v*)a42t+r=n2rt#l'
+)
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+# 调试模式：从环境变量读取，默认开启（开发环境）
+DEBUG = os.getenv('DJANGO_DEBUG', 'True').lower() == 'true'
 
-ALLOWED_HOSTS = ['*']
+# 允许访问的主机列表：从环境变量读取，逗号分隔
+ALLOWED_HOSTS_STR = os.getenv('DJANGO_ALLOWED_HOSTS', 'localhost,127.0.0.1')
+ALLOWED_HOSTS = [host.strip() for host in ALLOWED_HOSTS_STR.split(',') if host.strip()]
 
 # ----- IP 访问限制配置 -----
 IP_RESTRICTION_ENABLED = os.getenv('IP_RESTRICTION_ENABLED', 'false').lower() == 'true'
@@ -349,3 +356,31 @@ handler400 = 'core.views.errors.error_400'
 handler403 = 'core.views.errors.error_403'
 handler404 = 'core.views.errors.error_404'
 handler500 = 'core.views.errors.error_500'
+
+# ----- 安全配置（从环境变量读取）-----
+# 环境标识：development 或 production
+DJANGO_ENV = os.getenv('DJANGO_ENV', 'development')
+
+# HSTS (HTTP Strict Transport Security) 配置
+SECURE_HSTS_SECONDS = int(os.getenv('DJANGO_HSTS_SECONDS', '0'))
+SECURE_HSTS_INCLUDE_SUBDOMAINS = os.getenv('DJANGO_HSTS_INCLUDE_SUBDOMAINS', 'false').lower() == 'true'
+SECURE_HSTS_PRELOAD = os.getenv('DJANGO_HSTS_PRELOAD', 'false').lower() == 'true'
+
+# SSL 重定向
+SECURE_SSL_REDIRECT = os.getenv('DJANGO_SSL_REDIRECT', 'false').lower() == 'true'
+
+# Cookie 安全设置
+SESSION_COOKIE_SECURE = os.getenv('DJANGO_SESSION_COOKIE_SECURE', 'false').lower() == 'true'
+CSRF_COOKIE_SECURE = os.getenv('DJANGO_CSRF_COOKIE_SECURE', 'false').lower() == 'true'
+
+# 生产环境自动启用安全配置
+if DJANGO_ENV == 'production':
+    SECURE_HSTS_SECONDS = SECURE_HSTS_SECONDS or 31536000  # 默认1年
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
+    SECURE_SSL_REDIRECT = True
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    DEBUG = False
+    if ALLOWED_HOSTS == ['localhost', '127.0.0.1']:
+        raise ValueError("生产环境必须在 DJANGO_ALLOWED_HOSTS 中配置实际域名！")

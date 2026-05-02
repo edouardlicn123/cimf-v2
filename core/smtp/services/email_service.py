@@ -190,7 +190,8 @@ class EmailService:
                     fail_silently=False,
                 )
             return True
-        except Exception:
+        except Exception as e:
+            logger.error(f"邮件发送失败: to={to_list}, subject={subject}, error={e}", exc_info=True)
             return False
 
     @classmethod

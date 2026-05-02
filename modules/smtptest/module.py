@@ -7,6 +7,6 @@ MODULE_INFO = {
     'version': '1.0.0',
     'author': '',
     'description': '用于测试SMTP功能，向指定邮箱发送邮件。',
-    'icon': 'bi-mail',
+    'icon': 'bi-envelope-fill',
     'install_on_init': False,
 }

@@ -1,8 +1,8 @@
 <nav class="navbar navbar-expand-lg navbar-macaron fixed-top shadow-sm">
-    <div class="container-fluid px-3 px-lg-4">
-        
-        <!-- 左侧品牌 -->
-        <a class="navbar-brand fw-bold fs-4 d-flex align-items-center" href="{{ url('core:dashboard') }}">
+        <div class="container-fluid nav-container">
+            
+            <!-- 左侧品牌 -->
+            <a class="navbar-brand fw-bold fs-4 d-flex align-items-center ms-0" href="{{ url('core:dashboard') }}">
             {% if system_settings.get('site_logo_enabled', true) %}
                 {% if system_settings.get('site_logo_path') %}
                     <img src="{{ media(system_settings['site_logo_path']) }}" alt="{{ system_name }}" class="me-2" style="height: 32px;">
@@ -22,8 +22,8 @@
         
         <div class="collapse navbar-collapse" id="navbarContent">
             
-            <!-- 中间主导航 -->
-            <ul class="navbar-nav me-auto mb-2 mb-lg-0 main-nav">
+                <!-- 中间主导航 -->
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0 main-nav ps-1 ps-lg-2">
                 <li class="nav-item">
                     <a class="nav-link fw-bold {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}" 
                        href="{{ url('core:dashboard') }}">

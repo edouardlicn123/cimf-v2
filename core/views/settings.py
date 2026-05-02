@@ -41,6 +41,24 @@ def system_settings(request):
         
         logo_file = request.FILES.get('site_logo_upload')
         if logo_file:
+            # 验证文件类型
+            allowed_types = ['image/png', 'image/jpeg', 'image/gif', 'image/webp']
+            if logo_file.content_type not in allowed_types:
+                messages.error(request, '只允许上传图片文件（PNG/JPG/GIF/WEBP）')
+                return redirect('core:system_settings')
+            
+            # 验证文件大小（最大 2MB）
+            if logo_file.size > 2 * 1024 * 1024:
+                messages.error(request, '文件大小不能超过 2MB')
+                return redirect('core:system_settings')
+            
+            # 验证文件扩展名
+            allowed_exts = ['.png', '.jpg', '.jpeg', '.gif', '.webp']
+            ext = os.path.splitext(logo_file.name)[1].lower()
+            if ext not in allowed_exts:
+                messages.error(request, '文件扩展名不合法')
+                return redirect('core:system_settings')
+            
             upload_dir = os.path.join(django_settings.MEDIA_ROOT, 'logos')
             os.makedirs(upload_dir, exist_ok=True)
             
@@ -48,9 +66,13 @@ def system_settings(request):
             if os.path.exists(old_path):
                 os.remove(old_path)
             
-            with open(old_path, 'wb+') as destination:
-                for chunk in logo_file.chunks():
-                    destination.write(chunk)
+            try:
+                with open(old_path, 'wb+') as destination:
+                    for chunk in logo_file.chunks():
+                        destination.write(chunk)
+            except Exception as e:
+                messages.error(request, f'文件保存失败: {str(e)}')
+                return redirect('core:system_settings')
             
             settings_dict['site_logo_path'] = 'logos/custom.png'
         
@@ -92,6 +114,7 @@ def system_permissions(request):
     role_labels = dict(UserRole.LABELS)
     for role in ['manager', 'leader', 'employee']:
         setting = SystemSetting.objects.filter(key=f'role_name_{role}').first()
+        # 调用者需检查 None
         if setting and setting.value:
             role_labels[role] = setting.value
         elif setting and not setting.value:
@@ -225,6 +248,7 @@ def homepage_settings(request):
     from importlib import import_module
     
     setting = SystemSetting.objects.filter(key='user_dashboard_card_positions').first()
+    # 调用者已检查 None
     positions = {}
     if setting and setting.value:
         try:

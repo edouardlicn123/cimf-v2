@@ -151,6 +151,7 @@ def taxonomy_item_update(request, taxonomy_id: int, item_id: int):
         
         if name:
             item = TaxonomyItem.objects.filter(id=item_id, taxonomy_id=taxonomy_id).first()
+            # 调用者已检查 None
             if item:
                 TaxonomyService.update_item(item_id, name=name, description=description)
                 messages.success(request, '词汇项更新成功')

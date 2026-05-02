@@ -110,12 +110,14 @@ class Module(models.Model):
     version = models.CharField(max_length=20, verbose_name='版本号')
     author = models.CharField(max_length=100, blank=True, null=True, verbose_name='作者')
     description = models.TextField(blank=True, null=True, verbose_name='描述')
+    icon = models.CharField(max_length=50, default='bi-wrench', verbose_name='图标')
     path = models.CharField(max_length=200, verbose_name='模块路径')
     
     is_installed = models.BooleanField(default=False, verbose_name='是否已安装')
     is_active = models.BooleanField(default=False, verbose_name='是否启用')
     is_system = models.BooleanField(default=False, verbose_name='是否系统默认模块')
     module_type = models.CharField(max_length=20, default='node', verbose_name='模块类型')
+    install_on_init = models.BooleanField(default=True, verbose_name='初始化时安装')
     
     installed_at = models.DateTimeField(null=True, blank=True, verbose_name='安装时间')
     activated_at = models.DateTimeField(null=True, blank=True, verbose_name='启用时间')

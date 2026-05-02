@@ -89,7 +89,14 @@ def run_stage3(force: bool = False, dry_run: bool = False) -> bool:
     
     admin_username = os.environ.get('ADMIN_USERNAME', 'admin')
     admin_nickname = os.environ.get('ADMIN_NICKNAME', '系统管理员')
-    admin_password = os.environ.get('ADMIN_PASSWORD', 'admin123')
+    admin_password = os.environ.get('ADMIN_PASSWORD')  # 生产环境必须设置
+    if not admin_password:
+        if os.environ.get('DJANGO_ENV', 'development') == 'production':
+            print("❌ 错误：生产环境必须设置 ADMIN_PASSWORD 环境变量！")
+            return False
+        else:
+            admin_password = 'admin123'  # 仅开发环境默认值
+            print(f"⚠️ 警告：使用默认密码，生产环境请设置 ADMIN_PASSWORD")
     admin_email = os.environ.get('ADMIN_EMAIL', 'admin@example.com')
     admin_theme = os.environ.get('ADMIN_THEME', 'default')
     admin_notifications = os.environ.get('ADMIN_NOTIFICATIONS', 'true').lower() in ('true', '1', 'yes', 'on')

@@ -170,7 +170,7 @@ class User(AbstractUser):
     
     def __str__(self):
         display_name = self.nickname or self.username
-        return f'{display_name} (id:{self.id})'
+        return f'{display_name} (id:{self.id})'  # 注意：如果循环打印，建议使用 select_related('node_type')
     
     def is_locked(self) -> bool:
         """判断账号是否处于锁定状态"""

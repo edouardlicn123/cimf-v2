@@ -70,6 +70,7 @@ class CustomerService:
                 Q(phone1__icontains=search) |
                 Q(phone2__icontains=search)
             )
+            )
         
         if customer_type_id:
             queryset = queryset.filter(customer_type_id=customer_type_id)

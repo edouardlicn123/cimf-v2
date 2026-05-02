@@ -16,158 +16,276 @@
 {% endblock %}
 
 {% block admin_content %}
-<div class="row">
-    <div class="col-12">
-        <!-- 提示 -->
-        <div class="border rounded p-3 mb-4 bg-light">
-            <i class="bi bi-exclamation-triangle text-warning me-1"></i>
-            安装或启用模块后,需要重启服务器才能正常使用.删除模块前必须先禁用.
-        </div>
-        
-        <!-- 已安装模块列表 -->
-        <div class="card mb-4">
-            <div class="card-header">
-                <h5 class="mb-0">已安装模块</h5>
+<!-- 提示信息 -->
+<div class="alert alert-warning alert-dismissible fade show mb-4" role="alert">
+    <i class="bi bi-exclamation-triangle me-2"></i>
+    安装或启用模块后，需要重启服务器才能正常使用。删除模块前必须先禁用。
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+</div>
+
+<!-- 筛选和搜索栏 -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="get" class="row g-3 align-items-end">
+            <!-- 搜索框 -->
+            <div class="col-md-4">
+                <label class="form-label small text-muted">搜索模块</label>
+                <input type="text" name="search" class="form-control" 
+                       placeholder="输入模块名称或ID..." value="{{ search|default('') }}">
             </div>
-            <div class="card-body">
-                {% if modules %}
-                <div class="table-responsive">
-                    <table class="table table-hover">
-                        <thead>
-                            <tr>
-                                <th>模块名称</th>
-                                <th>ID</th>
-                                <th>类型</th>
-                                <th>版本</th>
-                                <th>作者</th>
-                                <th>状态</th>
-                                <th>描述</th>
-                                <th>安装时间</th>
-                                <th>操作</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for module in modules %}
-                            <tr>
-                                <td>{{ module.name }}</td>
-                                <td><code>{{ module.module_id }}</code></td>
-                                <td>
-                                    {% if module.module_type == 'node' %}
-                                        <span class="badge bg-primary">node</span>
-                                    {% elif module.module_type == 'system' %}
-                                        <span class="badge bg-secondary">system</span>
-                                    {% else %}
-                                        <span class="badge bg-warning">{{ module.module_type }}</span>
-                                    {% endif %}
-                                </td>
-                                <td>{{ module.version }}</td>
-                                <td>
-                                    {% if module.author %}{{ module.author }}{% else %}-{% endif %}
-                                </td>
-                                <td>
-                                    {% if not module.path_exists %}
-                                        <span class="badge bg-danger">不存在</span>
-                                    {% elif module.is_active %}
-                                        <span class="badge bg-success">已启用</span>
-                                    {% elif module.is_installed %}
-                                        <span class="badge bg-secondary">已安装</span>
-                                    {% else %}
-                                        <span class="badge bg-warning">未安装</span>
-                                    {% endif %}
-                                </td>
-                                <td>
-                                    {% if module.description %}{{ module.description|truncatechars(30) }}{% else %}-{% endif %}
-                                </td>
-                                <td>
-                                    {% if module.installed_at %}{{ module.installed_at|date("Y-m-d H:i") }}{% else %}-{% endif %}
-                                </td>
-                                <td>
-                                    {% if not module.path_exists %}
-                                        <span class="text-muted">目录缺失</span>
-                                    {% elif module.is_installed and not module.is_active %}
-                                        <a href="{{ url('node:module_enable', module.module_id) }}" class="btn btn-sm btn-success">启用</a>
-                                    {% elif module.is_active %}
-                                        <a href="{{ url('node:module_disable', module.module_id) }}" class="btn btn-sm btn-warning">禁用</a>
-                                    {% else %}
-                                        <a href="{{ url('node:module_install', module.module_id) }}" class="btn btn-sm btn-primary">安装</a>
-                                    {% endif %}
-                                </td>
-                            </tr>
-                            <!-- 依赖信息行 -->
-                            <tr class="table-secondary">
-                                <td colspan="8" class="py-1" style="font-size: 0.875rem;">
-                                    {% if module.dependencies is none %}
-                                        <span class="text-danger">模块配置解析失败</span>
-                                    {% elif module.dependencies %}
-                                        <span class="text-muted">依赖:</span>
-                                        {% for dep_id in module.dependencies %}
-                                            <span class="badge bg-light text-dark me-1">{{ dep_id }}</span>
-                                        {% endfor %}
-                                    {% else %}
-                                        <span class="text-muted">依赖:无</span>
-                                    {% endif %}
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
+            
+            <!-- 类型筛选 -->
+            <div class="col-md-3">
+                <label class="form-label small text-muted">模块类型</label>
+                <select name="type" class="form-select">
+                    <option value="">全部类型</option>
+                    <option value="node" {% if type_filter == 'node' %}selected{% endif %}>Node（事务节点）</option>
+                    <option value="system" {% if type_filter == 'system' %}selected{% endif %}>System（系统模块）</option>
+                    <option value="tool" {% if type_filter == 'tool' %}selected{% endif %}>Tool（协作工具）</option>
+                </select>
+            </div>
+            
+            <!-- 状态筛选 -->
+            <div class="col-md-3">
+                <label class="form-label small text-muted">模块状态</label>
+                <select name="status" class="form-select">
+                    <option value="">全部状态</option>
+                    <option value="active" {% if status_filter == 'active' %}selected{% endif %}>已启用</option>
+                    <option value="installed" {% if status_filter == 'installed' %}selected{% endif %}>已安装（未启用）</option>
+                    <option value="uninstalled" {% if status_filter == 'uninstalled' %}selected{% endif %}>未安装</option>
+                    <option value="error" {% if status_filter == 'error' %}selected{% endif %}>错误</option>
+                </select>
+            </div>
+            
+            <!-- 按钮 -->
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="bi bi-search"></i> 筛选
+                </button>
+            </div>
+            
+            <!-- 清除筛选 -->
+            {% if search or type_filter or status_filter %}
+            <div class="col-md-12">
+                <a href="{{ url('core:modules_manage') }}" class="btn btn-sm btn-outline-secondary">
+                    <i class="bi bi-x-circle"></i> 清除筛选
+                </a>
+                <span class="text-muted small ms-2">
+                    找到 {{ page_obj.paginator.count }} 个模块
+                </span>
+            </div>
+            {% endif %}
+        </form>
+    </div>
+</div>
+
+<!-- 模块卡片列表 -->
+{% if modules %}
+<div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4 mb-4">
+    {% for module in modules %}
+    {% set is_registered = module.is_registered %}
+    {% set mod_type = module.module_type %}
+    {% set mod_id = module.id %}
+    {% set mod_status = module._status %}
+    {% set mod_name = module.name %}
+    {% set mod_icon = module.icon|default('bi-box-seam') %}
+    {% set is_uninstalled = mod_status == 'uninstalled' %}
+    {% set mod_version = module.version %}
+    {% set mod_description = module.description|default('暂无描述') %}
+    {% set mod_dependencies = module.dependencies if is_registered else [] %}
+    
+    <div class="col">
+        <!-- 根据状态设置卡片样式 -->
+        {% if mod_status == 'active' %}
+        <div class="entry-card h-100 border-success">
+            <div class="entry-card-figure bg-success text-white">
+                <i class="bi {{ mod_icon }}"></i>
+                <h5 class="entry-card-title">{{ mod_name }}</h5>
+            </div>
+            <div class="entry-card-body d-flex flex-column">
+                <div class="mb-2 small">
+                    <code>{{ mod_id }}</code>
+                    <span class="badge bg-primary ms-1">{{ mod_type }}</span>
+                    <span class="badge bg-success ms-1">已启用</span>
+                    {% if mod_version %}
+                    <span class="badge bg-info ms-1">v{{ mod_version }}</span>
+                    {% endif %}
                 </div>
-                {% else %}
-                <p class="text-muted mb-0">暂无已安装的模块</p>
+                <p class="entry-card-desc small text-muted mb-3 flex-grow-1">
+                    {{ mod_description|truncatechars(60) }}
+                </p>
+                {% if mod_dependencies %}
+                <div class="small text-muted mb-2">
+                    <i class="bi bi-link-45deg"></i> 依赖:
+                    {% for dep in mod_dependencies[:3] %}
+                    <span class="badge bg-light text-dark me-1">{{ dep }}</span>
+                    {% endfor %}
+                    {% if mod_dependencies|length > 3 %}
+                    <span class="text-muted">+{{ mod_dependencies|length - 3 }}</span>
+                    {% endif %}
+                </div>
                 {% endif %}
+                <div class="entry-card-actions mt-auto">
+                    <a href="{{ url('node:module_disable', mod_id) }}" class="btn btn-sm btn-warning">
+                        <i class="bi bi-pause-circle"></i> 禁用
+                    </a>
+                </div>
             </div>
         </div>
-        
-        <!-- 未注册模块列表 -->
-        {% if unregistered_modules %}
-        <div class="card mb-4">
-            <div class="card-header">
-                <h5 class="mb-0">未注册模块</h5>
+        {% elif mod_status == 'installed' %}
+        <div class="entry-card h-100 border-secondary">
+            <div class="entry-card-figure bg-secondary text-white">
+                <i class="bi {{ mod_icon }}"></i>
+                <h5 class="entry-card-title">{{ mod_name }}</h5>
             </div>
-            <div class="card-body">
-                <div class="table-responsive">
-                    <table class="table table-hover">
-                        <thead>
-                            <tr>
-                                <th>模块名称</th>
-                                <th>ID</th>
-                                <th>类型</th>
-                                <th>版本</th>
-                                <th>作者</th>
-                                <th>描述</th>
-                                <th>操作</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for module in unregistered_modules %}
-                            <tr>
-                                <td>{{ module.name }}</td>
-                                <td><code>{{ module.id }}</code></td>
-                                <td>
-                                    {% if module.type == 'node' %}
-                                    <span class="badge bg-primary">node</span>
-                                    {% elif module.type == 'system' %}
-                                    <span class="badge bg-secondary">system</span>
-                                    {% else %}
-                                    <span class="badge bg-warning">{{ module.type|default('-') }}</span>
-                                    {% endif %}
-                                </td>
-                                <td>{{ module.version }}</td>
-                                <td>
-                                    {% if module.author %}{{ module.author }}{% else %}-{% endif %}
-                                </td>
-                                <td>{{ module.description|default('-')|truncatechars(50) }}</td>
-                                <td>
-                                    <a href="{{ url('node:module_install', module.id) }}" class="btn btn-sm btn-primary">安装</a>
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
+            <div class="entry-card-body d-flex flex-column">
+                <div class="mb-2 small">
+                    <code>{{ mod_id }}</code>
+                    <span class="badge bg-primary ms-1">{{ mod_type }}</span>
+                    <span class="badge bg-secondary ms-1">已安装</span>
+                    {% if mod_version %}
+                    <span class="badge bg-info ms-1">v{{ mod_version }}</span>
+                    {% endif %}
+                </div>
+                <p class="entry-card-desc small text-muted mb-3 flex-grow-1">
+                    {{ mod_description|truncatechars(60) }}
+                </p>
+                {% if mod_dependencies %}
+                <div class="small text-muted mb-2">
+                    <i class="bi bi-link-45deg"></i> 依赖:
+                    {% for dep in mod_dependencies[:3] %}
+                    <span class="badge bg-light text-dark me-1">{{ dep }}</span>
+                    {% endfor %}
+                    {% if mod_dependencies|length > 3 %}
+                    <span class="text-muted">+{{ mod_dependencies|length - 3 }}</span>
+                    {% endif %}
+                </div>
+                {% endif %}
+                <div class="entry-card-actions mt-auto">
+                    <a href="{{ url('node:module_enable', mod_id) }}" class="btn btn-sm btn-success">
+                        <i class="bi bi-play-circle"></i> 启用
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% elif mod_status == 'error' %}
+        <div class="entry-card h-100 border-danger">
+            <div class="entry-card-figure bg-danger text-white">
+                <i class="bi {{ mod_icon }}"></i>
+                <h5 class="entry-card-title" style="opacity: 0.5;">{{ mod_name }}</h5>
+            </div>
+            <div class="entry-card-body d-flex flex-column">
+                <div class="mb-2 small">
+                    <code>{{ mod_id }}</code>
+                    <span class="badge bg-primary ms-1">{{ mod_type }}</span>
+                    <span class="badge bg-danger ms-1">错误</span>
+                    {% if mod_version %}
+                    <span class="badge bg-info ms-1">v{{ mod_version }}</span>
+                    {% endif %}
+                </div>
+                {% if module.error %}
+                <div class="alert alert-danger py-1 px-2 small mb-2">
+                    <i class="bi bi-exclamation-triangle"></i> {{ module.error }}
+                </div>
+                {% endif %}
+                <p class="entry-card-desc small text-muted mb-3 flex-grow-1">
+                    {{ mod_description|truncatechars(60) }}
+                </p>
+                <div class="entry-card-actions mt-auto">
+                    <a href="{{ url('node:module_install', mod_id) }}" class="btn btn-sm btn-warning">
+                        <i class="bi bi-wrench"></i> 修复安装
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div class="entry-card h-100 border-dashed">
+            <div class="entry-card-figure bg-light text-dark">
+                <i class="bi {{ mod_icon }}"></i>
+                <h5 class="entry-card-title" style="opacity: 0.5;">{{ mod_name }}</h5>
+            </div>
+            <div class="entry-card-body d-flex flex-column">
+                <div class="mb-2 small">
+                    <code>{{ mod_id }}</code>
+                    <span class="badge bg-primary ms-1">{{ mod_type }}</span>
+                    <span class="badge bg-warning ms-1">未安装</span>
+                    {% if mod_version %}
+                    <span class="badge bg-info ms-1">v{{ mod_version }}</span>
+                    {% endif %}
+                </div>
+                <p class="entry-card-desc small text-muted mb-3 flex-grow-1">
+                    {{ mod_description|truncatechars(60) }}
+                </p>
+                <div class="entry-card-actions mt-auto">
+                    <a href="{{ url('node:module_install', mod_id) }}" class="btn btn-sm btn-primary">
+                        <i class="bi bi-download"></i> 安装
+                    </a>
                 </div>
             </div>
         </div>
         {% endif %}
     </div>
+    {% endfor %}
 </div>
+
+<!-- 分页控件 -->
+{% if page_obj and page_obj.paginator.num_pages > 1 %}
+<nav aria-label="模块分页" class="mt-4">
+    <ul class="pagination justify-content-center">
+        {% if page_obj.has_previous %}
+        <li class="page-item">
+            <a class="page-link" href="{{ base_query }}page={{ page_obj.previous_page_number() }}">
+                上一页
+            </a>
+        </li>
+        {% else %}
+        <li class="page-item disabled">
+            <span class="page-link">上一页</span>
+        </li>
+        {% endif %}
+        
+        {% for p in page_range %}
+        <li class="page-item {% if p == current_page %}active{% endif %}">
+            <a class="page-link" href="{{ base_query }}page={{ p }}">
+                {{ p }}
+            </a>
+        </li>
+        {% endfor %}
+        
+        {% if page_obj.has_next %}
+        <li class="page-item">
+            <a class="page-link" href="{{ base_query }}page={{ page_obj.next_page_number() }}">
+                下一页
+            </a>
+        </li>
+        {% else %}
+        <li class="page-item disabled">
+            <span class="page-link">下一页</span>
+        </li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}
+
+{% else %}
+<!-- 无结果提示 -->
+<div class="text-center py-5">
+    <div class="mb-4">
+        <i class="bi bi-inbox" style="font-size: 4rem; color: #dee2e6;"></i>
+    </div>
+    <h5 class="text-muted mb-3">暂无匹配的模块</h5>
+    {% if search or type_filter or status_filter %}
+    <p class="text-muted mb-4">尝试调整筛选条件或搜索关键词</p>
+    <a href="{{ url('core:modules_manage') }}" class="btn btn-primary">
+        <i class="bi bi-arrow-counterclockwise"></i> 清除筛选
+    </a>
+    {% else %}
+    <p class="text-muted mb-4">请使用扫描功能获取可用模块</p>
+    <a href="{{ url('node:module_scan') }}" class="btn btn-primary">
+        <i class="bi bi-arrow-repeat"></i> 扫描模块
+    </a>
+    {% endif %}
+</div>
+{% endif %}
+
 {% endblock %}

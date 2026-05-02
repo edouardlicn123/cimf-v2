@@ -15,7 +15,7 @@ class NodeTypeService:
     
     @staticmethod
     def get_by_id(node_type_id: int) -> Optional[NodeType]:
-        return NodeType.objects.filter(id=node_type_id).first()
+        return NodeType.objects.filter(id=node_type_id).first()  # 调用者需检查 None
     
     @staticmethod
     def get_by_id_or_404(node_type_id: int) -> NodeType:
@@ -27,7 +27,7 @@ class NodeTypeService:
     
     @staticmethod
     def get_by_slug(slug: str) -> Optional[NodeType]:
-        return NodeType.objects.filter(slug=slug, is_active=True).first()
+        return NodeType.objects.filter(slug=slug, is_active=True).first()  # 调用者需检查 None
     
     @staticmethod
     def get_by_slug_or_404(slug: str) -> NodeType:
@@ -39,7 +39,7 @@ class NodeTypeService:
     
     @staticmethod
     def get_by_slug_including_inactive(slug: str) -> Optional[NodeType]:
-        return NodeType.objects.filter(slug=slug).first()
+        return NodeType.objects.filter(slug=slug).first()  # 调用者需检查 None
     
     @staticmethod
     def get_by_slug_including_inactive_or_404(slug: str) -> NodeType:

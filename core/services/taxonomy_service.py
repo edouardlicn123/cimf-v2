@@ -510,12 +510,12 @@ class TaxonomyService:
         from django.db import transaction
         from collections import defaultdict
         
-        # 一次性加载所有已存在的词汇表
+        # 一次性加载所有已存在的词汇表（使用 select_related 避免 N+1）
         existing_taxonomies = {t.slug: t for t in Taxonomy.objects.all()}
         
-        # 一次性加载所有已存在的词汇项（避免37次查询）
+        # 一次性加载所有已存在的词汇项（使用 select_related 避免 N+1）
         existing_items = defaultdict(set)
-        for item in TaxonomyItem.objects.all().values('taxonomy__slug', 'name'):
+        for item in TaxonomyItem.objects.select_related('taxonomy').all().values('taxonomy__slug', 'name'):
             slug = item['taxonomy__slug']
             existing_items[slug].add(item['name'])
         

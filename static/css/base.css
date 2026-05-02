@@ -1,22 +1,59 @@
-/* base.css
-   =============================================================================
-   重要开发指南（请务必阅读并遵守！）
-   =============================================================================
-   1. base.css 是整个项目的基础样式文件，所有页面都会加载它。
-   2. 为了实现“只修改某一页布局/间距，而不影响其他页面”，强烈推荐以下做法：
-      - 在目标页面的模板（如 auth/login.html、main/dashboard.html）最外层容器添加专属 class
-        （例如 class="login-page" 或 class="dashboard-page"）
-      - 然后在 base.css 文件末尾的“页面专属样式区”添加以该 class 为前缀的规则
-      - 使用 !important 确保覆盖主题变量或默认值
-   3. 优点：
-      - 所有页面特定调整集中在此文件，便于维护和查找
-      - 不需要修改 custom.css（仅用于入口导入）
-      - 不需要修改各个主题文件（保持主题纯净，仅负责配色）
-      - 换主题时页面布局调整自动继承，无需重复复制代码
-   4. 示例结构：
-      .xxx-page .some-element { ... !important; }
-   5. 请始终将新的页面专属样式添加到下面的“页面专属样式区”，并加上注释说明是哪个页面。
-   ============================================================================= */
+ /* base.css
+    =============================================================================
+    重要开发指南（请务必阅读并遵守！）
+    =============================================================================
+    1. base.css 是整个项目的基础样式文件，所有页面都会加载它。
+    2. 为了实现"只修改某一页布局/间距，而不影响其他页面"，强烈推荐以下做法：
+       - 在目标页面的模板（如 auth/login.html、main/dashboard.html）最外层容器添加专属 class
+         （例如 class="login-page" 或 class="dashboard-page"）
+       - 然后在 base.css 文件末尾的"页面专属样式区"添加以该 class 为前缀的规则
+       - 使用 !important 确保覆盖主题变量或默认值
+    3. 优点：
+       - 所有页面特定调整集中在此文件，便于维护和查找
+       - 不需要修改 custom.css（仅用于入口导入）
+       - 不需要修改各个主题文件（保持主题纯净，仅负责配色）
+       - 换主题时页面布局调整自动继承，无需重复复制代码
+    4. 示例结构：
+       .xxx-page .some-element { ... !important; }
+    5. 请始终将新的页面专属样式添加到下面的"页面专属样式区"，并加上注释说明是哪个页面。
+    ============================================================================= */
+
+/* === 字体声明（Inter + Noto Sans SC）=== */
+@font-face {
+    font-family: 'Inter';
+    src: url("../fonts/inter/Inter-Regular.woff2") format("woff2"),
+         url("../fonts/inter/Inter-Regular.ttf") format("truetype");
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Inter';
+    src: url("../fonts/inter/Inter-Bold.woff2") format("woff2"),
+         url("../fonts/inter/Inter-Bold.ttf") format("truetype");
+    font-weight: 700;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Noto Sans SC';
+    src: url("../fonts/noto-sans-sc/NotoSansSC-Regular.woff2") format("woff2");
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Noto Sans SC';
+    src: url("../fonts/noto-sans-sc/NotoSansSC-Bold.woff2") format("woff2");
+    font-weight: 700;
+    font-style: normal;
+    font-display: swap;
+}
+
+
 
 /* === 重置与 Normalize === */
 *,
@@ -35,7 +72,7 @@ html {
 }
 
 body {
-    font-family: "PingFang SC", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-family: 'Inter', 'Noto Sans SC', system-ui, -apple-system, sans-serif;
     background-color: var(--bg-main);
     color: var(--text-primary);
     line-height: 1.6;
@@ -271,3 +308,24 @@ footer {
 /* .some-page .some-element {
     ... !important;
 } */
+
+/* ---------- 导航栏微调（浏览器兼容方案） ---------- */
+.nav-container {
+    padding-left: 0.5rem !important;
+    padding-right: 1rem !important;
+}
+
+@media (min-width: 992px) {
+    .nav-container {
+        padding-left: 0.75rem !important;
+    }
+}
+
+/* 品牌和主导航不需要额外负 margin */
+.navbar-brand {
+    margin-left: 0 !important;
+}
+
+.navbar .navbar-nav.me-auto {
+    margin-left: 0 !important;
+}
