@@ -48,3 +48,19 @@ modules/whatsapp/
 # 开发阶段文档
 docs/stage3/
 docs/stage4/
+
+# 字体压缩包和冗余格式
+static/fonts/**/*.zip
+storage/staticfiles/fonts/**/*.zip
+static/fonts/**/extras/
+storage/staticfiles/fonts/**/extras/
+
+# Python 缓存
+__pycache__/
+*.pyc
+
+# 日志文件
+storage/logs/*.log
+
+# 静态文件收集目录
+storage/staticfiles/
