@@ -1,8 +1,8 @@
 # core/views 视图层规范
 
-> 文档版本：1.1  
+> 文档版本：1.4  
 > 创建日期：2026-04-07  
-> 最后更新：2026-05-02
+> 最后更新：2026-05-03
 
 ---
 
@@ -23,32 +23,40 @@
 
 ### 1.3 视图分布
 
+**core/views/ 包**（已拆分为多个模块文件）：
+
 | 文件 | 视图数量 | 主要功能 |
 |------|----------|----------|
-| `core/views/auth.py` | ~3 | 登录、登出 |
-| `core/views/dashboard.py` | ~2 | 仪表盘 |
-| `core/views/users.py` | ~6 | 用户管理（创建、编辑、删除） |
-| `core/views/settings.py` | ~5 | 个人设置、偏好 |
-| `core/views/taxonomy.py` | ~8 | 词汇表管理 |
-| `core/views/cron.py` | ~4 | 定时任务管理 |
-| `core/views/importexport.py` | ~12 | 导入导出 |
-| `core/views/tools.py` | ~5 | 协作工具页面 |
-| `core/views/node.py` | ~3 | 节点相关视图 |
-| `core/views/logs.py` | ~2 | 日志视图 |
-| `core/views/errors.py` | ~4 | 错误处理视图 |
-| `core/views/health.py` | ~1 | 健康检查 |
-| `core/views/api/` | ~20 | API 视图 |
-| `core/node/views.py` | ~30 | 节点系统、模块管理 |
-| `core/smtp/views.py` | ~5 | 邮件配置、发送记录 |
-| `core/marketplace/views.py` | ~2 | 模块市场 |
-| `modules/customer/views.py` | ~6 | 海外客户管理 |
-| `modules/calc/views.py` | ~2 | 计算器工具 |
-| `modules/clock/views.py` | ~2 | 时钟/日历展示 |
-| `modules/smtptest/views.py` | ~2 | SMTP 测试 |
+| `core/views/auth.py` | 2 | 登录、登出 |
+| `core/views/dashboard.py` | 2 | 仪表盘（首页、管理后台） |
+| `core/views/users.py` | 4 | 用户管理（创建、编辑、删除） |
+| `core/views/settings.py` | 7 | 系统设置、个人设置、偏好、权限检查、密码修改 |
+| `core/views/taxonomy.py` | 8 | 词汇表管理 |
+| `core/views/cron.py` | 9 | 定时任务管理 + 4个API |
+| `core/views/importexport.py` | 1 | 导入导出仪表盘 |
+| `core/views/tools.py` | 5 | 协作工具页面 + login_required_json 装饰器 |
+| `core/views/node.py` | 1 | 内容结构首页 |
+| `core/views/logs.py` | 3 | 日志视图 + get_client_ip |
+| `core/views/errors.py` | 4 | 错误处理视图 |
+| `core/views/health.py` | 3 | 健康检查 + API 版本 |
+| `core/views/api/` | 14 | REST API 视图（cards:5 + regions:6 + time:3） |
+
+**其他视图模块**：
+
+| 文件 | 视图数量 | 主要功能 |
+|------|----------|----------|
+| `core/node/views.py` | ~15 | 节点系统（node CRUD、module_dispatch、字段类型） |
+| `core/smtp/views.py` | 5 | 邮件配置、预设、发送记录、清理日志 |
+| `core/marketplace/views.py` | 2 | 模块市场 |
+| `core/module/views.py` | 7 | 模块管理 |
+| `modules/customer/views.py` | 6 | 海外客户管理 |
+| `modules/clock/views.py` | 1 | 时钟 API |
+| `modules/calc/views.py` | 1 | 计算器工具 |
+| `modules/smtptest/views.py` | 1 | SMTP 测试 |
 
 ---
 
-## 二、core/views.py 视图清单
+## 二、core/views/ 视图清单
 
 ### 2.1 认证视图
 
@@ -85,45 +93,45 @@
 
 | 视图函数 | URL | 方法 | 说明 |
 |----------|-----|------|------|
-| `taxonomies` | `/taxonomies/` | GET | 词汇表列表 |
-| `taxonomy_create` | `/taxonomy/create/` | GET/POST | 创建词汇表 |
-| `taxonomy_view` | `/taxonomy/<id>/` | GET | 查看词汇表及词汇项 |
-| `taxonomy_edit` | `/taxonomy/<id>/edit/` | GET/POST | 编辑词汇表 |
-| `taxonomy_delete` | `/taxonomy/<id>/delete/` | POST | 删除词汇表 |
-| `taxonomy_item_create` | `/taxonomy/<id>/item/create/` | POST | 创建词汇项 |
-| `taxonomy_item_update` | `/taxonomy/<id>/item/<item_id>/edit/` | POST | 编辑词汇项 |
-| `taxonomy_item_delete` | `/taxonomy/<id>/item/<item_id>/delete/` | POST | 删除词汇项 |
+| `taxonomies` | `/structure/taxonomies/` | GET | 词汇表列表 |
+| `taxonomy_create` | `/structure/taxonomy/create/` | GET/POST | 创建词汇表 |
+| `taxonomy_view` | `/structure/taxonomy/<id>/` | GET | 查看词汇表及词汇项 |
+| `taxonomy_edit` | `/structure/taxonomy/<id>/edit/` | GET/POST | 编辑词汇表 |
+| `taxonomy_delete` | `/structure/taxonomy/<id>/delete/` | POST | 删除词汇表 |
+| `taxonomy_item_create` | `/structure/taxonomy/<id>/item/create/` | POST | 创建词汇项 |
+| `taxonomy_item_update` | `/structure/taxonomy/<id>/item/<item_id>/edit/` | POST | 编辑词汇项 |
+| `taxonomy_item_delete` | `/structure/taxonomy/<id>/item/<item_id>/delete/` | POST | 删除词汇项 |
 
 ### 2.5 个人中心视图
 
 | 视图函数 | URL | 方法 | 说明 |
 |----------|-----|------|------|
 | `dashboard` | `/` | GET | 仪表盘（首页） |
-| `profile_view` | `/profile/` | GET | 个人资料查看 |
-| `profile_settings` | `/profile/settings/` | GET/POST | 个人设置 |
-| `homepage_settings` | `/profile/settings/homepage/` | GET/POST | 首页导航卡片设置 |
-| `navigation_settings` | `/user/nav-cards/` | GET | 导航卡片设置 |
+| `profile_view` | `/user/profile/` | GET | 个人资料查看 |
+| `profile_settings` | `/user/settings/` | GET/POST | 个人设置 |
+| `homepage_settings` | `/user/functioncards/` | GET/POST | 首页功能卡片设置 |
+| `navigation_settings` | `/user/navcards/` | GET | 导航卡片设置 |
 
-### 2.6 API 视图（core）
+### 2.6 API 视图（core/api_urls.py，挂载于 `/api/v1/`）
 
 | 视图函数 | URL | 方法 | 说明 |
 |----------|-----|------|------|
-| `api_time_current` | `/api/time/current/` | GET | 获取当前时间 |
-| `api_time_test` | `/api/time/test/` | GET | 测试时间同步 |
-| `api_time_status` | `/api/time/status/` | GET | 时间同步状态 |
-| `api_regions_provinces` | `/api/regions/provinces/` | GET | 获取省份列表 |
-| `api_regions_cities` | `/api/regions/cities/` | GET | 获取城市列表 |
-| `api_regions_districts` | `/api/regions/districts/` | GET | 获取区县列表 |
-| `api_regions_search` | `/api/regions/search/` | GET | 搜索行政区划 |
-| `api_regions_path` | `/api/regions/path/` | GET | 获取行政区划路径 |
-| `api_regions_stats` | `/api/regions/stats/` | GET | 行政区划统计 |
-| `api_dashboard_cards` | `/api/user/dashboard/cards/` | GET | 获取仪表盘卡片 |
-| `api_dashboard_cards_save` | `/api/user/dashboard/cards/save/` | POST | 保存仪表盘卡片 |
-| `api_nav_cards` | `/api/user/nav-cards/` | GET | 获取导航卡片 |
-| `api_nav_cards_save` | `/api/user/nav-cards/save/` | POST | 保存导航卡片 |
-| `cron_status` | `/api/cron/status/` | GET | 定时任务状态 |
-| `cron_run_task` | `/api/cron/run/<task_name>/` | POST | 手动执行任务 |
-| `cron_toggle_task` | `/api/cron/toggle/<task_name>/` | POST | 切换任务启用状态 |
+| `cron_status` | `/api/v1/cron/status/` | GET | 定时任务状态 |
+| `cron_run_task` | `/api/v1/cron/run/<task_name>/` | POST | 手动执行任务 |
+| `cron_toggle_task` | `/api/v1/cron/toggle/<task_name>/` | POST | 切换任务启用状态 |
+| `api_time_current` | `/api/v1/time/current/` | GET | 获取当前时间 |
+| `api_time_test` | `/api/v1/time/test/` | GET | 测试时间同步 |
+| `api_time_status` | `/api/v1/time/status/` | GET | 时间同步状态 |
+| `api_regions_provinces` | `/api/v1/regions/provinces/` | GET | 获取省份列表 |
+| `api_regions_cities` | `/api/v1/regions/cities/` | GET | 获取城市列表 |
+| `api_regions_districts` | `/api/v1/regions/districts/` | GET | 获取区县列表 |
+| `api_regions_search` | `/api/v1/regions/search/` | GET | 搜索行政区划 |
+| `api_regions_path` | `/api/v1/regions/path/` | GET | 获取行政区划路径 |
+| `api_regions_stats` | `/api/v1/regions/stats/` | GET | 行政区划统计 |
+| `api_dashboard_cards` | `/api/v1/user/dashboard/cards/` | GET | 获取仪表盘卡片 |
+| `api_dashboard_cards_save` | `/api/v1/user/dashboard/cards/save/` | POST | 保存仪表盘卡片 |
+| `api_nav_cards` | `/api/v1/user/nav-cards/` | GET | 获取导航卡片 |
+| `api_nav_cards_save` | `/api/v1/user/nav-cards/save/` | POST | 保存导航卡片 |
 
 ### 2.7 API 视图（modules）
 
@@ -131,45 +139,73 @@
 |----------|------|-----|------|------|
 | `api_time` | clock | `/modules/clock/api/time/` | GET | 获取当前时间（JSON） |
 | `api_stats` | customer | `/modules/customer/api/stats/` | GET | 客户统计信息 |
-| `api_regions_path` | `/api/regions/path/` | GET | 获取行政区划路径 |
-| `api_regions_stats` | `/api/regions/stats/` | GET | 行政区划统计 |
-| `api_dashboard_cards` | `/api/user/dashboard/cards/` | GET | 获取仪表盘卡片 |
-| `api_dashboard_cards_save` | `/api/user/dashboard/cards/save/` | POST | 保存仪表盘卡片 |
-| `api_nav_cards` | `/api/user/nav-cards/` | GET | 获取导航卡片 |
-| `api_nav_cards_save` | `/api/user/nav-cards/save/` | POST | 保存导航卡片 |
-| `cron_status` | `/api/cron/status/` | GET | 定时任务状态 |
-| `cron_run_task` | `/api/cron/run/<task_name>/` | POST | 手动执行任务 |
-| `cron_toggle_task` | `/api/cron/toggle/<task_name>/` | POST | 切换任务启用状态 |
+| `taxonomy_items_api` | core | `/modules/api/taxonomy-items/` | GET | 词汇项 API |
 
-### 2.7 其他视图
+### 2.8 其他视图
 
 | 视图函数 | URL | 方法 | 说明 |
 |----------|-----|------|------|
-| `structure_dashboard` | `/structure/` | GET | 内容结构仪表盘 |
-| `importexport_dashboard` | `/importexport/` | GET | 导入导出仪表盘（路由在 cimf_django/urls.py 中） |
+| `structure_dashboard` | `/structure/dashboard/` | GET | 内容结构仪表盘 |
+| `importexport_dashboard` | `/importexport/` | GET | 导入导出仪表盘 |
 
-### 2.8 导入导出视图（core/importexport/views.py）
+### 2.9 模块分发视图（module_dispatch）
+
+`core/node/views.py` 中的 `module_dispatch` 是节点系统的核心分发器：
+
+```python
+@login_required
+def module_dispatch(request, node_type_slug, node_id=None, action=None):
+    """模块分发视图 - 根据节点类型动态加载对应模块的视图"""
+    try:
+        module_views = __import__(f'modules.{module_path}.views', fromlist=[''])
+        
+        # create 操作
+        if action == 'create':
+            if hasattr(module_views, 'node_create'):
+                return module_views.node_create(request)
+        
+        # delete 操作
+        if action == 'delete':
+            if hasattr(module_views, 'node_delete'):
+                return module_views.node_delete(request, node_id)
+        
+        # list/view/edit 操作
+        if hasattr(module_views, 'node_list') and not node_id:
+            return module_views.node_list(request)
+        elif hasattr(module_views, 'node_view') and node_id:
+            return module_views.node_view(request, node_id)
+        elif hasattr(module_views, 'node_edit') and node_id:
+            return module_views.node_edit(request, node_id)
+    except ImportError:
+        pass
+    
+    return redirect('node:module_page', node_type_slug)
+```
+
+**分发规则**：详见 [B05 规范第六节](./B05_core_urls路由与模块化规范.md#六模块分发机制module_dispatch)
+
+### 2.10 导入导出视图（core/importexport/views.py）
 
 | 视图函数 | URL | 方法 | 说明 |
 |----------|-----|------|------|
 | `export_list` | `/importexport/export/` | GET | 导出列表 |
-| `export_select_fields` | `/importexport/export/<slug:node_type_slug>/` | GET/POST | 选择导出字段 |
-| `export_confirm` | `/importexport/export/<slug:node_type_slug>/confirm/` | GET/POST | 确认导出 |
-| `export_exporting` | `/importexport/export/<slug:node_type_slug>/exporting/` | GET | 导出中页面 |
-| `do_export` | `/importexport/export/<slug:node_type_slug>/do/` | GET | 执行导出 |
+| `export_select_fields` | `/importexport/export/<slug>/` | GET/POST | 选择导出字段 |
+| `export_confirm` | `/importexport/export/<slug>/confirm/` | GET/POST | 确认导出 |
+| `export_exporting` | `/importexport/export/<slug>/exporting/` | GET | 导出中页面 |
+| `do_export` | `/importexport/export/<slug>/do/` | GET | 执行导出 |
 | `import_list` | `/importexport/import/` | GET | 导入列表 |
-| `import_page` | `/importexport/import/<slug:node_type_slug>/` | GET | 导入页面 |
-| `download_template` | `/importexport/import/<slug:node_type_slug>/template/` | GET | 下载模板 |
-| `upload_preview` | `/importexport/import/<slug:node_type_slug>/upload/` | POST | 上传预览 |
-| `do_import` | `/importexport/import/<slug:node_type_slug>/do/` | POST | 执行导入 |
-| `download_errors` | `/importexport/import/<slug:node_type_slug>/errors/` | GET | 下载错误 |
+| `import_page` | `/importexport/import/<slug>/` | GET | 导入页面 |
+| `download_template` | `/importexport/import/<slug>/template/` | GET | 下载模板 |
+| `upload_preview` | `/importexport/import/<slug>/upload/` | POST | 上传预览 |
+| `do_import` | `/importexport/import/<slug>/do/` | POST | 执行导入 |
+| `download_errors` | `/importexport/import/<slug>/errors/` | GET | 下载错误 |
 
-### 2.9 模块市场视图（core/marketplace/views.py）
+### 2.11 模块市场视图（core/marketplace/views.py）
 
 | 视图函数 | URL | 方法 | 说明 |
 |----------|-----|------|------|
-| `market_index` | `/market/` | GET | 模块市场首页 |
-| `market_install` | `/market/install/<module_id>/` | POST | 安装模块 |
+| `market_index` | `/modules/market/` | GET | 模块市场首页 |
+| `market_install` | `/modules/market/install/<module_id>/` | POST | 安装模块 |
 
 ---
 
@@ -355,3 +391,15 @@ render(request, 'template.html', {
 - [ ] 补充 node/views.py 视图清单
 - [ ] 添加视图单元测试规范
 - [ ] 补充视图性能优化建议
+
+---
+
+## 八、版本历史
+
+| 版本 | 日期 | 变更内容 |
+|------|------|----------|
+| 1.0 | 2026-04-07 | 初始版本 |
+| 1.1 | 2026-05-02 | 修正 views.py 为 views/ 包结构，更新视图分布表 |
+| 1.2 | 2026-05-03 | 修正 SMTP 预设路由、修正 API 路径至 /api/v1/ |
+| 1.3 | 2026-05-03 | 修正视图文件计数（cron 5→9, tools 2→5） |
+| 1.4 | 2026-05-03 | 修正 SMTP 视图数量 4→5 |

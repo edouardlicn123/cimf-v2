@@ -810,4 +810,12 @@
 13. 修复/node/customer/create/模板不存在Bug：扩展module_dispatch统一接管create/delete操作，URL路由全部由module_dispatch分发
 14. 修复模板中core:api_* URL命名空间错误：将5处core:api_nav_cards_save和core:api_dashboard_cards_save改为api:命名空间
 15. 清理core/views/node.py死代码：删除node_dashboard、node_list、node_create、node_edit、node_delete五个无路由绑定的函数
+16. 更新A03/A04/A05技术规范文档：修正API路径至/api/v1/，清理A04重复目录结构，更新URL命名约定
+17. 修正规范文档：B03视图数量/标题、A01字段数/Django版本/smtp描述、B01模块位置、B02遗漏服务
+18. 第二轮文档审查修正：B05 路由计数修正(~40→~42, ~18→19, ~13→12)、补充 calc/smtptest 到动态路由表；B06 版本历史补充；A02/B04 审查确认无误
+
+# 2026-05-04 修改记录
+
+1. 第三轮文档全面审查修正：A01(字段数24→26×2, stage3→stage4, 尾部版本统一v1.3, 新增版本历史→v1.4); B01(尾部日期统一); B02(仙芙CIMP→CIMF, 尾部版本统一v1.4); A03(标注测试页面路由/管理命令不存在); A04(更新模板目录树, 添加标准版本头); B03(SMTP视图4→5, 新增版本历史→v1.4); A05(修正架构路径views.py→views/)
+2. 修正 docs/开发规范.md：项目结构 nodes/→modules/ views.py→views/ 字段数24→26 补充模块目录结构 修正模板目录树 CSRF写法统一为{{ csrf_token }} URL命名空间nodes:→node: 表单规范更新为Django Form+BootstrapFormMixin 相关文档链接更新 版本号v1.040→v1.045
 

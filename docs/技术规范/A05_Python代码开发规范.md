@@ -2,7 +2,7 @@
 
 本文档定义 cimf-v2（仙芙CIMF）项目的 Python 代码编写规范，涵盖 Django 后端开发的各个方面。
 
-> 最后更新：2026-05-02 - 新增常量集中化、BaseModel、BootstrapFormMixin 规范
+> 最后更新：2026-05-03 - 修正架构目录（views.py→views/, services.py→services/），更新 API 路径至 `/api/v1/`
 
 ---
 
@@ -32,23 +32,33 @@ cimf_django/                    # Django 项目配置
 
 core/                          # 核心应用
 ├── models.py                  # 核心模型（User, Taxonomy 等）
-├── services/                  # 核心服务
-├── views.py                   # 核心视图
+├── services/                  # 核心服务（目录）
+├── views/                     # 核心视图（目录，按功能拆分）
 ├── forms/                     # 表单定义
 ├── fields/                    # 自定义字段
 ├── importexport/              # 导入导出
-└── management/                # 管理命令
+├── node/                      # 节点系统（动态模块加载）
+│   ├── views.py               # module_dispatch 分发器
+│   ├── urls.py                # 节点路由
+│   ├── models.py              # NodeType 模型
+│   └── services/              # 节点服务（目录）
+├── module/                    # 模块管理
+│   ├── models.py              # Module, ToolType 模型
+│   └── services/              # 模块服务（目录）
+├── management/                # 管理命令
+└── api_urls.py                # REST API 路由（挂载于 /api/v1/）
 
-modules/                         # 业务模块
+modules/                       # 业务模块
 ├── __init__.py
-├── customer/               # 海外客户模块
+├── urls.py                    # 动态路由加载
+├── customer/                  # 海外客户模块
 │   ├── __init__.py
-│   ├── models.py                  # CustomerFields 模型
-│   ├── services.py               # 客户服务
-│   ├── views.py                   # 视图
-│   ├── urls.py                    # 路由
-│   ├── forms.py                   # 表单
-│   └── templates/                # 模块模板
+│   ├── models.py              # CustomerFields 模型
+│   ├── services.py            # 客户服务
+│   ├── views.py               # 视图
+│   ├── urls.py                # 路由
+│   ├── forms.py               # 表单
+│   └── templates/             # 模块模板
 │
 ├── clock/                     # 时钟模块
 │   ├── __init__.py
@@ -848,12 +858,13 @@ def delete_customer(request, customer_id: int):
 ### 8.1 RESTful URL 设计
 
 ```python
-# 正确示例：RESTful URL 设计
-# URL 路由
-path('api/customers/', views.customers_api, name='customers_api'),
-path('api/customers/<int:customer_id>/', views.customer_detail_api, name='customer_detail_api'),
-path('api/field-types/', views.field_types_api, name='field_types_api'),
-path('api/taxonomy-items/', views.taxonomy_items_api, name='taxonomy_items_api'),
+# 正确示例：RESTful URL 设计（统一挂载于 /api/v1/）
+# URL 路由（core/api_urls.py，命名空间 api）
+path('regions/provinces/', views.api_regions_provinces, name='api_regions_provinces'),
+path('customers/', views.customers_api, name='customers_api'),
+path('customers/<int:customer_id>/', views.customer_detail_api, name='customer_detail_api'),
+path('field-types/', views.field_types_api, name='field_types_api'),
+path('taxonomy-items/', views.taxonomy_items_api, name='taxonomy_items_api'),
 ```
 
 ### 8.2 JSON 响应格式
@@ -1124,13 +1135,13 @@ class APITestCase(TestCase):
     
     def test_api_time_current_requires_login(self):
         """测试时间 API 需要登录"""
-        response = self.client.get('/api/time/current/')
+        response = self.client.get('/api/v1/time/current/')
         self.assertEqual(response.status_code, 302)  # 未登录重定向
     
     def test_api_time_current_authenticated(self):
         """测试登录后可以访问时间 API"""
         self.client.login(username='testuser', password='test12345678')
-        response = self.client.get('/api/time/current/')
+        response = self.client.get('/api/v1/time/current/')
         self.assertEqual(response.status_code, 200)
         self.assertIn('time', response.json())
 ```
@@ -2119,5 +2130,5 @@ coverage report
 
 ---
 
-*文档版本：1.0*
-*最后更新：2026-03-23*
+*文档版本：1.1*
+*最后更新：2026-05-03*

@@ -1,8 +1,8 @@
 # core/models 模型设计规范
 
-> 文档版本：1.1  
+> 文档版本：1.2  
 > 创建日期：2026-04-07  
-> 最后更新：2026-05-02
+> 最后更新：2026-05-03
 
 ---
 
@@ -63,7 +63,8 @@ class User(AbstractUser):
 | 文件 | 模型 | 用途 |
 |------|------|------|
 | `core/models.py` | User, SystemSetting, Taxonomy, TaxonomyItem, ChinaRegion | 核心基础数据 |
-| `core/node/models.py` | NodeType, Node, Module | 节点系统模型 |
+| `core/node/models.py` | NodeType, Node | 节点系统模型 |
+| `core/module/models.py` | Module, ToolType | 模块注册与工具类型 |
 | `core/smtp/models.py` | EmailTemplate, EmailLog | 邮件系统模型 |
 
 ---

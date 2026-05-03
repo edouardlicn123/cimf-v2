@@ -1,8 +1,8 @@
 # core/services 服务层规范
 
-> 文档版本：1.3  
+> 文档版本：1.4  
 > 创建日期：2026-04-07  
-> 最后更新：2026-05-02
+> 最后更新：2026-05-03
 
 ---
 
@@ -39,6 +39,11 @@
 | `version_service.py` | VersionService | 版本信息管理 |
 | `sample_data_service.py` | SampleDataService | 示例数据生成 |
 | `base_service.py` | BaseService | 服务基类 |
+|  |  |  |
+| **节点服务（core/node/services/）** |  |  |
+| `node_service.py` | NodeService | 节点 CRUD 操作 |
+| `node_type_service.py` | NodeTypeService | 节点类型管理 |
+| `module_service.py` | ModuleService | 模块安装/卸载/依赖管理 |
 |  |  |  |
 | **模块服务（modules/）** |  |  |
 | `modules/customer/services.py` | CustomerService | 海外客户管理服务 |
@@ -153,7 +158,7 @@ ROLE_DEFAULT_PERMISSIONS = {
 
 | 分类 | 配置项 | 默认值 |
 |------|--------|--------|
-| 系统 | system_name | 仙芙CIMP |
+| 系统 | system_name | 仙芙CIMF |
 | 上传 | upload_max_size_mb | 12 |
 | 上传 | upload_max_files | 20 |
 | 上传 | upload_allowed_extensions | pdf,doc,docx,xls,xlsx,jpg,png,jpeg,zip,rar |
@@ -398,6 +403,6 @@ def user_list(request):
 
 ---
 
-*文档版本：1.2*
-*最后更新：2026-04-29*
-*更新内容：补充模块服务类（CustomerService、CustomerCnService、ResidentInfoService、WhatsAppService、ClockService）*
+*文档版本：1.4*
+*最后更新：2026-05-03*
+*更新内容：补充 LogService、SampleDataService 到服务列表；修正系统设置名称（仙芙CIMP→CIMF）*
