@@ -8,8 +8,8 @@
 {% endblock %}
 
 {% block admin_buttons_content %}
-<a href="{{ url('modules:node_edit', node_type.slug, node.id) }}" class="btn btn-primary">编辑</a>
-<a href="{{ url('modules:module_page', node_type.slug) }}" class="btn btn-secondary">返回列表</a>
+<a href="{{ url('node:node_edit', node_type.slug, node.id) }}" class="btn btn-primary">编辑</a>
+<a href="{{ url('node:module_page', node_type.slug) }}" class="btn btn-secondary">返回列表</a>
 {% endblock %}
 
 {% block admin_content %}

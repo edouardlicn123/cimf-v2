@@ -49,7 +49,7 @@
                 {% if 'importexport.view' in user_permissions or '*' in user_permissions %}
                 <li class="nav-item">
                     <a class="nav-link fw-bold {% if request.resolver_match.url_name == 'importexport_dashboard' %}active{% endif %}" 
-                       href="{{ url('core:importexport_dashboard') }}">
+                       href="{{ url('importexport:importexport_dashboard') }}">
                         导出导入
                     </a>
                 </li>
@@ -58,8 +58,8 @@
                 <!-- 模块管理 - 仅管理员可见 -->
                 {% if user.is_admin %}
                 <li class="nav-item">
-                    <a class="nav-link fw-bold {% if request.resolver_match.namespace == 'node' %}active{% endif %}" 
-                       href="{{ url('core:modules_manage') }}">
+                    <a class="nav-link fw-bold {% if request.resolver_match.url_name == 'modules_manage' %}active{% endif %}" 
+                       href="{{ url('module:list') }}">
                         模块管理
                     </a>
                 </li>

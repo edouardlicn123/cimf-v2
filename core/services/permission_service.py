@@ -193,7 +193,7 @@ class PermissionService:
     @staticmethod
     def get_node_permissions() -> Dict[str, Dict]:
         """获取节点权限，按节点类型分组（从模块配置动态读取）"""
-        from core.node.models import Module
+        from core.module.models import Module
         from importlib import import_module
         
         node_permissions = {}

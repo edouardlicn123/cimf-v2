@@ -16,7 +16,7 @@
     <div class="card-body">
         <h5>步骤 1：下载模板</h5>
         <p>请先下载导入模板，填写数据后再上传</p>
-        <a href="{{ url('modules:download_template', node_type.slug) }}" class="btn btn-success">
+        <a href="{{ url('importexport:download_template', node_type.slug) }}" class="btn btn-success">
             <i class="bi bi-download"></i> 下载模板
         </a>
     </div>
@@ -55,16 +55,16 @@
                 <ul class="text-danger" style="max-height: 200px; overflow-y: auto;"></ul>
             </div>
             
-            <form action="{{ url('modules:do_import', node_type.slug) }}" method="post">
+            <form action="{{ url('importexport:do_import', node_type.slug) }}" method="post">
                 {% include "includes/csrf.html" %}
                 <button type="submit" class="btn btn-success">确认导入</button>
-                <a href="{{ url('modules:import_page', node_type.slug) }}" class="btn btn-secondary">重新上传</a>
+                <a href="{{ url('importexport:import_page', node_type.slug) }}" class="btn btn-secondary">重新上传</a>
             </form>
         </div>
     </div>
 </div>
 
-<a href="{{ url('modules:import_list') }}" class="btn btn-link">&larr; 返回导入列表</a>
+<a href="{{ url('importexport:import_list') }}" class="btn btn-link">&larr; 返回导入列表</a>
 
 <script>
 document.getElementById('uploadForm').addEventListener('submit', async function(e) {
@@ -81,7 +81,7 @@ document.getElementById('uploadForm').addEventListener('submit', async function(
     formData.append('file', file);
     
     try {
-        const response = await fetch("{{ url('modules:upload_preview', node_type.slug) }}", {
+        const response = await fetch("{{ url('importexport:upload_preview', node_type.slug) }}", {
             method: 'POST',
             body: formData,
             headers: {

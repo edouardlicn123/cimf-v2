@@ -143,7 +143,7 @@
         if (!timeElement) return;
 
         // 从后端API获取时间
-        fetch('/api/time/current')
+        fetch('/api/v1/time/current')
             .then(response => response.json())
             .then(data => {
                 if (data.time) {

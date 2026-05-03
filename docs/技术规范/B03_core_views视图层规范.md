@@ -146,23 +146,23 @@
 | 视图函数 | URL | 方法 | 说明 |
 |----------|-----|------|------|
 | `structure_dashboard` | `/structure/` | GET | 内容结构仪表盘 |
-| `importexport_dashboard` | `/importexport/` | GET | 导入导出仪表盘 |
+| `importexport_dashboard` | `/importexport/` | GET | 导入导出仪表盘（路由在 cimf_django/urls.py 中） |
 
 ### 2.8 导入导出视图（core/importexport/views.py）
 
 | 视图函数 | URL | 方法 | 说明 |
 |----------|-----|------|------|
-| `export_list` | `/modules/export/` | GET | 导出列表 |
-| `export_select_fields` | `/modules/export/<node_type>/fields/` | GET | 选择导出字段 |
-| `export_confirm` | `/modules/export/<node_type>/confirm/` | GET/POST | 确认导出 |
-| `export_exporting` | `/modules/export/<node_type>/exporting/` | GET | 导出中页面 |
-| `do_export` | `/modules/export/<node_type>/do/` | POST | 执行导出 |
-| `import_list` | `/modules/import/` | GET | 导入列表 |
-| `import_page` | `/modules/import/<node_type>/` | GET | 导入页面 |
-| `download_template` | `/modules/import/<node_type>/template/` | GET | 下载模板 |
-| `upload_preview` | `/modules/import/<node_type>/preview/` | POST | 上传预览 |
-| `do_import` | `/modules/import/<node_type>/do/` | POST | 执行导入 |
-| `download_errors` | `/modules/import/<node_type>/errors/` | GET | 下载错误 |
+| `export_list` | `/importexport/export/` | GET | 导出列表 |
+| `export_select_fields` | `/importexport/export/<slug:node_type_slug>/` | GET/POST | 选择导出字段 |
+| `export_confirm` | `/importexport/export/<slug:node_type_slug>/confirm/` | GET/POST | 确认导出 |
+| `export_exporting` | `/importexport/export/<slug:node_type_slug>/exporting/` | GET | 导出中页面 |
+| `do_export` | `/importexport/export/<slug:node_type_slug>/do/` | GET | 执行导出 |
+| `import_list` | `/importexport/import/` | GET | 导入列表 |
+| `import_page` | `/importexport/import/<slug:node_type_slug>/` | GET | 导入页面 |
+| `download_template` | `/importexport/import/<slug:node_type_slug>/template/` | GET | 下载模板 |
+| `upload_preview` | `/importexport/import/<slug:node_type_slug>/upload/` | POST | 上传预览 |
+| `do_import` | `/importexport/import/<slug:node_type_slug>/do/` | POST | 执行导入 |
+| `download_errors` | `/importexport/import/<slug:node_type_slug>/errors/` | GET | 下载错误 |
 
 ### 2.9 模块市场视图（core/marketplace/views.py）
 

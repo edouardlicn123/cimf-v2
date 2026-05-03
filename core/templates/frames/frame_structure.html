@@ -27,7 +27,7 @@
           <ul class="nav flex-column mb-auto">
             <li class="nav-item">
               <a class="nav-link d-flex align-items-center py-2 px-2 rounded {% if active_section == 'node_types' %}active{% endif %}" 
-                 href="{{ url('node:node_types_list') }}">
+                 href="{{ url('core:node_types_list') }}">
                 <i class="bi bi-box-seam me-2 fs-6"></i>
                 可用节点类型
               </a>
@@ -41,7 +41,7 @@
             </li>
             <li class="nav-item">
               <a class="nav-link d-flex align-items-center py-2 px-2 rounded {% if active_section == 'field_types' %}active{% endif %}" 
-                 href="{{ url('modules:field_types') }}">
+                 href="{{ url('core:field_types') }}">
                 <i class="bi bi-ui-checks me-2 fs-6"></i>
                 字段类型
               </a>

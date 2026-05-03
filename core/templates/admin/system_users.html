@@ -60,7 +60,8 @@
                             <td>{{ u.nickname|default('-') }}</td>
                             <td>{{ u.email|default('-') }}</td>
                             <td>
-                                {% include "includes/role_badge.html" with role=u.role %}
+                                {% set role = u.role %}
+                                {% include "includes/role_badge.html" %}
                             </td>
                             <td>
                                 {% if u.is_active %}

@@ -12,7 +12,7 @@ from django.core.paginator import Paginator
 
 from core.models import SystemSetting
 from core.services import UserService
-from core.node.models import Module
+from core.module.models import Module
 
 
 @login_required

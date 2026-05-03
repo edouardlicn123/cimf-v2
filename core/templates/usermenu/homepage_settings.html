@@ -230,7 +230,7 @@ document.addEventListener('DOMContentLoaded', function() {
             positions[pos] = { module: card ? card.dataset.module : null };
         });
         
-        fetch('{{ url("core:api_dashboard_cards_save") }}', {
+        fetch('{{ url("api:api_dashboard_cards_save") }}', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

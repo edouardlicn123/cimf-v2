@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
-from core.node.models import Module, ToolType
+from core.module.models import Module, ToolType
 from core.constants import ModuleType
 
 

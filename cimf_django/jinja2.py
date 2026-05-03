@@ -38,7 +38,7 @@ def url_with_args(viewname, *args, **kwargs):
     包装 reverse 函数，支持位置参数和关键字参数
     用法：{{ url('core:user_edit', user.id) }}
           {{ url('core:user_edit', user_id=user.id) }}
-          {{ url('node:module_scan') }}
+          {{ url('module:list') }}
     """
     # 处理关键字参数
     if args and kwargs:

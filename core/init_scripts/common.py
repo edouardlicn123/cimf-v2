@@ -125,8 +125,8 @@ def verify_module_taxonomies() -> List[str]:
     Returns:
         list: 错误信息列表，空列表表示验证通过
     """
-    from core.node.services import ModuleService
-    from core.node.models import Module
+    from core.module.services import ModuleService
+    from core.module.models import Module
     from core.models import Taxonomy, TaxonomyItem
     
     errors = []

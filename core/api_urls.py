@@ -24,6 +24,11 @@ from core import views
 app_name = 'api'
 
 urlpatterns = [
+    # Cron API
+    path('cron/status/', views.cron_status, name='api_cron_status'),
+    path('cron/run/<str:task_name>/', views.cron_run_task, name='api_cron_run_task'),
+    path('cron/toggle/<str:task_name>/', views.cron_toggle_task, name='api_cron_toggle_task'),
+    
     # 时间 API
     path('time/current/', views.api_time_current, name='api_time_current'),
     path('time/test/', views.api_time_test, name='api_time_test'),

@@ -23,7 +23,7 @@
 
 <script>
     setTimeout(function() {
-        window.location.href = "{{ url('modules:do_export', node_type.slug) }}";
+        window.location.href = "{{ url('importexport:do_export', node_type.slug) }}";
     }, 1000);
 </script>
 {% endblock %}

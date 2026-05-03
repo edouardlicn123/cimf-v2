@@ -793,3 +793,21 @@
 36. 同步更新 docs/技术规范/ 全部 13 份文档：添加 core/constants.py 规范、BaseModel 抽象基类、BootstrapFormMixin、Django Form 模式、nodes→modules 路径更新、ModuleType 常量引用
 37. 修正技术规范文档：删除非存在模块引用(customer_cn/resident_info/whatsapp)，修正core/views/目录结构，替换nodes:为node:命名空间，更新服务列表
 
+# 2026-05-03 修改记录
+
+1. 创建模块管理模板 node/modules.html（继承 frame_module.html），修正侧边栏归属
+2. 恢复卡片式模块管理页：重命名 index.html→modules.html，更新视图函数支持搜索/筛选/分页/依赖加载，继承 frame_module.html
+3. 修复 Jinja2 模板语法：将 Django 风格的 include with 改为 Jinja2 风格的 set + include（profile.html, system_users.html, permission_check.html）
+4. 清理废弃路由：删除 /node/types/create 和 /node/types/<id>/edit/，删除对应模板，更新URL文档；变更个人中心路径：profile→user/profile等
+5. 导入导出URL路由迁移：去除modules前缀，统一使用importexport命名空间
+6. 修正技术规范文档中的导入导出URL路径（B03、B05）
+7. 修复导入导出模块 Bug：移除废弃的 import_list/export_list 视图，修正 URL 引用
+8. Phase 1: 模块管理路径从 modules_manage/ 改为 modules/manage/
+9. Phase 2: Node/Module概念分离 - 创建core/module目录，拆分Module/ToolType模型和服务，创建module命名空间，更新所有引用
+10. 模块市场路径从 market/ 改为 modules/market/
+11. 重构URL路由：structure/统一收口内容结构管理路径，包含dashboard、types、taxonomies、fieldtypes
+12. URL路由重组：core/urls.py按业务域分组，删除17条重复/api/路由，cron API迁移至api/v1/，模板和JS硬编码路径统一为/api/v1/
+13. 修复/node/customer/create/模板不存在Bug：扩展module_dispatch统一接管create/delete操作，URL路由全部由module_dispatch分发
+14. 修复模板中core:api_* URL命名空间错误：将5处core:api_nav_cards_save和core:api_dashboard_cards_save改为api:命名空间
+15. 清理core/views/node.py死代码：删除node_dashboard、node_list、node_create、node_edit、node_delete五个无路由绑定的函数
+

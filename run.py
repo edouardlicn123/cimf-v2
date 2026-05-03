@@ -80,7 +80,7 @@ def init_modules():
     try:
         import django
         django.setup()
-        from core.node.services import ModuleService
+        from core.module.services import ModuleService
         
         # 扫描并注册所有模块（不安装）
         modules = ModuleService.scan_modules()

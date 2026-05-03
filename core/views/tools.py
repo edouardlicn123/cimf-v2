@@ -19,7 +19,7 @@
 import os
 from functools import wraps
 from django.shortcuts import render, redirect
-from core.node.models import Module, ToolType
+from core.module.models import Module, ToolType
 from core.constants import ModuleType
 
 

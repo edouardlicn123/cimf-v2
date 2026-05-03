@@ -196,7 +196,7 @@
             }
         });
         
-        fetch('/api/user/dashboard/cards/save/', {
+        fetch('/api/v1/user/dashboard/cards/save/', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -364,7 +364,7 @@
     function renderCards() {
         var slots = document.querySelectorAll('.card-slot');
         
-        fetch('/api/user/dashboard/cards/', {credentials: 'include'})
+        fetch('/api/v1/user/dashboard/cards/', {credentials: 'include'})
             .then(function(response) { return response.json(); })
             .then(function(data) {
                 if (data.success && data.data) {

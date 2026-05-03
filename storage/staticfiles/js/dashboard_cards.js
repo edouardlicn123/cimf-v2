@@ -10,7 +10,7 @@
 
     async function initDashboardCards() {
         try {
-            const response = await fetch('/api/user/dashboard/cards/', {
+            const response = await fetch('/api/v1/user/dashboard/cards/', {
                 credentials: 'include'
             });
             const data = await response.json();
@@ -183,7 +183,7 @@
 
     async function saveCardPositions() {
         try {
-            const response = await fetch('/api/user/dashboard/cards/save/', {
+            const response = await fetch('/api/v1/user/dashboard/cards/save/', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

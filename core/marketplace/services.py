@@ -75,7 +75,7 @@ class MarketService:
     def get_installed_module_version(cls, module_id: str) -> Optional[str]:
         """从数据库获取已注册模块的版本"""
         try:
-            from core.node.models import Module
+            from core.module.models import Module
             module = Module.objects.filter(module_id=module_id).first()
             if module:
                 return module.version
@@ -170,8 +170,8 @@ class MarketService:
             # 更新数据库中的模块版本号
             market_version = module.get('version', '1.0.0')
             try:
-                from core.node.services import ModuleService
-                from core.node.models import Module
+                from core.module.services import ModuleService
+                from core.module.models import Module
                 existing = Module.objects.filter(module_id=module_id).first()
                 if existing:
                     existing.version = market_version

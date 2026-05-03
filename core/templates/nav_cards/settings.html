@@ -319,7 +319,7 @@ async function deleteCard(cardId) {
     updateCardDisplay();
     
     try {
-        const response = await fetch('{{ url("core:api_nav_cards_save") }}', {
+        const response = await fetch('{{ url("api:api_nav_cards_save") }}', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -411,7 +411,7 @@ document.getElementById('saveCardBtn').addEventListener('click', async function(
     
     // 保存到数据库
     try {
-        const response = await fetch('{{ url("core:api_nav_cards_save") }}', {
+        const response = await fetch('{{ url("api:api_nav_cards_save") }}', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -521,7 +521,7 @@ function initDragAndDrop() {
 }
 
 function saveCardsOrder() {
-    fetch('{{ url("core:api_nav_cards_save") }}', {
+        fetch('{{ url("api:api_nav_cards_save") }}', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',

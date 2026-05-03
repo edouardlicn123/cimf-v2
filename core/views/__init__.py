@@ -15,8 +15,8 @@ from .taxonomy import (
     taxonomies, taxonomy_view, taxonomy_create, taxonomy_edit,
     taxonomy_delete, taxonomy_item_create, taxonomy_item_update, taxonomy_item_delete
 )
-from .importexport import importexport_dashboard, import_list, export_list
-from .node import node_dashboard, node_list, node_create, node_edit, node_delete, structure_dashboard
+from .importexport import importexport_dashboard
+from .node import structure_dashboard
 from .cron import cron_manager, cron_status, cron_run_task, cron_toggle_task, permission_check
 from .api import (
     api_time_current, api_time_test, api_time_status,
@@ -38,8 +38,8 @@ __all__ = [
     'change_password', 'profile', 'profile_view', 'profile_settings', 'homepage_settings',
     'taxonomies', 'taxonomy_view', 'taxonomy_create', 'taxonomy_edit',
     'taxonomy_delete', 'taxonomy_item_create', 'taxonomy_item_update', 'taxonomy_item_delete',
-    'importexport_dashboard', 'import_list', 'export_list',
-    'node_dashboard', 'node_list', 'node_create', 'node_edit', 'node_delete', 'structure_dashboard',
+    'importexport_dashboard',
+    'structure_dashboard',
     'cron_manager', 'cron_status', 'cron_run_task', 'cron_toggle_task', 'permission_check',
     'api_time_current', 'api_time_test', 'api_time_status',
     'api_regions_provinces', 'api_regions_cities', 'api_regions_districts',

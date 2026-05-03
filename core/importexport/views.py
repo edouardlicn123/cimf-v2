@@ -63,7 +63,7 @@ def export_select_fields(request, node_type_slug):
     
     node_type = NodeTypeService.get_by_slug(node_type_slug)
     if not node_type:
-        return redirect('modules:export_list')
+        return redirect('importexport:export_list')
     
     if request.method == 'POST':
         selected_fields = []
@@ -75,7 +75,7 @@ def export_select_fields(request, node_type_slug):
         
         if not selected_fields:
             messages.error(request, '请至少选择一个导出字段')
-            return redirect('modules:export_select_fields', node_type_slug)
+            return redirect('importexport:export_select_fields', node_type_slug)
         
         request.session['export_selected_fields'] = selected_fields
         request.session['export_format'] = request.POST.get('format', 'csv')
@@ -102,7 +102,7 @@ def export_select_fields(request, node_type_slug):
             })
         
         request.session['export_filters'] = filters
-        return redirect('modules:export_confirm', node_type_slug)
+        return redirect('importexport:export_confirm', node_type_slug)
     
     fields = ExportService.get_exportable_fields(node_type_slug)
     filterable_fields = ExportService.get_filterable_fields(node_type_slug)
@@ -125,17 +125,17 @@ def export_confirm(request, node_type_slug):
     
     node_type = NodeTypeService.get_by_slug(node_type_slug)
     if not node_type:
-        return redirect('modules:export_list')
+        return redirect('importexport:export_list')
     
     selected_fields = request.session.get('export_selected_fields', [])
     export_format = request.session.get('export_format', 'csv')
     filters = request.session.get('export_filters', [])
     
     if request.method == 'POST':
-        return redirect('modules:export_exporting', node_type_slug)
+        return redirect('importexport:export_exporting', node_type_slug)
     
     if not selected_fields:
-        return redirect('modules:export_select_fields', node_type_slug)
+        return redirect('importexport:export_select_fields', node_type_slug)
     
     fields_info = ExportService.get_fields_info(node_type_slug, selected_fields)
     record_count = ExportService.get_record_count(node_type_slug, filters)
@@ -163,11 +163,11 @@ def export_exporting(request, node_type_slug):
     
     node_type = NodeTypeService.get_by_slug(node_type_slug)
     if not node_type:
-        return redirect('modules:export_list')
+        return redirect('importexport:export_list')
     
     selected_fields = request.session.get('export_selected_fields', [])
     if not selected_fields:
-        return redirect('modules:export_select_fields', node_type_slug)
+        return redirect('importexport:export_select_fields', node_type_slug)
     
     return render(request, 'importexport/export_exporting.html', {
         'node_type': node_type,
@@ -183,14 +183,14 @@ def do_export(request, node_type_slug):
     
     node_type = NodeTypeService.get_by_slug(node_type_slug)
     if not node_type:
-        return redirect('modules:export_list')
+        return redirect('importexport:export_list')
     
     selected_fields = request.session.get('export_selected_fields', [])
     export_format = request.session.get('export_format', 'csv')
     filters = request.session.get('export_filters', [])
     
     if not selected_fields:
-        return redirect('modules:export_select_fields', node_type_slug)
+        return redirect('importexport:export_select_fields', node_type_slug)
     
     try:
         response = ExportService.export(node_type_slug, selected_fields, export_format, filters)
@@ -201,7 +201,7 @@ def do_export(request, node_type_slug):
         return response
     except Exception as e:
         messages.error(request, f'导出失败：{str(e)}')
-        return redirect('modules:export_select_fields', node_type_slug)
+        return redirect('importexport:export_select_fields', node_type_slug)
 
 
 @login_required
@@ -225,7 +225,7 @@ def import_page(request, node_type_slug):
     
     node_type = NodeTypeService.get_by_slug(node_type_slug)
     if not node_type:
-        return redirect('modules:import_list')
+        return redirect('importexport:import_list')
     
     fields = ImportService.get_importable_fields(node_type_slug)
     
@@ -244,7 +244,7 @@ def download_template(request, node_type_slug):
     
     node_type = NodeTypeService.get_by_slug(node_type_slug)
     if not node_type:
-        return redirect('modules:import_list')
+        return redirect('importexport:import_list')
     
     return TemplateGenerator.generate(node_type_slug)
 
@@ -341,18 +341,18 @@ def do_import(request, node_type_slug):
     
     node_type = NodeTypeService.get_by_slug(node_type_slug)
     if not node_type:
-        return redirect('modules:import_list')
+        return redirect('importexport:import_list')
     
     import_data = request.session.get('import_data')
     if not import_data:
         messages.error(request, '请先上传文件')
-        return redirect('modules:import_page', node_type_slug)
+        return redirect('importexport:import_page', node_type_slug)
     
     rows = import_data.get('rows', [])
     
     if not rows:
         messages.error(request, '没有可导入的数据')
-        return redirect('modules:import_page', node_type_slug)
+        return redirect('importexport:import_page', node_type_slug)
     
     validation = ImportService.validate_data(node_type_slug, rows)
     valid_rows = [row for i, row in enumerate(rows, 1) 
@@ -398,7 +398,7 @@ def download_errors(request, node_type_slug):
     
     node_type = NodeTypeService.get_by_slug(node_type_slug)
     if not node_type:
-        return redirect('modules:import_list')
+        return redirect('importexport:import_list')
     
     errors_json = request.session.get('import_errors', '[]')
     import json

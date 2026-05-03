@@ -25,7 +25,7 @@
             <div class="entry-card-body">
                 <p class="entry-card-desc">{{ node_type.description|default('暂无描述') }}</p>
                 <div class="entry-card-actions">
-                    <a href="{{ url('modules:import_page', node_type.slug) }}" class="btn btn-primary btn-sm">
+                    <a href="{{ url('importexport:import_page', node_type.slug) }}" class="btn btn-primary btn-sm">
                         导入 {{ node_type.name }}
                     </a>
                 </div>

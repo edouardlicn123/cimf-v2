@@ -47,7 +47,7 @@
     opacity: 1;
 }
 .main-nav:hover .nav-link {
-    opacity: 0.7;
+    opacity: 0.6;
 }
 .main-nav:hover .nav-link:hover {
     opacity: 1;

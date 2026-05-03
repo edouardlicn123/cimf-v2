@@ -70,7 +70,7 @@ def run_stage4(dry_run: bool = False) -> Dict[str, Any]:
     print_section("阶段4：业务模块")
     print_step("4.1", "扫描并注册业务模块")
     
-    from core.node.services import ModuleService
+    from core.module.services import ModuleService
     
     if dry_run:
         return {'message': '[模拟] 将扫描并注册模块', 'success': True}

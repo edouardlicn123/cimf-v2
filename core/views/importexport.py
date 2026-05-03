@@ -17,23 +17,3 @@ def importexport_dashboard(request):
     return render(request, 'importexport/importexport_dashboard.html', {
         'active_section': 'dashboard',
     })
-
-
-@login_required
-def import_list(request):
-    """导入记录列表"""
-    if not PermissionService.has_permission(request.user, 'importexport.view'):
-        return redirect('core:dashboard')
-    return render(request, 'importexport/import_list.html', {
-        'active_section': 'import',
-    })
-
-
-@login_required
-def export_list(request):
-    """导出记录列表"""
-    if not PermissionService.has_permission(request.user, 'importexport.view'):
-        return redirect('core:dashboard')
-    return render(request, 'importexport/export_list.html', {
-        'active_section': 'export',
-    })

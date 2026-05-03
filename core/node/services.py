@@ -6,7 +6,7 @@ Node 节点系统服务（向后兼容）
 保留此文件以保持向后兼容
 """
 
-from core.node.services import NodeTypeService, NodeService, ModuleService
+from core.node.services import NodeTypeService, NodeService
 
 
 def get_dynamic_model_class(module_id: str):
@@ -18,4 +18,4 @@ def get_dynamic_model_class(module_id: str):
     })
 
 
-__all__ = ['NodeTypeService', 'NodeService', 'ModuleService', 'get_dynamic_model_class']
+__all__ = ['NodeTypeService', 'NodeService', 'get_dynamic_model_class']

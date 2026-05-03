@@ -76,7 +76,7 @@
     </div>
     
     <div class="text-end">
-        <a href="{{ url('core:modules_manage') }}" class="btn btn-secondary">取消</a>
+        <a href="{{ url('module:list') }}" class="btn btn-secondary">取消</a>
         <button type="submit" class="btn btn-primary">创建模块</button>
     </div>
 </form>
@@ -90,7 +90,7 @@ document.getElementById('createModuleForm').addEventListener('submit', async fun
     const formData = new FormData(this);
     
     try {
-        const response = await fetch('{{ url("node:module_create_action") }}', {
+        const response = await fetch('{{ url("module:create_action") }}', {
             method: 'POST',
             body: formData,
             headers: {
@@ -102,7 +102,7 @@ document.getElementById('createModuleForm').addEventListener('submit', async fun
         
         if (result.success) {
             alert('模块创建成功！');
-            window.location.href = '{{ url("core:modules_manage") }}';
+            window.location.href = '{{ url("module:list") }}';
         } else {
             alert('错误: ' + result.error);
         }

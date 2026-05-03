@@ -17,7 +17,7 @@
           <ul class="nav flex-column mb-auto">
             <li class="nav-item">
               <a class="nav-link d-flex align-items-center py-2 px-2 rounded {% if active_section == 'dashboard' %}active{% endif %}" 
-                 href="{{ url('modules:index') }}">
+                 href="{{ url('node:index') }}">
                 <i class="bi bi-grid me-2 fs-6"></i>
                 事务总览
               </a>
@@ -27,7 +27,7 @@
             {% for nt in node_types %}
             <li class="nav-item">
               <a class="nav-link d-flex align-items-center py-2 px-2 rounded {% if active_section == nt.slug %}active{% endif %}" 
-                 href="{{ url('modules:module_page', nt.slug) }}">
+                 href="{{ url('node:module_page', nt.slug) }}">
                 <i class="bi {{ nt.icon|default('bi-folder') }} me-2 fs-6"></i>
                 {{ nt.name }}
               </a>

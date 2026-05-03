@@ -38,6 +38,13 @@ Agent 应在以下情况检查该文档：
 
 ## 开发规范
 
+**⚠️ 模板引擎：Jinja2**
+- 项目使用 **Jinja2** 模板引擎，**不使用 Django 模板语法**
+- 禁止使用 `{% include "..." with ... %}`（Django 语法），应使用 `{% set var = value %}{% include "..." %}`
+- 禁止使用 `{% csrf_token %}`、`{% load %}`、`{% blocktrans %}` 等 Django 专属标签
+- 模板中使用 `url('namespace:name', arg)` 生成链接，详见 `A04_模板开发规范`
+- 编写/修改模板前，请查阅 `docs/技术规范/A04_模板开发规范.md`
+
 **在每次会话开始时，请读取 `docs/开发规范.md` 以了解最新的开发规范。**
 
 **重要：每次完成编辑后，必须自动调用 `update_progress.py` 更新记录：**

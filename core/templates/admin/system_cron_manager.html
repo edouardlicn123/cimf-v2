@@ -107,7 +107,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const taskName = this.dataset.task;
             console.log('Clicked run:', taskName);
             
-            fetch(`/api/cron/run/${taskName}/`, { 
+            fetch(`/api/v1/cron/run/${taskName}/`, { 
                 method: 'POST',
                 headers: {
                     'X-CSRFToken': csrfToken,
@@ -140,7 +140,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const enabled = this.checked;
             console.log('Toggle:', taskName, enabled);
             
-            fetch(`/api/cron/toggle/${taskName}/`, {
+            fetch(`/api/v1/cron/toggle/${taskName}/`, {
                 method: 'POST',
                 headers: { 
                     'Content-Type': 'application/json',

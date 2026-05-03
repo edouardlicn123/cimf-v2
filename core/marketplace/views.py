@@ -89,7 +89,7 @@ def market_install(request, module_id: str):
         return JsonResponse(result)
 
     try:
-        from core.node.services import ModuleService
+        from core.module.services import ModuleService
 
         module = ModuleService.register_module({
             'id': module_id,

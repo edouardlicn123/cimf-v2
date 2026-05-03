@@ -243,7 +243,7 @@ def profile_settings(request):
 @login_required
 def homepage_settings(request):
     """首页卡片设置"""
-    from core.node.models import Module
+    from core.module.models import Module
     from importlib import import_module
     
     setting = SystemSetting.objects.filter(key='user_dashboard_card_positions').first()
